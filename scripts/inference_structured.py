@@ -223,7 +223,7 @@ def main():
     qa_system = SriLankanHistoryQA()
     
     print("=" * 60)
-    print("🇱🇰 Sri Lankan Historical Events Story Q&A System")
+    print("Sri Lankan Historical Events Story Q&A System")
     print("Ask questions about Sri Lankan history in any way!")
     print("Type 'quit' or 'exit' to exit\n")
     print("=" * 60 + "\n")
