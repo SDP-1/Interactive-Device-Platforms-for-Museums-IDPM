@@ -1,0 +1,11 @@
+📖 Quick Start Guide
+
+1. Read README.md for project overview
+2. Follow SETUP.md for complete setup instructions
+3. Use TEST_QUESTIONS.md for testing questions
+
+🚀 Quick Commands:
+- Install: pip install -r requirements.txt
+- Ingest: python ingestion/ingest_artifacts.py
+- Start: uvicorn api.main:app --reload
+- Swagger: http://localhost:8000/docs
