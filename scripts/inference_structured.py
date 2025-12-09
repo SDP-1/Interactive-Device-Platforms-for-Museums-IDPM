@@ -174,7 +174,7 @@ class SriLankanHistoryQA:
             return event_data, best_similarity
         return None, 0
     
-    def generate_story(self, question, use_retrieval=True, similarity_threshold=0.85):
+    def generate_story(self, question, use_retrieval=True, similarity_threshold=0.65):
         """Generate story answer"""
         if use_retrieval and self.index is not None:
             # Try to find similar question
