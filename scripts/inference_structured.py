@@ -17,36 +17,51 @@ def convert_to_story(name, description, era, what_happened):
     points = [p.strip() for p in what_happened.split('|') if p.strip()]
     story_parts = []
     
+    # Opening variations (none include description to avoid duplication)
     openings = [
         f"Long ago, in the {era}, a remarkable chapter unfolded in Sri Lankan history.",
         f"In the {era}, the story of {name} began to unfold.",
-        f"Once upon a time, in the {era}, {description.lower()}",
+        f"Once upon a time, in the {era}, something extraordinary happened.",
         f"The {era} witnessed the extraordinary tale of {name}.",
     ]
     story_parts.append(random.choice(openings))
-    story_parts.append(f"{description}")
+    
+    # Add description with proper ending punctuation
+    desc = description.strip()
+    if not desc.endswith('.'):
+        desc += '.'
+    story_parts.append(desc)
+    
+    # Varied transitions for middle points
+    transitions = ["Over time,", "Furthermore,", "Additionally,", "Moreover,"]
     
     for i, point in enumerate(points):
         point = point.replace('•', '').strip()
         if point:
             point = point[0].upper() + point[1:] if len(point) > 1 else point.upper()
         
+        # Ensure point ends with period
+        if not point.endswith('.'):
+            point += '.'
+        
         if i == 0:
+            # First point
             if point.startswith(('Founded', 'Established', 'Built', 'Created', 'Born')):
                 story_parts.append(point)
             else:
                 story_parts.append(f"It began when {point.lower()}")
-        elif i < len(points) - 2:
-            if point.startswith(('The', 'This', 'That', 'King', 'Prince')):
-                story_parts.append(point)
-            else:
-                story_parts.append(f"Over time, {point.lower()}")
+        elif i == len(points) - 1:
+            # Only LAST point gets "Finally"
+            story_parts.append(f"Finally, {point.lower()}")
         else:
+            # Middle points get varied transitions
             if point.startswith(('The', 'This', 'That', 'King', 'Prince')):
                 story_parts.append(point)
             else:
-                story_parts.append(f"Finally, {point.lower()}")
+                transition = transitions[i % len(transitions)]
+                story_parts.append(f"{transition} {point.lower()}")
     
+    # Conclusion
     conclusions = [
         f"This remarkable story of {name} remains a testament to the rich history of Sri Lanka.",
         f"The legacy of {name} continues to inspire and shape Sri Lankan identity to this day.",
@@ -54,9 +69,10 @@ def convert_to_story(name, description, era, what_happened):
     ]
     story_parts.append(random.choice(conclusions))
     
+    # Join with spaces and clean up
     story = " ".join(story_parts)
     story = " ".join(story.split())
-    story = story.replace(" ,", ",").replace(" .", ".").replace("  ", " ")
+    story = story.replace(" ,", ",").replace(" .", ".").replace("..", ".").replace("  ", " ")
     return story
 
 class SriLankanHistoryQA:
