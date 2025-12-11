@@ -12,6 +12,14 @@ import faiss
 import os
 import random
 
+# Optional: Fuzzy matching for spelling correction
+try:
+    from rapidfuzz import fuzz, process
+    FUZZY_AVAILABLE = True
+except ImportError:
+    FUZZY_AVAILABLE = False
+    print("⚠️  rapidfuzz not installed. Spelling correction disabled. Run: pip install rapidfuzz")
+
 def convert_to_story(name, description, era, what_happened):
     """Convert structured data to story format (same as training)"""
     points = [p.strip() for p in what_happened.split('|') if p.strip()]
@@ -159,6 +167,93 @@ class SriLankanHistoryQA:
         print("🇱🇰 Sri Lankan Historical Events Q&A System Ready!")
         print("="*60 + "\n")
     
+    def _build_entity_terms(self):
+        """Build a set of entity terms for spelling correction"""
+        if self.df is None:
+            return set()
+        
+        entity_terms = set()
+        for name in self.df['name'].tolist():
+            # Add full name (lowercase)
+            entity_terms.add(name.lower())
+            # Add individual words (skip short ones)
+            for word in name.lower().split():
+                if len(word) > 3:
+                    entity_terms.add(word)
+        
+        return entity_terms
+    
+    def correct_spelling(self, query):
+        """
+        Correct misspelled historical terms using fuzzy matching.
+        Only corrects words that are likely entity names (not common English words).
+        """
+        if not FUZZY_AVAILABLE or self.df is None:
+            return query
+        
+        # Build entity terms if not already done
+        if not hasattr(self, '_entity_terms'):
+            self._entity_terms = self._build_entity_terms()
+        
+        if not self._entity_terms:
+            return query
+        
+        # Common English words to skip
+        skip_words = {
+            'what', 'is', 'the', 'tell', 'me', 'about', 'give', 'details',
+            'explain', 'describe', 'who', 'was', 'when', 'where', 'how',
+            'why', 'did', 'does', 'history', 'story', 'of', 'in', 'a', 'an',
+            'and', 'or', 'but', 'for', 'with', 'from', 'to', 'at', 'by',
+            'are', 'were', 'been', 'have', 'has', 'had', 'do', 'can', 'could',
+            'would', 'should', 'will', 'shall', 'may', 'might', 'must',
+            'kingdom', 'king', 'queen', 'prince', 'temple', 'stupa', 'war',
+            'battle', 'period', 'era', 'century', 'year', 'built', 'founded'
+        }
+        
+        words = query.split()
+        corrected_words = []
+        corrections_made = []
+        
+        for word in words:
+            word_lower = word.lower()
+            
+            # Skip common words and short words
+            if word_lower in skip_words or len(word_lower) <= 3:
+                corrected_words.append(word)
+                continue
+            
+            # Check if word is already a valid entity term
+            if word_lower in self._entity_terms:
+                corrected_words.append(word)
+                continue
+            
+            # Find best fuzzy match
+            match = process.extractOne(
+                word_lower,
+                self._entity_terms,
+                scorer=fuzz.ratio,
+                score_cutoff=75  # Minimum 75% similarity to correct
+            )
+            
+            if match:
+                matched_term, score, _ = match
+                # Only correct if score is good but not perfect (avoid unnecessary changes)
+                if 75 <= score < 100:
+                    corrections_made.append(f"'{word}' → '{matched_term}'")
+                    corrected_words.append(matched_term)
+                else:
+                    corrected_words.append(word)
+            else:
+                corrected_words.append(word)
+        
+        corrected_query = ' '.join(corrected_words)
+        
+        # Log corrections if any were made
+        if corrections_made:
+            print(f"🔄 Spelling corrections: {', '.join(corrections_made)}")
+        
+        return corrected_query
+    
     def find_similar_question(self, user_question, threshold=0.7, top_k=5):
         """Find similar questions using semantic similarity"""
         if self.index is None:
@@ -190,14 +285,15 @@ class SriLankanHistoryQA:
             return event_data, best_similarity
         return None, 0
     
-    def generate_story(self, question, use_retrieval=True, similarity_threshold=0.65):
-        """Generate story answer"""
+    def generate_story(self, question, use_retrieval=True):
+        """Generate story answer with hybrid fuzzy spelling correction"""
+        
         if use_retrieval and self.index is not None:
-            # Try to find similar question
-            event_data, similarity = self.find_similar_question(question)
+            # === PHASE 1: Try direct semantic match (high threshold) ===
+            event_data, similarity = self.find_similar_question(question, threshold=0.80)
             
-            if event_data is not None and similarity > similarity_threshold:
-                # High similarity - generate story from structured data
+            if event_data is not None and similarity >= 0.80:
+                # High confidence match - use directly
                 story = convert_to_story(
                     event_data['name'],
                     event_data['description'],
@@ -205,11 +301,36 @@ class SriLankanHistoryQA:
                     event_data['what_happened']
                 )
                 return story, f"Found similar question (similarity: {similarity:.2f})"
-            elif event_data is not None:
-                # Medium similarity - could use as context
-                pass
+            
+            # === PHASE 2: Apply spelling correction and retry ===
+            corrected_question = self.correct_spelling(question)
+            
+            if corrected_question.lower() != question.lower():
+                # Spelling was corrected - try matching again
+                event_data, similarity = self.find_similar_question(corrected_question, threshold=0.70)
+                
+                if event_data is not None and similarity >= 0.70:
+                    story = convert_to_story(
+                        event_data['name'],
+                        event_data['description'],
+                        event_data['era'],
+                        event_data['what_happened']
+                    )
+                    return story, f"Found after spelling correction (similarity: {similarity:.2f})"
+            
+            # === PHASE 3: Try lower threshold on original question ===
+            event_data, similarity = self.find_similar_question(question, threshold=0.65)
+            
+            if event_data is not None and similarity >= 0.65:
+                story = convert_to_story(
+                    event_data['name'],
+                    event_data['description'],
+                    event_data['era'],
+                    event_data['what_happened']
+                )
+                return story, f"Found similar question (similarity: {similarity:.2f})"
         
-        # Generate using model
+        # === PHASE 4: Fallback to model generation ===
         input_text = f"question: {question}"
         
         input_ids = self.tokenizer.encode(
