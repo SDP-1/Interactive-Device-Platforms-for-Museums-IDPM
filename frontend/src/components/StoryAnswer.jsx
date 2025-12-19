@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   Mic, 
   Play, 
@@ -10,13 +10,43 @@ import {
   MapPin,
   Calendar,
   Crown,
-  Circle
+  Circle,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 
 function StoryAnswer({ answer, question, onAskAnother }) {
   const [isPlaying, setIsPlaying] = useState(true)
   const [currentTime, setCurrentTime] = useState(0)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const videoContainerRef = useRef(null)
   const totalTime = 208 // 3:28 in seconds
+
+  // Toggle fullscreen
+  const toggleFullscreen = async () => {
+    if (!videoContainerRef.current) return
+
+    if (!document.fullscreenElement) {
+      try {
+        await videoContainerRef.current.requestFullscreen()
+        setIsFullscreen(true)
+      } catch (err) {
+        console.error('Error entering fullscreen:', err)
+      }
+    } else {
+      await document.exitFullscreen()
+      setIsFullscreen(false)
+    }
+  }
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
   
   // Simulate playback progress
   useEffect(() => {
@@ -76,11 +106,27 @@ function StoryAnswer({ answer, question, onAskAnother }) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-6 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <main className="flex-1 px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
           
           {/* Left Side - Image Card */}
-          <div className="relative rounded-2xl overflow-hidden shadow-xl min-h-[500px]">
+          <div 
+            ref={videoContainerRef}
+            className={`relative rounded-2xl overflow-hidden shadow-xl flex-1 aspect-video ${isFullscreen ? 'bg-black' : ''}`}
+          >
+            {/* Fullscreen Toggle Button */}
+            <button
+              onClick={toggleFullscreen}
+              className="absolute top-4 right-4 z-20 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-lg flex items-center justify-center transition-colors"
+              title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="w-5 h-5 text-white" />
+              ) : (
+                <Maximize2 className="w-5 h-5 text-white" />
+              )}
+            </button>
+
             {/* Background Image - Sunset/Sigiriya style */}
             <div className="absolute inset-0 bg-gradient-to-b from-orange-400 via-orange-500 to-stone-900" />
             
@@ -111,18 +157,74 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               </div>
             </div>
             
-            {/* Story Text Overlay */}
-            <div className="absolute bottom-6 left-6 right-6 z-10">
-              <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-                <p className="text-stone-700 text-sm leading-relaxed">
-                  "{answer?.answer?.substring(0, 180) || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa...'}..."
-                </p>
+            {/* Story Text Overlay - Hidden in fullscreen */}
+            {!isFullscreen && (
+              <div className="absolute bottom-6 left-6 right-6 z-10">
+                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+                  <p className="text-stone-700 text-sm leading-relaxed">
+                    "{answer?.answer?.substring(0, 180) || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa...'}..."
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Fullscreen Audio Controls */}
+            {isFullscreen && (
+              <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-16">
+                {/* Story Text in Fullscreen */}
+                <div className="max-w-4xl mx-auto mb-6">
+                  <p className="text-white text-lg leading-relaxed text-center">
+                    "{answer?.answer?.substring(0, 300) || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa...'}..."
+                  </p>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="max-w-4xl mx-auto mb-4">
+                  <div className="h-1.5 bg-white/30 rounded-full overflow-hidden cursor-pointer">
+                    <div 
+                      className="h-full bg-[#D97706] rounded-full transition-all duration-300"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-white/70 mt-2">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(totalTime)}</span>
+                  </div>
+                </div>
+
+                {/* Control Buttons */}
+                <div className="flex justify-center items-center gap-6">
+                  <button 
+                    onClick={() => setCurrentTime(Math.max(0, currentTime - 10))}
+                    className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                    title="Rewind 10s"
+                  >
+                    <RotateCcw className="w-5 h-5 text-white" />
+                  </button>
+                  <button 
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="w-16 h-16 bg-[#D97706] hover:bg-[#B45309] rounded-full flex items-center justify-center shadow-lg transition-colors"
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-8 h-8 text-white" />
+                    ) : (
+                      <Play className="w-8 h-8 text-white ml-1" />
+                    )}
+                  </button>
+                  <button 
+                    onClick={() => setCurrentTime(Math.min(totalTime, currentTime + 10))}
+                    className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors rotate-180"
+                    title="Forward 10s"
+                  >
+                    <RotateCcw className="w-5 h-5 text-white" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Side - Narrator Panel */}
-          <div className="space-y-4">
+          <div className="space-y-4 w-full lg:w-[420px] lg:ml-auto lg:mr-0 lg:flex-shrink-0">
             {/* AI Narrator Card */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               {/* Mic Icon */}

@@ -26,16 +26,39 @@ function App() {
   const [backendStatus, setBackendStatus] = useState('checking')
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Check backend health on mount
+  // Check backend health with retry
+  const checkBackendHealth = async (retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await checkHealth()
+        setBackendStatus('connected')
+        return true
+      } catch (err) {
+        console.log(`Health check attempt ${i + 1} failed, retrying...`)
+        await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second before retry
+      }
+    }
+    setBackendStatus('disconnected')
+    return false
+  }
+
+  // Check backend health on mount and periodically
   useEffect(() => {
-    checkHealth()
-      .then(() => setBackendStatus('connected'))
-      .catch(() => setBackendStatus('disconnected'))
+    checkBackendHealth()
     
     // Load example questions
     getExampleQuestions()
       .then(data => setExamples(data.examples || []))
       .catch(err => console.error('Failed to load examples:', err))
+
+    // Periodically check backend health every 10 seconds
+    const healthInterval = setInterval(() => {
+      checkHealth()
+        .then(() => setBackendStatus('connected'))
+        .catch(() => setBackendStatus('disconnected'))
+    }, 10000)
+
+    return () => clearInterval(healthInterval)
   }, [])
 
   const handleSubmit = async (e) => {
@@ -276,6 +299,17 @@ function App() {
                   ? 'Ready to narrate your story' 
                   : 'Backend disconnected'}
               </span>
+              {backendStatus === 'disconnected' && (
+                <button
+                  onClick={() => {
+                    setBackendStatus('checking')
+                    checkBackendHealth()
+                  }}
+                  className="ml-2 text-xs underline hover:no-underline"
+                >
+                  Retry
+                </button>
+              )}
             </div>
           </div>
         </div>
