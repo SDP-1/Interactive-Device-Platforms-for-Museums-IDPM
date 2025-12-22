@@ -16,11 +16,152 @@ import {
 } from 'lucide-react'
 
 function StoryAnswer({ answer, question, onAskAnother }) {
-  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true)
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(-1)
   const videoContainerRef = useRef(null)
-  const totalTime = 208 // 3:28 in seconds
+  const utteranceRef = useRef(null)
+  const speechStartTimeRef = useRef(null)
+  
+  // Get the story text from answer
+  const storyText = answer?.answer || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa. This ancient rock fortress rises nearly 200 meters above the surrounding jungle.'
+  
+  // Split story into sentences for highlighting
+  const sentences = storyText.split(/(?<=[.!?])\s+/).filter(s => s.trim())
+  
+  // Estimate total time based on text length (average 150 words per minute)
+  const wordCount = storyText.split(/\s+/).length
+  const totalTime = Math.ceil((wordCount / 150) * 60) // seconds
+  
+  // Calculate time per sentence (proportional to word count)
+  const sentenceTimings = sentences.map(sentence => {
+    const words = sentence.split(/\s+/).length
+    return (words / wordCount) * totalTime
+  })
+
+  // Initialize speech synthesis
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      setIsSpeechSupported(false)
+      console.warn('Text-to-speech not supported in this browser')
+      return
+    }
+
+    // Create utterance
+    const utterance = new SpeechSynthesisUtterance(storyText)
+    utterance.rate = 0.85 // Slower for clarity
+    utterance.pitch = 1.05 // Slightly higher for feminine voice
+    utterance.volume = 1
+    
+    // Try to use a clear female English voice
+    const setVoice = () => {
+      const voices = window.speechSynthesis.getVoices()
+      const englishVoices = voices.filter(v => v.lang.startsWith('en'))
+      
+      // Priority list of clear female voices (common across platforms)
+      const femaleVoiceNames = [
+        'Samantha',      // macOS - very clear
+        'Karen',         // macOS Australian
+        'Victoria',      // macOS
+        'Fiona',         // macOS Scottish
+        'Moira',         // macOS Irish
+        'Tessa',         // macOS South African
+        'Zira',          // Windows
+        'Hazel',         // Windows UK
+        'Susan',         // Windows UK
+        'Google UK English Female',
+        'Google US English',
+        'Microsoft Zira',
+        'Microsoft Hazel',
+        'female',        // Generic match
+        'Female',
+        'Natural',       // High quality voices
+        'Enhanced',
+        'Premium'
+      ]
+      
+      // Find the best female voice
+      let selectedVoice = null
+      for (const name of femaleVoiceNames) {
+        selectedVoice = englishVoices.find(v => 
+          v.name.includes(name) || v.name.toLowerCase().includes(name.toLowerCase())
+        )
+        if (selectedVoice) break
+      }
+      
+      // Fallback to any English voice
+      if (!selectedVoice && englishVoices.length > 0) {
+        selectedVoice = englishVoices[0]
+      }
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice
+        console.log('Using voice:', selectedVoice.name, selectedVoice.lang)
+      }
+    }
+    
+    // Voices may load asynchronously
+    if (window.speechSynthesis.getVoices().length > 0) {
+      setVoice()
+    } else {
+      window.speechSynthesis.onvoiceschanged = setVoice
+    }
+
+    utterance.onend = () => {
+      setIsPlaying(false)
+      setCurrentTime(totalTime)
+    }
+
+    utterance.onerror = (e) => {
+      console.error('Speech error:', e)
+      setIsPlaying(false)
+    }
+
+    utteranceRef.current = utterance
+
+    // Cleanup on unmount
+    return () => {
+      window.speechSynthesis.cancel()
+    }
+  }, [storyText, totalTime])
+
+  // Handle play/pause
+  const togglePlayPause = () => {
+    if (!isSpeechSupported) return
+
+    if (isPlaying) {
+      // Pause
+      window.speechSynthesis.pause()
+      setIsPlaying(false)
+    } else {
+      // Play or Resume
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume()
+      } else {
+        // Start fresh
+        window.speechSynthesis.cancel()
+        if (utteranceRef.current) {
+          speechStartTimeRef.current = Date.now()
+          setCurrentTime(0)
+          window.speechSynthesis.speak(utteranceRef.current)
+        }
+      }
+      setIsPlaying(true)
+    }
+  }
+
+  // Restart story from beginning
+  const restartStory = () => {
+    window.speechSynthesis.cancel()
+    setCurrentTime(0)
+    if (utteranceRef.current) {
+      speechStartTimeRef.current = Date.now()
+      window.speechSynthesis.speak(utteranceRef.current)
+      setIsPlaying(true)
+    }
+  }
 
   // Toggle fullscreen
   const toggleFullscreen = async () => {
@@ -48,16 +189,36 @@ function StoryAnswer({ answer, question, onAskAnother }) {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
   
-  // Simulate playback progress
+  // Track playback progress and current sentence
   useEffect(() => {
     let interval
     if (isPlaying && currentTime < totalTime) {
       interval = setInterval(() => {
-        setCurrentTime(prev => Math.min(prev + 1, totalTime))
-      }, 1000)
+        if (speechStartTimeRef.current) {
+          const elapsed = Math.floor((Date.now() - speechStartTimeRef.current) / 1000)
+          setCurrentTime(Math.min(elapsed, totalTime))
+          
+          // Calculate which sentence is currently being spoken
+          let accumulatedTime = 0
+          for (let i = 0; i < sentenceTimings.length; i++) {
+            accumulatedTime += sentenceTimings[i]
+            if (elapsed < accumulatedTime) {
+              setCurrentSentenceIndex(i)
+              break
+            }
+          }
+        }
+      }, 300)
     }
     return () => clearInterval(interval)
-  }, [isPlaying, currentTime])
+  }, [isPlaying, totalTime, sentenceTimings])
+  
+  // Reset sentence index when restarting
+  useEffect(() => {
+    if (currentTime === 0) {
+      setCurrentSentenceIndex(isPlaying ? 0 : -1)
+    }
+  }, [currentTime, isPlaying])
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -160,9 +321,25 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             {/* Story Text Overlay - Hidden in fullscreen */}
             {!isFullscreen && (
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-                  <p className="text-stone-700 text-sm leading-relaxed">
-                    "{answer?.answer?.substring(0, 180) || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa...'}..."
+                <div className="p-5">
+                  <p className="text-xl leading-relaxed text-white drop-shadow-lg">
+                    {sentences.slice(0, 4).map((sentence, index) => (
+                      <span
+                        key={index}
+                        className={`transition-all duration-300 drop-shadow-md ${
+                          index === currentSentenceIndex
+                            ? 'text-[#D97706] font-bold'
+                            : index < currentSentenceIndex
+                            ? 'text-white/50'
+                            : 'text-white/90'
+                        }`}
+                      >
+                        {sentence}{' '}
+                      </span>
+                    ))}
+                    {sentences.length > 4 && (
+                      <span className="text-white/50">...</span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -170,11 +347,24 @@ function StoryAnswer({ answer, question, onAskAnother }) {
 
             {/* Fullscreen Audio Controls */}
             {isFullscreen && (
-              <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-16">
+              <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-8 pt-20">
                 {/* Story Text in Fullscreen */}
-                <div className="max-w-4xl mx-auto mb-6">
-                  <p className="text-white text-lg leading-relaxed text-center">
-                    "{answer?.answer?.substring(0, 300) || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa...'}..."
+                <div className="max-w-6xl mx-auto mb-8">
+                  <p className="text-2xl leading-relaxed text-center">
+                    {sentences.map((sentence, index) => (
+                      <span
+                        key={index}
+                        className={`transition-all duration-300 ${
+                          index === currentSentenceIndex
+                            ? 'text-[#D97706] font-bold text-3xl'
+                            : index < currentSentenceIndex
+                            ? 'text-white/40'
+                            : 'text-white/70'
+                        }`}
+                      >
+                        {sentence}{' '}
+                      </span>
+                    ))}
                   </p>
                 </div>
 
@@ -195,14 +385,14 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                 {/* Control Buttons */}
                 <div className="flex justify-center items-center gap-6">
                   <button 
-                    onClick={() => setCurrentTime(Math.max(0, currentTime - 10))}
+                    onClick={restartStory}
                     className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
-                    title="Rewind 10s"
+                    title="Restart"
                   >
                     <RotateCcw className="w-5 h-5 text-white" />
                   </button>
                   <button 
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={togglePlayPause}
                     className="w-16 h-16 bg-[#D97706] hover:bg-[#B45309] rounded-full flex items-center justify-center shadow-lg transition-colors"
                   >
                     {isPlaying ? (
@@ -210,13 +400,6 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                     ) : (
                       <Play className="w-8 h-8 text-white ml-1" />
                     )}
-                  </button>
-                  <button 
-                    onClick={() => setCurrentTime(Math.min(totalTime, currentTime + 10))}
-                    className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors rotate-180"
-                    title="Forward 10s"
-                  >
-                    <RotateCcw className="w-5 h-5 text-white" />
                   </button>
                 </div>
               </div>
@@ -273,7 +456,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               {/* Control Buttons */}
               <div className="flex justify-center items-center gap-4">
                 <button 
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={togglePlayPause}
                   className="w-14 h-14 bg-[#D97706] hover:bg-[#B45309] rounded-full flex items-center justify-center shadow-lg transition-colors"
                 >
                   {isPlaying ? (
@@ -283,10 +466,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   )}
                 </button>
                 <button 
-                  onClick={() => {
-                    setCurrentTime(0)
-                    setIsPlaying(true)
-                  }}
+                  onClick={restartStory}
                   className="w-12 h-12 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center transition-colors"
                 >
                   <RotateCcw className="w-5 h-5 text-stone-600" />
@@ -299,10 +479,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
 
             {/* Replay Story Button */}
             <button 
-              onClick={() => {
-                setCurrentTime(0)
-                setIsPlaying(true)
-              }}
+              onClick={restartStory}
               className="w-full bg-[#D97706] hover:bg-[#B45309] text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-md"
             >
               <RotateCcw className="w-5 h-5" />
