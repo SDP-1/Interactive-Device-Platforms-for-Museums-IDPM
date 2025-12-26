@@ -12,7 +12,9 @@ import {
   Crown,
   Circle,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Video,
+  VideoOff
 } from 'lucide-react'
 
 function StoryAnswer({ answer, question, onAskAnother }) {
@@ -21,12 +23,18 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isSpeechSupported, setIsSpeechSupported] = useState(true)
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(-1)
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
   const videoContainerRef = useRef(null)
+  const videoRef = useRef(null)
   const utteranceRef = useRef(null)
   const speechStartTimeRef = useRef(null)
   
   // Get the story text from answer
   const storyText = answer?.answer || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa. This ancient rock fortress rises nearly 200 meters above the surrounding jungle.'
+  
+  // Get video info from API response (vector DB match)
+  const videoInfo = answer?.video || null
   
   // Split story into sentences for highlighting
   const sentences = storyText.split(/(?<=[.!?])\s+/).filter(s => s.trim())
@@ -127,6 +135,19 @@ function StoryAnswer({ answer, question, onAskAnother }) {
     }
   }, [storyText, totalTime])
 
+  // Sync video with audio playback
+  useEffect(() => {
+    if (videoRef.current && videoInfo && videoLoaded && !videoError) {
+      if (isPlaying) {
+        videoRef.current.play().catch(err => {
+          console.error('Video play error:', err)
+        })
+      } else {
+        videoRef.current.pause()
+      }
+    }
+  }, [isPlaying, videoInfo, videoLoaded, videoError])
+
   // Handle play/pause
   const togglePlayPause = () => {
     if (!isSpeechSupported) return
@@ -156,6 +177,12 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   const restartStory = () => {
     window.speechSynthesis.cancel()
     setCurrentTime(0)
+    
+    // Restart video from beginning
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0
+    }
+    
     if (utteranceRef.current) {
       speechStartTimeRef.current = Date.now()
       window.speechSynthesis.speak(utteranceRef.current)
@@ -228,19 +255,37 @@ function StoryAnswer({ answer, question, onAskAnother }) {
 
   const progressPercent = (currentTime / totalTime) * 100
 
-  // Extract topic info from answer (can be enhanced based on your data)
+  // Extract topic info from answer or video info
   const topicInfo = {
-    location: "Sigiriya, Sri Lanka",
-    era: "5th Century CE",
-    period: "King Kashyapa Era"
+    location: answer?.info?.name || videoInfo?.topics?.[0] || "Sri Lanka",
+    era: videoInfo?.era || answer?.info?.era || "Ancient Era",
+    period: videoInfo?.topics?.[1] || "Historical Period"
   }
 
-  // Get title from question or use default
-  const storyTitle = question?.includes('Sigiriya') 
-    ? 'The Majesty of Sigiriya' 
-    : question?.includes('Dutugemunu')
-    ? 'The Legend of King Dutugemunu'
-    : 'The Story of History'
+  // Get title from question, video info, or use default
+  const getStoryTitle = () => {
+    if (videoInfo?.topics?.[0]) {
+      return `The Story of ${videoInfo.topics[0]}`
+    }
+    if (question?.toLowerCase().includes('sigiriya')) {
+      return 'The Majesty of Sigiriya'
+    }
+    if (question?.toLowerCase().includes('dutugemunu')) {
+      return 'The Legend of King Dutugemunu'
+    }
+    if (question?.toLowerCase().includes('anuradhapura')) {
+      return 'Ancient Anuradhapura'
+    }
+    if (question?.toLowerCase().includes('kandy')) {
+      return 'The Kingdom of Kandy'
+    }
+    return 'The Story of History'
+  }
+  
+  const storyTitle = getStoryTitle()
+
+  // Check if we should show video
+  const showVideo = videoInfo && videoInfo.video_path && !videoError
 
   return (
     <div className="min-h-screen bg-[#F5F3EE] flex flex-col">
@@ -270,7 +315,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
       <main className="flex-1 px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-6 h-full">
           
-          {/* Left Side - Image Card */}
+          {/* Left Side - Video/Image Card */}
           <div 
             ref={videoContainerRef}
             className={`relative rounded-2xl overflow-hidden shadow-xl flex-1 aspect-video ${isFullscreen ? 'bg-black' : ''}`}
@@ -288,34 +333,85 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               )}
             </button>
 
-            {/* Background Image - Sunset/Sigiriya style */}
-            <div className="absolute inset-0 bg-gradient-to-b from-orange-400 via-orange-500 to-stone-900" />
-            
-            {/* Sun */}
-            <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-b from-yellow-300 to-orange-500 rounded-full blur-sm opacity-90" />
-            
-            {/* Mountain silhouettes */}
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg viewBox="0 0 400 150" className="w-full h-auto">
-                <path d="M0,150 L0,100 Q50,60 100,90 Q150,50 200,80 Q250,40 300,70 Q350,30 400,60 L400,150 Z" fill="#292524" />
-                <path d="M0,150 L0,120 Q80,90 160,110 Q240,80 320,100 L400,90 L400,150 Z" fill="#1c1917" />
-              </svg>
-            </div>
-            
-            {/* Rock fortress silhouette (Sigiriya-like) */}
-            <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2">
-              <div className="w-20 h-40 bg-stone-800 rounded-t-lg relative">
-                {/* Small structure on top */}
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-6 bg-stone-700" />
-                <div className="absolute -top-2 left-1/4 w-1 h-4 bg-stone-600" />
-              </div>
-            </div>
+            {/* VIDEO DISPLAY - Show when video is available */}
+            {showVideo ? (
+              <>
+                <video
+                  ref={videoRef}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  src={videoInfo.video_path}
+                  poster={videoInfo.poster_path || undefined}
+                  loop
+                  muted
+                  playsInline
+                  onLoadedData={() => {
+                    setVideoLoaded(true)
+                    setVideoError(false)
+                    console.log('Video loaded:', videoInfo.video_path)
+                  }}
+                  onError={(e) => {
+                    console.error('Video failed to load:', videoInfo.video_path, e)
+                    setVideoError(true)
+                    setVideoLoaded(false)
+                  }}
+                />
+                {/* Overlay gradient for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+              </>
+            ) : (
+              /* Fallback Background - Sunset/Sigiriya style when no video */
+              <>
+                <div className="absolute inset-0 bg-gradient-to-b from-orange-400 via-orange-500 to-stone-900" />
+                
+                {/* Sun */}
+                <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-b from-yellow-300 to-orange-500 rounded-full blur-sm opacity-90" />
+                
+                {/* Mountain silhouettes */}
+                <div className="absolute bottom-0 left-0 right-0">
+                  <svg viewBox="0 0 400 150" className="w-full h-auto">
+                    <path d="M0,150 L0,100 Q50,60 100,90 Q150,50 200,80 Q250,40 300,70 Q350,30 400,60 L400,150 Z" fill="#292524" />
+                    <path d="M0,150 L0,120 Q80,90 160,110 Q240,80 320,100 L400,90 L400,150 Z" fill="#1c1917" />
+                  </svg>
+                </div>
+                
+                {/* Rock fortress silhouette (Sigiriya-like) */}
+                <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2">
+                  <div className="w-20 h-40 bg-stone-800 rounded-t-lg relative">
+                    {/* Small structure on top */}
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-6 bg-stone-700" />
+                    <div className="absolute -top-2 left-1/4 w-1 h-4 bg-stone-600" />
+                  </div>
+                </div>
+              </>
+            )}
             
             {/* Title Badge */}
             <div className="absolute top-6 left-6 z-10">
               <div className="bg-[#D97706] text-white px-4 py-2 rounded-lg font-semibold shadow-lg">
                 {storyTitle}
               </div>
+              {/* Video indicator badge */}
+              {videoInfo && (
+                <div className={`mt-2 ${showVideo ? 'bg-green-600/80' : 'bg-stone-600/80'} text-white px-3 py-1 rounded-lg text-sm flex items-center gap-2`}>
+                  {showVideo ? (
+                    <>
+                      <Video className="w-3 h-3" />
+                      Video Available
+                    </>
+                  ) : (
+                    <>
+                      <VideoOff className="w-3 h-3" />
+                      Video Not Found
+                    </>
+                  )}
+                </div>
+              )}
+              {/* Similarity score (for debugging) */}
+              {videoInfo?.similarity && (
+                <div className="mt-1 bg-black/50 text-white/70 px-2 py-0.5 rounded text-xs">
+                  Match: {(videoInfo.similarity * 100).toFixed(1)}%
+                </div>
+              )}
             </div>
             
             {/* Story Text Overlay - Hidden in fullscreen */}
@@ -521,4 +617,3 @@ function StoryAnswer({ answer, question, onAskAnother }) {
 }
 
 export default StoryAnswer
-

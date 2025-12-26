@@ -38,3 +38,14 @@ Thumbs.db
 
 # Colab
 *.zip
+
+# Videos and media files
+frontend/public/videos/*.mp4
+frontend/public/videos/*.webm
+frontend/public/videos/*.ogg
+frontend/public/videos/posters/*.jpg
+frontend/public/videos/posters/*.png
+!frontend/public/videos/README.txt
+
+# ChromaDB data
+data/video_db/
