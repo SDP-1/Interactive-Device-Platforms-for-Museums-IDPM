@@ -1,23 +1,25 @@
 import { useState, useEffect } from 'react'
 import { askQuestion, getExampleQuestions, checkHealth } from './services/api'
 import StoryAnswer from './components/StoryAnswer'
+import HomePage from './components/HomePage'
 import { 
   Landmark, 
   Mic, 
   Send, 
   Play, 
   Globe, 
-  Home, 
   Triangle, 
   Crown, 
   Bell, 
   TreePine, 
   Drum,
   Loader2,
-  CircleHelp
+  CircleHelp,
+  ArrowLeft
 } from 'lucide-react'
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('home') // 'home', 'ask', 'answer'
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -72,6 +74,7 @@ function App() {
     try {
       const response = await askQuestion(question)
       setAnswer(response)
+      setCurrentPage('answer')
     } catch (err) {
       setError('Failed to get answer. Please make sure the backend is running.')
     } finally {
@@ -94,6 +97,22 @@ function App() {
     setAnswer(null)
     setQuestion('')
     setError(null)
+    setCurrentPage('ask')
+  }
+
+  // Navigation handler for HomePage
+  const handleNavigate = (page, prefillQuestion = null) => {
+    if (prefillQuestion) {
+      setQuestion(`Tell me about ${prefillQuestion}`)
+    }
+    setCurrentPage(page)
+  }
+
+  const handleGoHome = () => {
+    setCurrentPage('home')
+    setAnswer(null)
+    setQuestion('')
+    setError(null)
   }
 
   // Default examples if API fails
@@ -102,8 +121,18 @@ function App() {
     "What happened during King Dutugemunu's reign?"
   ]
 
+  // Show HomePage (Dashboard)
+  if (currentPage === 'home') {
+    return (
+      <HomePage 
+        onNavigate={handleNavigate}
+        backendStatus={backendStatus}
+      />
+    )
+  }
+
   // Show Story Answer page when we have an answer
-  if (answer) {
+  if (answer && currentPage === 'answer') {
     return (
       <StoryAnswer 
         answer={answer}
@@ -113,7 +142,7 @@ function App() {
     )
   }
 
-  // Show Question Screen
+  // Show Question Screen (Ask Page)
   return (
     <div className="min-h-screen bg-[#F5F3EE] flex flex-col">
       {/* Header */}
@@ -131,10 +160,13 @@ function App() {
             <button className="text-[#D97706] hover:text-[#B45309] transition-colors">
               <Globe className="w-6 h-6" />
             </button>
-            <button className="bg-[#D97706] hover:bg-[#B45309] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-              <Home className="w-4 h-4" />
-              Home
-        </button>
+            <button 
+              onClick={handleGoHome}
+              className="bg-[#D97706] hover:bg-[#B45309] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </button>
           </div>
         </div>
       </header>
