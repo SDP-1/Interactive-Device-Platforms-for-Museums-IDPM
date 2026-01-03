@@ -78,7 +78,7 @@ class VideoVectorDB:
         )
         print(f"✓ Added video: {video_id}")
     
-    def find_video(self, question: str, answer: str = "", threshold: float = 0.35):
+    def find_video(self, question: str, answer: str = "", threshold: float = 0.75):
         """
         Find the best matching video for a question/answer
         
