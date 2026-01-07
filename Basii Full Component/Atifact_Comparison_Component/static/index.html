@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Artifact & Comparison Engine</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ Interactive Artifact Explorer</h1>
+            <p>Explore cultural artifacts with interactive features and cross-cultural comparisons</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Artifact Gallery -->
+            <section id="gallery-section" class="section">
+                <h2>Artifact Collection</h2>
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all">All Artifacts</button>
+                    <button class="filter-btn" data-filter="sri-lankan">Sri Lankan</button>
+                    <button class="filter-btn" data-filter="comparison">Comparison Artifacts</button>
+                </div>
+                <div id="artifact-gallery" class="gallery-grid"></div>
+            </section>
+
+            <!-- Artifact Detail View -->
+            <section id="detail-section" class="section hidden">
+                <button class="back-btn" onclick="showGallery()">← Back to Gallery</button>
+                <div class="artifact-detail">
+                    <div class="artifact-viewer">
+                        <div class="image-container" id="image-container">
+                            <div class="placeholder-image" id="artifact-image">
+                                <div class="placeholder-content">
+                                    <span class="icon">🏺</span>
+                                    <p>Artifact Image</p>
+                                </div>
+                            </div>
+                            <div id="hotspots-overlay" class="hotspots-overlay"></div>
+                        </div>
+                        <div class="viewer-controls">
+                            <button class="control-btn" onclick="zoomIn()">🔍+ Zoom In</button>
+                            <button class="control-btn" onclick="zoomOut()">🔍- Zoom Out</button>
+                            <button class="control-btn" onclick="resetZoom()">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="artifact-info">
+                        <h2 id="artifact-name"></h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>Category:</strong>
+                                <span id="artifact-category"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Origin:</strong>
+                                <span id="artifact-origin"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Era:</strong>
+                                <span id="artifact-era"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Materials:</strong>
+                                <span id="artifact-materials"></span>
+                            </div>
+                            <div class="info-item full-width">
+                                <strong>Function:</strong>
+                                <p id="artifact-function"></p>
+                            </div>
+                            <div class="info-item full-width">
+                                <strong>Symbolism:</strong>
+                                <p id="artifact-symbolism"></p>
+                            </div>
+                            <div class="info-item full-width">
+                                <strong>Special Features:</strong>
+                                <p id="artifact-notes"></p>
+                            </div>
+                        </div>
+                        <div class="ai-explanation">
+                            <h3>AI Explanation</h3>
+                            <p style="color: #666; margin-bottom: 15px;">Generate an AI-powered analysis of this artifact's historical significance, cultural context, and unique features.</p>
+                            <button class="primary-btn" id="generate-explanation-btn" onclick="generateAIExplanation()" style="margin-bottom: 15px;">✨ Generate AI Explanation</button>
+                            <div id="ai-explanation-content" style="display: none;"></div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="primary-btn" onclick="showComparison()">🔀 Compare with Similar Artifacts</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison View -->
+            <section id="comparison-section" class="section hidden">
+                <button class="back-btn" onclick="showDetail()">← Back to Artifact</button>
+                <h2>Artifact Comparison</h2>
+                <div id="comparison-container" class="comparison-container">
+                    <div class="loading">Loading similar artifacts...</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Hotspot Popup -->
+    <div id="hotspot-popup" class="hotspot-popup hidden">
+        <button class="close-btn" onclick="closeHotspot()">×</button>
+        <h3 id="hotspot-title"></h3>
+        <p id="hotspot-description"></p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

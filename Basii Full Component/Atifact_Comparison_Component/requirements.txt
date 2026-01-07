@@ -1,0 +1,16 @@
+flask==3.0.0
+flask-cors==4.0.0
+pandas==2.1.4
+openpyxl==3.1.2
+numpy==1.26.2
+scikit-learn==1.3.2
+openai==1.3.0
+python-dotenv==1.0.0
+chromadb==0.4.22
+
+# NLP / ML Training
+torch>=2.0.0
+transformers>=4.36.0
+sentencepiece>=0.1.99
+datasets>=2.16.0
+accelerate>=0.26.0
