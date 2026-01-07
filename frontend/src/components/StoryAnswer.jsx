@@ -29,6 +29,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   const videoRef = useRef(null)
   const utteranceRef = useRef(null)
   const speechStartTimeRef = useRef(null)
+  const sentenceStartIndicesRef = useRef([])
   
   // Get the story text from answer
   const storyText = answer?.answer || 'Rising from the emerald plains of Sri Lanka, Sigiriya stands as a testament to the architectural genius of King Kashyapa. This ancient rock fortress rises nearly 200 meters above the surrounding jungle.'
@@ -39,9 +40,20 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   // Split story into sentences for highlighting
   const sentences = storyText.split(/(?<=[.!?])\s+/).filter(s => s.trim())
   
-  // Estimate total time based on text length (average 150 words per minute)
+  // Calculate sentence start indices for accurate tracking
+  useEffect(() => {
+    let charIndex = 0
+    const startIndices = []
+    for (const sentence of sentences) {
+      startIndices.push(charIndex)
+      charIndex += sentence.length + 1 // +1 for space
+    }
+    sentenceStartIndicesRef.current = startIndices
+  }, [sentences])
+  
+  // Estimate total time based on text length (slower rate: 0.85 * 150 = ~127 words per minute)
   const wordCount = storyText.split(/\s+/).length
-  const totalTime = Math.ceil((wordCount / 150) * 60) // seconds
+  const totalTime = Math.ceil((wordCount / 127) * 60) // seconds - adjusted for slower speech rate
   
   // Calculate time per sentence (proportional to word count)
   const sentenceTimings = sentences.map(sentence => {
@@ -117,9 +129,25 @@ function StoryAnswer({ answer, question, onAskAnother }) {
       window.speechSynthesis.onvoiceschanged = setVoice
     }
 
+    // Use onboundary event for accurate sentence tracking
+    utterance.onboundary = (event) => {
+      if (event.name === 'word' || event.name === 'sentence') {
+        const charIndex = event.charIndex
+        // Find which sentence this character belongs to
+        const startIndices = sentenceStartIndicesRef.current
+        for (let i = startIndices.length - 1; i >= 0; i--) {
+          if (charIndex >= startIndices[i]) {
+            setCurrentSentenceIndex(i)
+            break
+          }
+        }
+      }
+    }
+
     utterance.onend = () => {
       setIsPlaying(false)
       setCurrentTime(totalTime)
+      setCurrentSentenceIndex(sentences.length - 1) // Highlight last sentence at end
     }
 
     utterance.onerror = (e) => {
@@ -216,7 +244,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
   
-  // Track playback progress and current sentence
+  // Track playback progress (time only - sentence tracking is done via onboundary)
   useEffect(() => {
     let interval
     if (isPlaying && currentTime < totalTime) {
@@ -224,21 +252,11 @@ function StoryAnswer({ answer, question, onAskAnother }) {
         if (speechStartTimeRef.current) {
           const elapsed = Math.floor((Date.now() - speechStartTimeRef.current) / 1000)
           setCurrentTime(Math.min(elapsed, totalTime))
-          
-          // Calculate which sentence is currently being spoken
-          let accumulatedTime = 0
-          for (let i = 0; i < sentenceTimings.length; i++) {
-            accumulatedTime += sentenceTimings[i]
-            if (elapsed < accumulatedTime) {
-              setCurrentSentenceIndex(i)
-              break
-            }
-          }
         }
-      }, 300)
+      }, 500) // Update time less frequently since sentence tracking is event-based
     }
     return () => clearInterval(interval)
-  }, [isPlaying, totalTime, sentenceTimings])
+  }, [isPlaying, totalTime])
   
   // Reset sentence index when restarting
   useEffect(() => {
@@ -419,24 +437,43 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               <div className="absolute bottom-6 left-6 right-6 z-10">
                 <div className="p-5">
                   <p className="text-xl leading-relaxed text-white drop-shadow-lg">
-                    {sentences.slice(0, 4).map((sentence, index) => (
-                      <span
-                        key={index}
-                        className={`transition-all duration-300 drop-shadow-md ${
-                          index === currentSentenceIndex
-                            ? 'text-[#D97706] font-bold'
-                            : index < currentSentenceIndex
-                            ? 'text-white/50'
-                            : 'text-white/90'
-                        }`}
-                      >
-                        {sentence}{' '}
-                      </span>
-                    ))}
-                    {sentences.length > 4 && (
-                      <span className="text-white/50">...</span>
-                    )}
+                    {/* Show current sentence and 1 sentence context (before/after) */}
+                    {(() => {
+                      const startIdx = Math.max(0, currentSentenceIndex - 1)
+                      const endIdx = Math.min(sentences.length, Math.max(2, currentSentenceIndex + 2))
+                      const visibleSentences = sentences.slice(startIdx, endIdx)
+                      
+                      return visibleSentences.map((sentence, i) => {
+                        const actualIndex = startIdx + i
+                        return (
+                          <span
+                            key={actualIndex}
+                            className={`transition-all duration-500 drop-shadow-md ${
+                              actualIndex === currentSentenceIndex
+                                ? 'text-[#D97706] font-bold text-2xl'
+                                : actualIndex < currentSentenceIndex
+                                ? 'text-white/40 text-lg'
+                                : 'text-white/60 text-lg'
+                            }`}
+                          >
+                            {sentence}{' '}
+                          </span>
+                        )
+                      })
+                    })()}
                   </p>
+                  {/* Part indicator */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="text-white/60 text-sm">
+                      Part {Math.max(1, currentSentenceIndex + 1)} of {sentences.length}
+                    </span>
+                    <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-[#D97706] rounded-full transition-all duration-300"
+                        style={{ width: `${((currentSentenceIndex + 1) / sentences.length) * 100}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -444,24 +481,40 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             {/* Fullscreen Audio Controls */}
             {isFullscreen && (
               <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-8 pt-20">
-                {/* Story Text in Fullscreen */}
+                {/* Story Text in Fullscreen - Show only current part */}
                 <div className="max-w-6xl mx-auto mb-8">
                   <p className="text-2xl leading-relaxed text-center">
-                    {sentences.map((sentence, index) => (
-                      <span
-                        key={index}
-                        className={`transition-all duration-300 ${
-                          index === currentSentenceIndex
-                            ? 'text-[#D97706] font-bold text-3xl'
-                            : index < currentSentenceIndex
-                            ? 'text-white/40'
-                            : 'text-white/70'
-                        }`}
-                      >
-                        {sentence}{' '}
-                      </span>
-                    ))}
+                    {(() => {
+                      // Show current sentence + 1 before and 1 after for context
+                      const startIdx = Math.max(0, currentSentenceIndex - 1)
+                      const endIdx = Math.min(sentences.length, Math.max(2, currentSentenceIndex + 2))
+                      const visibleSentences = sentences.slice(startIdx, endIdx)
+                      
+                      return visibleSentences.map((sentence, i) => {
+                        const actualIndex = startIdx + i
+                        return (
+                          <span
+                            key={actualIndex}
+                            className={`transition-all duration-500 ${
+                              actualIndex === currentSentenceIndex
+                                ? 'text-[#D97706] font-bold text-4xl'
+                                : actualIndex < currentSentenceIndex
+                                ? 'text-white/30 text-xl'
+                                : 'text-white/50 text-xl'
+                            }`}
+                          >
+                            {sentence}{' '}
+                          </span>
+                        )
+                      })
+                    })()}
                   </p>
+                  {/* Part indicator in fullscreen */}
+                  <div className="mt-4 flex items-center justify-center gap-3">
+                    <span className="text-white/60 text-sm">
+                      Part {Math.max(1, currentSentenceIndex + 1)} of {sentences.length}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Progress Bar */}
