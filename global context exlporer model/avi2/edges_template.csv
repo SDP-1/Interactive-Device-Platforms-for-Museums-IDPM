@@ -1,0 +1,6 @@
+edge_id,source_node_id,target_node_id,causal_description,directness_score,source_count,max_sources_required,source_references
+EDGE_001,GLOBAL_001,LOCAL_001,Industrial Revolution created massive global demand for caffeine (Coffee/Tea), forcing British to build railway in Sri Lanka for mass export,1.0,3,5,"British trade ledgers;Local plantation records;Colonial archives"
+EDGE_002,GLOBAL_002,LOCAL_002,American Civil War crashed global cotton supplies. British shifted investment capital to Sri Lanka, pivoting economy from coffee to tea,0.9,4,5,"British investment records;Plantation owner diaries;Trade statistics;Colonial reports"
+EDGE_003,GLOBAL_001,LOCAL_002,Industrial Revolution's demand for tea created economic incentive for plantation expansion,0.7,3,5,"Economic history records;Trade statistics;Colonial reports"
+EDGE_004,GLOBAL_002,LOCAL_001,Cotton supply disruption led to increased focus on tea infrastructure including railways,0.5,2,5,"Trade analysis;Economic reports"
+
