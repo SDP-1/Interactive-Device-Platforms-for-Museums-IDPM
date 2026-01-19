@@ -182,6 +182,35 @@ def compare_artifacts():
     comparison = ai_explainer.compare_artifacts(artifact1, artifact2)
     return jsonify(comparison)
 
+@app.route('/api/compare/visual', methods=['POST'])
+def compare_artifacts_visual():
+    """Compare two artifacts visually using GPT-4 Vision"""
+    data = request.json
+    artifact1_id = data.get('artifact1_id')
+    artifact2_id = data.get('artifact2_id')
+    
+    artifact1 = next((a for a in artifacts if a['id'] == artifact1_id), None)
+    artifact2 = next((a for a in artifacts if a['id'] == artifact2_id), None)
+    
+    if not artifact1 or not artifact2:
+        return jsonify({'error': 'One or both artifacts not found'}), 404
+    
+    # Get image paths
+    image1 = artifact1.get('image')
+    image2 = artifact2.get('image')
+    
+    if not image1 or not image2:
+        return jsonify({'error': 'One or both artifacts missing images'}), 404
+    
+    # Perform visual comparison using GPT-4 Vision
+    try:
+        visual_comparison = ai_explainer.compare_artifacts_visual(
+            artifact1, artifact2, image1, image2
+        )
+        return jsonify(visual_comparison)
+    except Exception as e:
+        return jsonify({'error': f'Visual comparison failed: {str(e)}'}), 500
+
 @app.route('/api/hotspots/<artifact_id>', methods=['GET'])
 def get_hotspots(artifact_id):
     """Get hotspot information for an artifact"""
