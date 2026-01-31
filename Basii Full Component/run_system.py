@@ -57,7 +57,7 @@ def main():
     # 4. Start Basiii Frontend (What-If Explorer)
     # Port: 5174
     run_command(
-        "npm run dev", 
+        "npm run dev -- --port 5174", 
         os.path.join(base_dir, "Scenario_Generation", "frontend"),
         "Basiii Frontend (What-If Explorer)"
     )
