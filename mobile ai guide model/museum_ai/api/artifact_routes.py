@@ -86,9 +86,26 @@ async def ask(req: AskRequest):
         # ----------------------------
         # Classify question relevance
         # ----------------------------
+        # Build a compact, language-aware artifact summary for the classifier
+        def _get_field(key: str) -> str:
+            return (
+                artifact.get(f"{key}_{language}")
+                or artifact.get(key)
+                or artifact.get(f"{key}_en")
+                or artifact.get(f"{key}_si")
+                or ""
+            )
+
+        title = _get_field("title") or ""
+        origin = _get_field("origin") or ""
+        year = artifact.get("year") or ""
+        description = _get_field("description")
+
+        artifact_summary = f"{title}. Origin: {origin}. Year: {year}. Description: {description}"
+
         # Use classifier to ensure the visitor's question is about the artifact
         # (returns YES / NO / GREETING)
-        classification = is_related(req.question, artifact_id)
+        classification = is_related(req.question, artifact_summary)
 
         # ----------------------------
         # Handle greetings
