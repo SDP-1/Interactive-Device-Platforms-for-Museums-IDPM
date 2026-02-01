@@ -8,6 +8,7 @@ import 'package:mobile_ai_guide/pages/ai_persona_chat_page.dart';
 import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 import 'package:mobile_ai_guide/widgets/navigation/bottom_navigation_mixin.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class PersonaListPage extends StatefulWidget {
   const PersonaListPage({super.key});
@@ -265,12 +266,13 @@ class _PersonasOverviewCard extends StatelessWidget {
   }
 }
 
-class _PersonaCard extends StatelessWidget {
+class _PersonaCard extends StatefulWidget {
   const _PersonaCard({
     required this.index,
     required this.persona,
     required this.onTap,
     required this.chatLanguage,
+    super.key,
   });
 
   final int index;
@@ -279,21 +281,48 @@ class _PersonaCard extends StatelessWidget {
   final String chatLanguage;
 
   @override
-  Widget build(BuildContext context) {
-    final title = (chatLanguage == 'si') ? persona.nameSi : persona.nameEn;
-    final capital = (chatLanguage == 'si')
-        ? (persona.capitalSi ?? persona.capitalEn ?? '')
-        : (persona.capitalEn ?? persona.capitalSi ?? '');
-    final summary = (chatLanguage == 'si')
-        ? (persona.biographySi ?? persona.description ?? '')
-        : (persona.biographyEn ?? persona.description ?? '');
+  State<_PersonaCard> createState() => _PersonaCardState();
+}
 
+class _PersonaCardState extends State<_PersonaCard>
+    with TickerProviderStateMixin {
+  bool _expanded = false;
+  late final String title;
+  late final String capital;
+  late final String summary;
+  late final String plainSummary;
+  late final bool _canToggle;
+
+  static const int _truncateLength = 140;
+
+  @override
+  void initState() {
+    super.initState();
+    title = (widget.chatLanguage == 'si')
+        ? widget.persona.nameSi
+        : widget.persona.nameEn;
+    capital = (widget.chatLanguage == 'si')
+        ? (widget.persona.capitalSi ?? widget.persona.capitalEn ?? '')
+        : (widget.persona.capitalEn ?? widget.persona.capitalSi ?? '');
+    summary = (widget.chatLanguage == 'si')
+        ? (widget.persona.biographySi ?? widget.persona.description ?? '')
+        : (widget.persona.biographyEn ?? widget.persona.description ?? '');
+    plainSummary = summary.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim();
+    _canToggle = plainSummary.length > _truncateLength;
+  }
+
+  void _toggleExpanded() {
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       elevation: 1.5,
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,10 +337,10 @@ class _PersonaCard extends StatelessWidget {
                     height: 150,
                     width: double.infinity,
                     child:
-                        (persona.imageUrls != null &&
-                            persona.imageUrls!.isNotEmpty)
+                        (widget.persona.imageUrls != null &&
+                            widget.persona.imageUrls!.isNotEmpty)
                         ? Image.network(
-                            persona.imageUrls!.first,
+                            widget.persona.imageUrls!.first,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
@@ -349,7 +378,7 @@ class _PersonaCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      '$index',
+                      '${widget.index}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: Colors.black,
@@ -418,15 +447,142 @@ class _PersonaCard extends StatelessWidget {
                       ],
                     ),
                   ],
+
+                  // Show reign period if available
+                  if (widget.persona.reignPeriod.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_month,
+                          size: 14,
+                          color: Colors.grey.shade700,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            widget.persona.reignPeriod,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
                   const SizedBox(height: 6),
-                  Text(
-                    summary.isNotEmpty
-                        ? summary
-                        : 'Start a guided conversation with this historical persona.',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey.shade700, height: 1.3),
+
+                  // Biography (may contain HTML) with show more/less
+                  Builder(
+                    builder: (context) {
+                      final displayEmpty = summary.isEmpty;
+                      if (displayEmpty) {
+                        return Text(
+                          'Start a guided conversation with this historical persona.',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            height: 1.3,
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            child: ConstrainedBox(
+                              constraints: _expanded
+                                  ? const BoxConstraints()
+                                  : const BoxConstraints(maxHeight: 48),
+                              child: ClipRect(
+                                child: Html(
+                                  data: summary,
+                                  style: {
+                                    'body': Style(
+                                      margin: Margins.zero,
+                                      padding: HtmlPaddings.zero,
+                                      color: Colors.grey.shade700,
+                                      fontSize: FontSize(14),
+                                      lineHeight: LineHeight(1.3),
+                                    ),
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (_canToggle) ...[
+                            if (!_expanded)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 24,
+                                    margin: const EdgeInsets.only(
+                                      top: 2,
+                                      bottom: 6,
+                                    ),
+                                    alignment: Alignment.bottomLeft,
+                                    child: Text(
+                                      '...',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TextButton(
+                                    onPressed: _toggleExpanded,
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(40, 24),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      'Show more',
+                                      style: TextStyle(
+                                        color: kStoneAccent,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: _toggleExpanded,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(40, 24),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    'Show less',
+                                    style: TextStyle(
+                                      color: kStoneAccent,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
+
                   const SizedBox(height: 10),
                   Row(
                     children: [
