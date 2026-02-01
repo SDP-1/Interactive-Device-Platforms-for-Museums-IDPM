@@ -1,0 +1,90 @@
+import subprocess
+import time
+import os
+import webbrowser
+import sys
+
+def run_command(command, cwd, title):
+    """Run a command in a new terminal window"""
+    print(f"🚀 Starting {title}...")
+    if sys.platform == 'win32':
+        # Windows: Use start command to open new terminal
+        subprocess.Popen(f'start "{title}" cmd /k "{command}"', shell=True, cwd=cwd)
+    else:
+        # Linux/Mac: Different approach (simplified for now)
+        subprocess.Popen(command, shell=True, cwd=cwd)
+
+def main():
+    base_dir = os.getcwd()
+    print(f"📂 Working Directory: {base_dir}")
+    print("="*80)
+    print("      SRI LANKAN HERITAGE SYSTEM - UNIFIED LAUNCHER      ")
+    print("="*80)
+    print("\n📋 System Components:")
+    print("   1. Basi-Component2 Backend (Port 5000) - Comparison & Explanation")
+    print("   2. Basi-Component2 Frontend (Port 5173)")
+    print("   3. Basiii Backend (Port 5001) - RAG Chat with Fine-tuned Model")
+    print("   4. Basiii Frontend (Port 5174) - What-If Explorer")
+    print("   5. Component3 Frontend (Port 3000) - Craft Simulation")
+    print("   6. Dashboard Server (Port 8000)")
+    print("="*80)
+    print()
+
+    # 1. Start Basi-Component2 (Comparison & Explanation) Backend
+    # Port: 5000
+    run_command(
+        "python app.py", 
+        os.path.join(base_dir, "Atifact_Comparison_Component"),
+        "Component 2 Backend (Comparison)"
+    )
+
+    # 2. Start Basi-Component2 Frontend
+    # Port: 5173
+    run_command(
+        "npm run dev", 
+        os.path.join(base_dir, "Atifact_Comparison_Component", "frontend"),
+        "Component 2 Frontend"
+    )
+
+    # 3. Start Basiii (RAG Chat) Backend
+    # Port: 5001
+    run_command(
+        "python rag_api_server_fine_tuned.py", 
+        os.path.join(base_dir, "Scenario_Generation"),
+        "Basiii Backend (RAG Chat)"
+    )
+
+    # 4. Start Basiii Frontend (What-If Explorer)
+    # Port: 5174
+    run_command(
+        "npm run dev -- --port 5174", 
+        os.path.join(base_dir, "Scenario_Generation", "frontend"),
+        "Basiii Frontend (What-If Explorer)"
+    )
+
+    # 5. Start Component3-CraftSimulation Frontend
+    # Port: 3000
+    run_command(
+        "npm start", 
+        os.path.join(base_dir, "Craft_Simulation_Component"),
+        "Component 3 Frontend (Simulation)"
+    )
+
+    # 6. Start Dashboard HTTP Server (to allow cross-origin navigation)
+    # Port: 8000
+    run_command(
+        "python -m http.server 8000",
+        base_dir,
+        "Dashboard Server"
+    )
+
+    print("\n⏳ Waiting for servers to initialize...")
+    time.sleep(10)  # Wait for servers to spin up
+
+    # Open the Dashboard via HTTP (prevents browser security blocks)
+    dashboard_url = "http://localhost:8000/main_dashboard.html"
+    print(f"✨ Opening Dashboard: {dashboard_url}")
+    webbrowser.open(dashboard_url)
+
+if __name__ == "__main__":
+    main()

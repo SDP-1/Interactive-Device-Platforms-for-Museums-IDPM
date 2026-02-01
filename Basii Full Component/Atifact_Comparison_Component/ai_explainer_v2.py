@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import json
+import base64
 import subprocess
 import threading
 import time
@@ -202,7 +203,7 @@ class AIExplainer:
             explainer = ArtifactAIExplainer()
             
             # WARM UP: Run one dummy explanation
-            print("🔥 [Background] Warming up model with dummy inference...")
+            print("🔥 [Background] Warming up model with proper inference...")
             dummy = {
                 'name': 'Warmup', 'category': 'Test', 'origin': 'Test', 
                 'era': 'Test', 'materials': 'Test', 'function': 'Test', 
@@ -518,6 +519,175 @@ These artifacts represent different cultural approaches to similar needs, showca
         if artifact1.get('era') != artifact2.get('era'):
             differences.append(f"Different time periods: {artifact1.get('era', 'Unknown')} vs {artifact2.get('era', 'Unknown')}")
         return differences if differences else ["These artifacts share remarkable similarities"]
+    
+    def compare_artifacts_visual(self, artifact1: Dict, artifact2: Dict, image1: str, image2: str) -> Dict:
+        """
+        Compare two artifacts visually using GPT-4 Vision API
+        
+        Args:
+            artifact1: First artifact metadata
+            artifact2: Second artifact metadata
+            image1: Path to first artifact image
+            image2: Path to second artifact image
+            
+        Returns:
+            Dictionary with visual comparison results
+        """
+        if not self.use_openai:
+            return {
+                'error': 'OpenAI API not available',
+                'message': 'Visual comparison requires OpenAI API key',
+                'source': 'error'
+            }
+        
+        try:
+            # Load and encode images as base64
+            image1_base64 = self._encode_image(image1)
+            image2_base64 = self._encode_image(image2)
+            
+            # Create structured prompt for GPT-4 Vision
+            prompt = f"""You are an expert art historian analyzing cultural artifacts. Compare these two artifacts visually across specific dimensions.
+
+Artifact A: {artifact1['name']} ({artifact1['origin']}, {artifact1['era']})
+Artifact B: {artifact2['name']} ({artifact2['origin']}, {artifact2['era']})
+
+Analyze and compare these artifacts across the following dimensions. For each dimension, provide separate descriptions for Artifact A and Artifact B.
+
+Return your analysis as a JSON object with this exact structure:
+{{
+  "shape_form": {{
+    "artifact_a": "Description of Artifact A's shape, silhouette, and proportions",
+    "artifact_b": "Description of Artifact B's shape, silhouette, and proportions"
+  }},
+  "color_texture": {{
+    "artifact_a": "Description of Artifact A's color palette, finish, and aging",
+    "artifact_b": "Description of Artifact B's color palette, finish, and aging"
+  }},
+  "design_motifs": {{
+    "artifact_a": "Description of Artifact A's patterns, decorations, and iconography",
+    "artifact_b": "Description of Artifact B's patterns, decorations, and iconography"
+  }},
+  "craftsmanship": {{
+    "artifact_a": "Description of Artifact A's technique and manufacturing quality",
+    "artifact_b": "Description of Artifact B's technique and manufacturing quality"
+  }},
+  "overall_impression": {{
+    "artifact_a": "Overall visual impression and aesthetic of Artifact A",
+    "artifact_b": "Overall visual impression and aesthetic of Artifact B"
+  }}
+}}
+
+Provide detailed, specific observations based on what you see in the images."""
+            
+            # Call GPT-4 Vision API (using gpt-4o which has vision capabilities)
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image1_base64}",
+                                    "detail": "high"
+                                }
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image2_base64}",
+                                    "detail": "high"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=1500,
+                temperature=0.7
+            )
+            
+            # Parse response
+            response_text = response.choices[0].message.content
+            
+            # Extract JSON from response (in case there's extra text)
+            try:
+                # Try to find JSON in the response
+                json_start = response_text.find('{')
+                json_end = response_text.rfind('}') + 1
+                if json_start != -1 and json_end > json_start:
+                    json_str = response_text[json_start:json_end]
+                    visual_data = json.loads(json_str)
+                else:
+                    visual_data = json.loads(response_text)
+            except json.JSONDecodeError:
+                # If JSON parsing fails, return raw text
+                return {
+                    'error': 'Failed to parse GPT-4 Vision response',
+                    'raw_response': response_text,
+                    'source': 'openai_vision'
+                }
+            
+            return {
+                'artifact1': artifact1,
+                'artifact2': artifact2,
+                'visual_comparison': visual_data,
+                'source': 'openai_vision',
+                'success': True
+            }
+            
+        except Exception as e:
+            print(f"Visual comparison error: {e}")
+            return {
+                'error': f'Visual comparison failed: {str(e)}',
+                'source': 'error'
+            }
+    
+    def _encode_image(self, image_path: str) -> str:
+        """
+        Encode image file as base64 string
+        
+        Args:
+            image_path: Path to image file (can be relative or absolute)
+            
+        Returns:
+            Base64 encoded string
+        """
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # If already absolute and exists, use it
+        if os.path.isabs(image_path) and os.path.exists(image_path):
+            final_path = image_path
+        else:
+            # Try multiple possible locations
+            possible_paths = [
+                # Frontend public folder (primary location)
+                os.path.join(script_dir, 'frontend', 'public', image_path),
+                os.path.join(script_dir, 'frontend', 'public', 'images', os.path.basename(image_path)),
+                # Static folder (fallback)
+                os.path.join(script_dir, 'static', image_path),
+                os.path.join(script_dir, 'static', 'images', os.path.basename(image_path)),
+                # Direct path
+                os.path.join(script_dir, image_path)
+            ]
+            
+            final_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    final_path = path
+                    break
+            
+            if not final_path:
+                # Debug info for troubleshooting
+                tried_paths = '\n  - '.join(possible_paths)
+                raise FileNotFoundError(
+                    f"Image not found. Original path: {image_path}\n"
+                    f"Tried:\n  - {tried_paths}"
+                )
+        
+        with open(final_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
     
     def _remove_markdown(self, text: str) -> str:
         """Remove markdown formatting from text"""

@@ -8,7 +8,7 @@ const GalleryScreen = ({ onSelectArtifact }) => {
   const [artifacts, setArtifacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedEra, setSelectedEra] = useState('');
@@ -68,15 +68,15 @@ const GalleryScreen = ({ onSelectArtifact }) => {
   // Filter artifacts
   const filteredArtifacts = useMemo(() => {
     return artifacts.filter(artifact => {
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         artifact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (artifact.description && artifact.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
         artifact.category.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       const matchesCategory = !selectedCategory || artifact.category === selectedCategory;
       const matchesEra = !selectedEra || artifact.era === selectedEra;
       const matchesOrigin = !selectedOrigin || artifact.origin === selectedOrigin;
-      
+
       return matchesSearch && matchesCategory && matchesEra && matchesOrigin;
     });
   }, [artifacts, searchTerm, selectedCategory, selectedEra, selectedOrigin]);
@@ -116,8 +116,8 @@ const GalleryScreen = ({ onSelectArtifact }) => {
           </p>
           <button
             onClick={loadArtifacts}
-            className="px-6 py-2 bg-amber-700 hover:bg-amber-800 text-white 
-                       rounded-lg font-sans text-sm transition-colors inline-flex items-center gap-2"
+            className="px-8 py-3 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white 
+                       rounded-xl font-sans text-lg transition-colors inline-flex items-center gap-3 shadow-lg"
           >
             <RefreshCw size={16} />
             Retry Connection
@@ -129,96 +129,100 @@ const GalleryScreen = ({ onSelectArtifact }) => {
 
   return (
     <div className="animate-fadeIn w-full">
-      {/* Hero Section */}
-      <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-800 mb-3 sm:mb-4">
+      {/* Hero Section - Enlarged */}
+      <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+        <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-bold text-stone-800 mb-6 tracking-tight">
           Artifact Collection
         </h2>
-        <p className="text-stone-600 font-sans text-base sm:text-lg md:text-xl max-w-3xl mx-auto px-2 leading-relaxed">
-          Explore our curated collection of cultural artifacts from Sri Lanka and beyond. 
+        <p className="text-stone-600 font-sans text-xl sm:text-2xl md:text-3xl max-w-5xl mx-auto px-4 leading-relaxed font-light">
+          Explore our curated collection of cultural artifacts from Sri Lanka and beyond.
           Discover the rich heritage and stories behind each piece.
         </p>
       </div>
 
-      {/* Search and Filter Controls */}
-      <div className="bg-white rounded-2xl shadow-md border border-stone-200 p-4 sm:p-6 mb-8 sm:mb-10">
-        <div className="flex flex-col gap-4 sm:gap-5">
+      {/* Search and Filter Controls - Scaled Up */}
+      <div className="bg-white rounded-[2.5rem] shadow-xl border border-stone-200 p-8 sm:p-12 mb-12 sm:mb-16">
+        <div className="flex flex-col gap-8">
           {/* Search Input */}
-          <div className="w-full relative">
-            <Search 
-              size={22} 
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" 
+          <div className="w-full relative group">
+            <Search
+              size={32}
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-amber-700 transition-colors"
             />
             <input
               type="text"
               placeholder="Search artifacts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 sm:pl-14 pr-5 py-3.5 sm:py-4 rounded-xl border border-stone-300 
-                         focus:border-amber-500 focus:ring-2 focus:ring-amber-200 
-                         outline-none font-sans text-base sm:text-lg text-stone-700 placeholder:text-stone-400"
+              className="w-full pl-16 sm:pl-20 pr-8 py-6 rounded-[2rem] border-2 border-stone-100 
+                         focus:border-amber-500 bg-stone-50/50 focus:bg-white focus:ring-4 focus:ring-amber-100/50
+                         outline-none font-sans text-xl sm:text-2xl text-stone-800 placeholder:text-stone-400
+                         transition-all duration-300 shadow-inner"
             />
           </div>
 
-          {/* Filter Dropdowns - Scrollable on mobile */}
-          <div className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4 overflow-x-auto pb-1">
+          {/* Filter Dropdowns - Enlarged */}
+          <div className="flex flex-wrap sm:flex-nowrap gap-6 overflow-x-auto pb-2">
             {/* Category Filter */}
-            <div className="relative flex-1 min-w-[160px]">
+            <div className="relative flex-1 min-w-[250px]">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none px-4 sm:px-5 py-3 sm:py-3.5 pr-10 sm:pr-12 rounded-xl border border-stone-300 
-                           bg-white font-sans text-base text-stone-700 cursor-pointer
-                           focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none"
+                className="w-full appearance-none px-6 sm:px-8 py-5 rounded-[1.5rem] border-2 border-stone-100 
+                           bg-stone-50/50 focus:bg-white font-sans text-xl text-stone-800 cursor-pointer
+                           focus:border-amber-500 focus:ring-4 focus:ring-amber-100/50 outline-none
+                           transition-all duration-300 pr-16"
               >
                 <option value="">All Categories</option>
                 {categories.map(category => (
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
-              <ChevronDown 
-                size={20} 
-                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" 
+              <ChevronDown
+                size={28}
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
               />
             </div>
 
             {/* Era Filter */}
-            <div className="relative flex-1 min-w-[160px]">
+            <div className="relative flex-1 min-w-[250px]">
               <select
                 value={selectedEra}
                 onChange={(e) => setSelectedEra(e.target.value)}
-                className="w-full appearance-none px-4 sm:px-5 py-3 sm:py-3.5 pr-10 sm:pr-12 rounded-xl border border-stone-300 
-                           bg-white font-sans text-base text-stone-700 cursor-pointer
-                           focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none"
+                className="w-full appearance-none px-6 sm:px-8 py-5 rounded-[1.5rem] border-2 border-stone-100 
+                           bg-stone-50/50 focus:bg-white font-sans text-xl text-stone-800 cursor-pointer
+                           focus:border-amber-500 focus:ring-4 focus:ring-amber-100/50 outline-none
+                           transition-all duration-300 pr-16"
               >
                 <option value="">All Eras</option>
                 {eras.map(era => (
                   <option key={era} value={era}>{era}</option>
                 ))}
               </select>
-              <ChevronDown 
-                size={20} 
-                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" 
+              <ChevronDown
+                size={28}
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
               />
             </div>
 
             {/* Origin Filter */}
-            <div className="relative flex-1 min-w-[160px]">
+            <div className="relative flex-1 min-w-[250px]">
               <select
                 value={selectedOrigin}
                 onChange={(e) => setSelectedOrigin(e.target.value)}
-                className="w-full appearance-none px-4 sm:px-5 py-3 sm:py-3.5 pr-10 sm:pr-12 rounded-xl border border-stone-300 
-                           bg-white font-sans text-base text-stone-700 cursor-pointer
-                           focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none"
+                className="w-full appearance-none px-6 sm:px-8 py-5 rounded-[1.5rem] border-2 border-stone-100 
+                           bg-stone-50/50 focus:bg-white font-sans text-xl text-stone-800 cursor-pointer
+                           focus:border-amber-500 focus:ring-4 focus:ring-amber-100/50 outline-none
+                           transition-all duration-300 pr-16"
               >
                 <option value="">All Origins</option>
                 {origins.map(origin => (
                   <option key={origin} value={origin}>{origin}</option>
                 ))}
               </select>
-              <ChevronDown 
-                size={20} 
-                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" 
+              <ChevronDown
+                size={28}
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
               />
             </div>
           </div>
@@ -245,7 +249,7 @@ const GalleryScreen = ({ onSelectArtifact }) => {
             </div>
             <button
               onClick={clearFilters}
-              className="ml-auto text-base text-amber-700 hover:text-amber-800 font-sans font-medium"
+              className="ml-auto text-lg text-orange-500 hover:text-white hover:bg-orange-500 px-4 py-1 rounded-lg border-2 border-transparent hover:border-orange-500 font-sans font-bold transition-all"
             >
               Clear all
             </button>
@@ -253,14 +257,14 @@ const GalleryScreen = ({ onSelectArtifact }) => {
         )}
       </div>
 
-      {/* Results Count */}
-      <div className="mb-4 sm:mb-6 text-sm sm:text-base text-stone-500 font-sans">
-        Showing <span className="font-semibold text-stone-700">{filteredArtifacts.length}</span> of {artifacts.length} artifacts
+      {/* Results Count - Bold */}
+      <div className="mb-8 text-xl text-stone-500 font-sans border-l-4 border-amber-700 pl-4 py-1">
+        Showing <span className="font-bold text-stone-800 text-2xl px-1">{filteredArtifacts.length}</span> of {artifacts.length} artifacts
       </div>
 
-      {/* Artifact Grid - Fully responsive */}
+      {/* Artifact Grid - Reduced columns for maximum card size */}
       {filteredArtifacts.length > 0 ? (
-        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-5 sm:gap-6 md:gap-7 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 lg:gap-14">
           {filteredArtifacts.map((artifact, index) => (
             <ArtifactCard
               key={artifact.id}
@@ -279,8 +283,8 @@ const GalleryScreen = ({ onSelectArtifact }) => {
           </p>
           <button
             onClick={clearFilters}
-            className="px-8 py-3 bg-amber-700 hover:bg-amber-800 text-white 
-                       rounded-xl font-sans text-base sm:text-lg transition-colors"
+            className="px-10 py-4 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white 
+                       rounded-2xl font-sans text-xl sm:text-2xl transition-all shadow-xl active:scale-95"
           >
             Clear all filters
           </button>

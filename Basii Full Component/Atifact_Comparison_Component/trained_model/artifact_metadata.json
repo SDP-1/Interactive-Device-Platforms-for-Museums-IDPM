@@ -28,7 +28,7 @@
       "location": "Tokyo National Museum (representative)",
       "notes": "Forged with folding and differential hardening (hamon). Tsuba (guard) often artistically decorated; many katanas have provenance records and smith signatures (mei).",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C001_Sword.jpg"
     },
     {
       "id": "A002",
@@ -58,7 +58,7 @@
       "location": "Temples, performance centers across Japan",
       "notes": "Variety of sizes; some taiko are portable for parades, others are massive and stationary. Contemporary groups (e.g., Kodo) have revived and globalized taiko performance.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C002_Drum.jpg"
     },
     {
       "id": "A003",
@@ -88,7 +88,7 @@
       "location": "Major Thai wats (e.g., Wat Pho)",
       "notes": "Highly detailed narrative registers, rich color palette and gold highlight; murals often reflect courtly aesthetics and include donor portraits.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C003_mural.jpeg"
     },
     {
       "id": "A004",
@@ -118,7 +118,7 @@
       "location": "Archaeological sites in the Nile Delta; museums (e.g., British Museum)",
       "notes": "Biconical bodies, twin handles and narrow necks optimized for stowage and pouring; painted or stamped indices can indicate contents or makers.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C004_C2.jpg"
     },
     {
       "id": "A005",
@@ -148,7 +148,7 @@
       "location": "Ethnographic collections; regional museum contexts",
       "notes": "Often part of a full costume ensemble; specific masks are restricted to initiated members and may be ritually charged (consecrated).",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C005_Mask.jpeg"
     },
     {
       "id": "A006",
@@ -163,7 +163,7 @@
       "location": "Kandy, Matale craft centers",
       "notes": "Made on lathes with successive lacquer layers rubbed to polish; patterns often use circular/spiral motifs; dyes come from local plant sources.",
       "is_sri_lankan": true,
-      "image": null
+      "image": "images/A006_Lak.jpg"
     },
     {
       "id": "C006",
@@ -178,7 +178,7 @@
       "location": "Channapatna craft workshops",
       "notes": "Recognized with GI status; natural dyes and lacquering techniques are preserved through craft schools.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C006_Lak.jpg"
     },
     {
       "id": "A007",
@@ -193,7 +193,7 @@
       "location": "Temples, households island-wide",
       "notes": "Often shaped with culturally resonant motifs (peacock, elephant). Permits multiple wicks; sometimes carried on processional poles.",
       "is_sri_lankan": true,
-      "image": null
+      "image": "images/A007_Lamp.jpg"
     },
     {
       "id": "C007",
@@ -208,7 +208,7 @@
       "location": "Temple treasuries and household shrines",
       "notes": "Lamps often form part of ritual paraphernalia set; some are richly ornamented with iconography of Lakshmi or Shiva.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C007_deep.jpg"
     },
     {
       "id": "A008",
@@ -223,7 +223,7 @@
       "location": "Galle & Matara lace guilds",
       "notes": "Design complexity varies by locale; tools include lace pillows and pins. Some patterns are unique family motifs preserved across generations.",
       "is_sri_lankan": true,
-      "image": null
+      "image": "images/A008_bru.jpg"
     },
     {
       "id": "C008",
@@ -238,7 +238,7 @@
       "location": "Bruges lace centers, museums",
       "notes": "Technique produces extremely fine openwork; lace patterns may identify region or workshop.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C008_bru.jpg"
     },
     {
       "id": "A009",
@@ -253,7 +253,7 @@
       "location": "Rural households",
       "notes": "Hand-operated method imparts distinctive texture and flavor. Stone often kept as family heirloom with care.",
       "is_sri_lankan": true,
-      "image": null
+      "image": "images/A009_gal.jpg"
     },
     {
       "id": "C009",
@@ -268,7 +268,7 @@
       "location": "Indigenous communities; museums",
       "notes": "Often anthropomorphized in ceremonial pieces. Design and use persist in many communities.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C009_met.jpg"
     },
     {
       "id": "A010",
@@ -298,7 +298,7 @@
       "location": "South Indian temples (Tamil Nadu)",
       "notes": "Thresholds often integrated with carved doorframes (toranas) and elaborate lintels; iconography may vary by sectarian association (Shaiva/Vaishnava).",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C010_sa.jpg"
     },
     {
       "id": "A011",
@@ -313,7 +313,7 @@
       "location": "Anuradhapura, Polonnaruwa",
       "notes": "Often sculpted as part of temple friezes or freestanding vessels; may be painted or gilded in sacred contexts.",
       "is_sri_lankan": true,
-      "image": "images/A011_I1.jpg"
+      "image": "images/A011_I1.jpeg"
     },
     {
       "id": "C011",
@@ -328,7 +328,7 @@
       "location": "Museum collections (Athens, Delphi)",
       "notes": "Often depicted overflowing with fruit and grain; appears in funerary and domestic contexts.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C011_gre.jpg"
     },
     {
       "id": "A012",
@@ -358,7 +358,7 @@
       "location": "Japanese households, kitchens",
       "notes": "Interior combed ridges (kushi) increase grinding efficiency; typically used with wooden pestle (surikogi).",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C012_m.jpg"
     },
     {
       "id": "A013",
@@ -388,7 +388,7 @@
       "location": "Museum collections (Delhi, London)",
       "notes": "Intricate stone settings, enamel work (meenakari) in some pieces; provenance can often be traced through court records.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C013_j.jpg"
     },
     {
       "id": "A014",
@@ -403,7 +403,7 @@
       "location": "Embekke Devalaya and other historic sites",
       "notes": "Extremely high relief carving with dancers, wrestlers, floral patterns; joinery techniques avoid metal fasteners in some examples.",
       "is_sri_lankan": true,
-      "image": null
+      "image": "images/A014_car.jpg"
     },
     {
       "id": "C014",
@@ -418,7 +418,7 @@
       "location": "Balinese temple complexes",
       "notes": "Often painted/gilded; high relief with swirling vegetal patterns and animated guardian figures; carved by specialized families.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C014_car.jpg"
     },
     {
       "id": "A015",
@@ -433,7 +433,7 @@
       "location": "Household altars; social gatherings",
       "notes": "Designs often stylized (birds, fish, religious motifs); part of a set that includes betel tray, lime box and nut pick.",
       "is_sri_lankan": true,
-      "image": null
+      "image": "images/A015_be.jpg"
     },
     {
       "id": "C015",
@@ -448,7 +448,7 @@
       "location": "Regional ethnography collections",
       "notes": "Often engraved with dragons or auspicious emblems; used in both secular and ceremonial contexts.",
       "is_sri_lankan": false,
-      "image": null
+      "image": "images/C015_be.jpg"
     }
   ],
   "artifact_index": {
