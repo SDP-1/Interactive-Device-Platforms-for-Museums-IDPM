@@ -1,9 +1,9 @@
 colorName,hexCode,traditionalName,culturalMeaning,usage,symbolicSignificance,historicalSource
-Crimson,#DC143C,Rathu,Power & Protection,Demon masks and facial features,Wards off evil,Ancient temple murals
-Royal Gold,#FFD700,Ran,Divinity & Royalty,Crowns and royal regalia,Symbolizes sun and light,Historical chronicles
-Deep Black,#1a1a1a,Kalu,Mystery & Demons,Hair and base outlines,Represents the underworld,Natural charcoal dyes
-Ocean Blue,#1E90FF,Nil,Sky & Water,Divine beings and spirits,Represents infinite knowledge,Imported indigo
-Forest Green,#228B22,Kola,Nature & Life,Vegetation and landscape motifs,Growth and fertility,Natural leaf extracts
-Pure White,#FFFFFF,Sudu,Purity & Peace,Sacred objects and clothing,Divine grace,Calcined sea shells
-Sunset Orange,#FF6600,Thambili,Energy & Fire,Flame hair and radiant effects,Spiritual energy,Saffron and minerals
-Earth Brown,#8B4513,Dumburu,Stability,Wooden bases and earth elements,Groundedness,Natural clay and pigments
+Red,#DC143C,Rathu Rang,"Fierce protective energy and life force","Base color for demon masks, represents power to ward off evil","Blood, vitality, protection from malevolent spirits","Natural cinnabar and red ochre from earth"
+Black,#1A1A1A,Kalu Rang,"Darkness, mystery, and supernatural power","Outlines, shadows, facial features","Night, hidden knowledge, spiritual realm","Charcoal and soot from coconut husks"
+White,#FFFFFF,Sudu Rang,"Purity, divine light, and spiritual clarity","Eyes, teeth, highlights","Truth, enlightenment, divine presence","White clay and lime paste"
+Gold,#FFD700,Ran Rang,"Divine radiance and cosmic power","Crowns, ornaments, sacred symbols","Royalty, divinity, enlightenment","Gold leaf and yellow ochre"
+Yellow,#FFEB3B,Kaha Rang,"Sacred power and auspiciousness","Decorative patterns, celestial elements","Solar energy, blessing, prosperity","Turmeric and yellow clay"
+Blue,#1E90FF,Nil Rang,"Wisdom and tranquility","Gurulu masks, water spirits","Sky, water, divine wisdom","Indigo and lapis lazuli"
+Green,#228B22,Kola Rang,"Nature and fertility","Forest demon masks, vegetation","Growth, healing, natural world","Plant-based dyes from leaves"
+Orange,#FF8C00,Kirala Rang,"Transformative energy","Transitional elements, fire symbols","Change, purification, sacred fire","Red and yellow ochre mixture"
