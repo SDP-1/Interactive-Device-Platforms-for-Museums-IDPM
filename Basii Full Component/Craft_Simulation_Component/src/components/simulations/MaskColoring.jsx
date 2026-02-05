@@ -255,7 +255,8 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
             const loadedMasks = results.data.map(row => ({
               id: row.id,
               name: row.name,
-              src: row.src,
+              src: 'mask (' + (results.data.indexOf(row) + 1) + ').png',
+              displayImage: row.src,
               origin: row.origin || 'Southern Province',
               shortDescription: row.shortDescription,
               maskType: row.maskType,
@@ -466,7 +467,7 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
                 <div className="h-[400px] bg-stone-50 flex items-center justify-center p-10 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-stone-100/50 z-10" />
                   <img
-                    src={mask.src}
+                    src={mask.displayImage}
                     alt={mask.name}
                     className="h-full object-contain filter drop-shadow-2xl transition-transform duration-700 ease-out z-0"
                     style={{
