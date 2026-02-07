@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { askQuestion, getExampleQuestions, checkHealth } from './services/api'
 import StoryAnswer from './components/StoryAnswer'
 import HomePage from './components/HomePage'
+import QRScannerPage from './components/QRScannerPage'
+import ArtifactViewerPage from './components/ArtifactViewerPage'
+import HistoryPage from './components/HistoryPage'
 import { 
   Landmark, 
   Mic, 
@@ -19,7 +22,7 @@ import {
 } from 'lucide-react'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home') // 'home', 'ask', 'answer'
+  const [currentPage, setCurrentPage] = useState('home') // 'home', 'ask', 'answer', 'scanner', 'artifact', 'history'
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -27,6 +30,7 @@ function App() {
   const [examples, setExamples] = useState([])
   const [backendStatus, setBackendStatus] = useState('checking')
   const [isPlaying, setIsPlaying] = useState(false)
+  const [scannedArtifact, setScannedArtifact] = useState(null)
 
   // Check backend health with retry
   const checkBackendHealth = async (retries = 3) => {
@@ -115,11 +119,60 @@ function App() {
     setError(null)
   }
 
+  // Handler for QR scan completion
+  const handleScanComplete = (artifact) => {
+    setScannedArtifact(artifact)
+    setCurrentPage('artifact')
+  }
+
+  // Handler for learning more about artifact
+  const handleLearnMore = (artifact) => {
+    setQuestion(`Tell me about ${artifact.name}`)
+    handleSubmit()
+  }
+
+  // Handler for selecting a historical event
+  const handleSelectEvent = (event) => {
+    setQuestion(`Tell me about ${event.title}`)
+    setCurrentPage('ask')
+  }
+
   // Default examples if API fails
   const displayExamples = examples.length > 0 ? examples : [
     "Why was Sigiriya built on a rock?",
     "What happened during King Dutugemunu's reign?"
   ]
+
+  // Show QR Scanner Page
+  if (currentPage === 'scanner') {
+    return (
+      <QRScannerPage 
+        onNavigate={handleNavigate}
+        onScanComplete={handleScanComplete}
+      />
+    )
+  }
+
+  // Show 3D Artifact Viewer Page
+  if (currentPage === 'artifact') {
+    return (
+      <ArtifactViewerPage 
+        artifact={scannedArtifact}
+        onNavigate={handleNavigate}
+        onLearnMore={handleLearnMore}
+      />
+    )
+  }
+
+  // Show History Page
+  if (currentPage === 'history') {
+    return (
+      <HistoryPage 
+        onNavigate={handleNavigate}
+        onSelectEvent={handleSelectEvent}
+      />
+    )
+  }
 
   // Show HomePage (Dashboard)
   if (currentPage === 'home') {

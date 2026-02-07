@@ -14,7 +14,10 @@ import {
   WifiOff,
   Users,
   TrendingUp,
-  Volume2
+  Volume2,
+  QrCode,
+  Box,
+  History
 } from 'lucide-react'
 
 function HomePage({ onNavigate, backendStatus }) {
@@ -84,36 +87,36 @@ function HomePage({ onNavigate, backendStatus }) {
   // Dashboard cards with navigation
   const dashboardCards = [
     {
-      id: 'ask',
-      title: 'Ask a Question',
-      subtitle: 'AI-powered historical Q&A',
-      icon: MessageCircle,
+      id: 'scanner',
+      title: 'Scan QR Code',
+      subtitle: 'Scan artifact QR codes',
+      icon: QrCode,
       color: 'bg-gradient-to-br from-[#D97706] to-[#B45309]',
-      action: () => onNavigate('ask')
+      action: () => onNavigate('scanner')
     },
     {
-      id: 'timeline',
-      title: 'Explore Timeline',
-      subtitle: 'Journey through eras',
-      icon: Clock,
+      id: 'artifact',
+      title: 'View 3D Artifacts',
+      subtitle: 'Interactive 3D models',
+      icon: Box,
       color: 'bg-gradient-to-br from-indigo-500 to-purple-600',
-      action: () => onNavigate('timeline')
+      action: () => onNavigate('artifact')
     },
     {
-      id: 'collections',
-      title: 'Browse Collections',
-      subtitle: 'Artifacts & exhibits',
-      icon: BookOpen,
+      id: 'history',
+      title: 'Explore History',
+      subtitle: 'Timeline of events',
+      icon: History,
       color: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-      action: () => onNavigate('collections')
+      action: () => onNavigate('history')
     },
     {
-      id: 'stories',
-      title: 'Featured Stories',
-      subtitle: 'Curated narratives',
-      icon: Sparkles,
+      id: 'ask',
+      title: 'Ask Questions',
+      subtitle: 'AI-powered Q&A',
+      icon: MessageCircle,
       color: 'bg-gradient-to-br from-rose-500 to-pink-600',
-      action: () => onNavigate('stories')
+      action: () => onNavigate('ask')
     }
   ]
 
