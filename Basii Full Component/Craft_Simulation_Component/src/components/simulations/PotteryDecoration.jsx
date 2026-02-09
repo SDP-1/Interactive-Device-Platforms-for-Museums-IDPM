@@ -96,29 +96,29 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
 
   const createPotPieces = () => {
     if (!potImage) return;
-    
+
     // Calculate pot dimensions on canvas - centered
     const stageHeight = canvasHeight - 100; // Header space only
     const potWidth = 550;
     const potHeight = 800;
     const potX = (canvasWidth - potWidth) / 2; // Perfect center
     const potY = (stageHeight - potHeight) / 2;
-    
+
     // Divide pot into 8 pieces (2 columns x 4 rows)
     const pieceWidth = potWidth / 2;
     const pieceHeight = potHeight / 4;
-    
+
     const pieces = [];
     const types = ['top-left', 'top-right', 'upper-mid-left', 'upper-mid-right', 'lower-mid-left', 'lower-mid-right', 'bottom-left', 'bottom-right'];
-    
+
     // Define left and right side boundaries - straight vertical columns
     const leftEdgeX = 40;
     const rightEdgeX = canvasWidth - pieceWidth - 40;
-    
+
     // Create shuffled row positions for left and right sides separately
     const leftRowPositions = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
     const rightRowPositions = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
-    
+
     // Create left side pieces (indices 0-3)
     for (let i = 0; i < 4; i++) {
       const row = i;
@@ -126,7 +126,7 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
       const index = row * 2 + col;
       const assignedRow = leftRowPositions[i];
       const originalY = 60 + assignedRow * (pieceHeight + 50);
-      
+
       pieces.push({
         id: `piece-${index + 1}`,
         x: leftEdgeX,
@@ -146,7 +146,7 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
         rotation: 0
       });
     }
-    
+
     // Create right side pieces (indices 4-7)
     for (let i = 0; i < 4; i++) {
       const row = i + 2; // Offset for right side pieces
@@ -154,7 +154,7 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
       const index = row * 2 + col;
       const assignedRow = rightRowPositions[i];
       const originalY = 60 + assignedRow * (pieceHeight + 50);
-      
+
       pieces.push({
         id: `piece-${index + 1}`,
         x: rightEdgeX,
@@ -174,7 +174,7 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
         rotation: 0
       });
     }
-    
+
     setPotPieces(pieces);
     setRestoredPieces([]);
     setUndoStack([]); // Clear undo stack on new restore
@@ -186,8 +186,8 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
 
     // Move piece from side to center of canvas
     const stageHeight = canvasHeight - 100;
-    setPotPieces(prev => prev.map(p => 
-      p.id === pieceId 
+    setPotPieces(prev => prev.map(p =>
+      p.id === pieceId
         ? { ...p, x: canvasWidth / 2 - p.fullWidth / 2, y: stageHeight / 2 - p.fullHeight / 2, inCollection: false }
         : p
     ));
@@ -199,31 +199,31 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
 
     // Check if piece is close to correct position (auto-fit threshold)
     const threshold = 120; // Very generous threshold for easy auto-fitting
-    const isCorrect = Math.abs(x - piece.correctX) < threshold && 
-                      Math.abs(y - piece.correctY) < threshold;
+    const isCorrect = Math.abs(x - piece.correctX) < threshold &&
+      Math.abs(y - piece.correctY) < threshold;
 
     if (isCorrect && !restoredPieces.includes(pieceId)) {
       // Save state to undo stack before making changes
       setUndoStack(prev => [...prev, { restored: [...restoredPieces], lastPieceId: pieceId }]);
-      
+
       // Auto-fit/snap to correct position
-      setPotPieces(prev => prev.map(p => 
-        p.id === pieceId 
+      setPotPieces(prev => prev.map(p =>
+        p.id === pieceId
           ? { ...p, x: piece.correctX, y: piece.correctY, rotation: 0 }
           : p
       ));
       setRestoredPieces(prev => [...prev, pieceId]);
-      
+
       // Check if all pieces are restored
-      if (restoredPieces.length + 1 === potPieces.length) {
-        setTimeout(() => {
-          alert('Pot restored! Now you can color it!');
-          setMode('color');
-        }, 500);
-      }
+      // if (restoredPieces.length + 1 === potPieces.length) {
+      //   setTimeout(() => {
+      //     alert('Pot restored! Now you can color it!');
+      //     setMode('color');
+      //   }, 500);
+      // }
     } else {
       // Update position
-      setPotPieces(prev => prev.map(p => 
+      setPotPieces(prev => prev.map(p =>
         p.id === pieceId ? { ...p, x, y } : p
       ));
     }
@@ -234,7 +234,7 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
 
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
-    
+
     const newDecoration = {
       id: `dec-${Date.now()}`,
       type: selectedDecoration.id,
@@ -256,17 +256,17 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
 
   const handleUndo = () => {
     if (undoStack.length === 0) return;
-    
+
     const lastState = undoStack[undoStack.length - 1];
     const pieceIdToUndo = lastState.lastPieceId;
-    
+
     // Move the piece back to its original position on the side
-    setPotPieces(prev => prev.map(p => 
-      p.id === pieceIdToUndo 
+    setPotPieces(prev => prev.map(p =>
+      p.id === pieceIdToUndo
         ? { ...p, x: p.originalX, y: p.originalY, inCollection: true }
         : p
     ));
-    
+
     // Restore the previous restored pieces array
     setRestoredPieces(lastState.restored);
     setUndoStack(prev => prev.slice(0, -1));
@@ -385,10 +385,10 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
                 </div>
               </div>
             </div>
-              
+
             {/* Canvas Area - 4 pieces left column, pot centered, 4 pieces right column */}
-            <div className="flex-1 overflow-hidden">
-              <div 
+            <div className="flex-1 overflow-hidden relative">
+              <div
                 className="w-full h-full bg-stone-50"
                 onDrop={(e) => {
                   e.preventDefault();
@@ -409,14 +409,14 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
                     {potImage && (
                       <KonvaImage
                         image={potImage}
-                       x={(canvasWidth - 550) / 2}
+                        x={(canvasWidth - 550) / 2}
                         y={((canvasHeight - 100) - 800) / 2}
                         width={550}
                         height={800}
                         opacity={0.15}
                       />
                     )}
-                    
+
                     {/* Render all pot pieces on canvas */}
                     {potPieces.map(piece => (
                       <PotPiece
@@ -429,6 +429,22 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
                     ))}
                   </Layer>
                 </Stage>
+
+                {/* Restoration Complete Button - Appearing below pot */}
+                {restoredPieces.length > 0 && restoredPieces.length === potPieces.length && (
+                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce-in flex flex-col items-center">
+                    <div className="mb-4 bg-white/90 backdrop-blur-md px-6 py-2 rounded-full shadow-sm border border-stone-200 text-museum-primary font-bold">
+                      ✨ Pot Restored!
+                    </div>
+                    <button
+                      onClick={() => setMode('color')}
+                      className="px-10 py-5 bg-gradient-to-r from-museum-primary to-museum-accent text-white font-bold text-2xl rounded-2xl shadow-2xl hover:scale-105 hover:shadow-museum-accent/30 transition-all flex items-center gap-4 border-4 border-white ring-4 ring-black/5"
+                    >
+                      <span className="text-3xl">🎨</span>
+                      <span>LET'S DECORATE</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -471,11 +487,10 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
                   <button
                     key={dec.id}
                     onClick={() => setSelectedDecoration(dec)}
-                    className={`px-4 py-2 rounded-xl border-2 transition-all text-xl ${
-                      selectedDecoration?.id === dec.id
-                        ? 'border-museum-accent bg-museum-accent text-white shadow-lg scale-110'
-                        : 'border-stone-300 bg-white hover:border-museum-accent'
-                    }`}
+                    className={`px-4 py-2 rounded-xl border-2 transition-all text-xl ${selectedDecoration?.id === dec.id
+                      ? 'border-museum-accent bg-museum-accent text-white shadow-lg scale-110'
+                      : 'border-stone-300 bg-white hover:border-museum-accent'
+                      }`}
                     title={dec.name}
                   >
                     {dec.symbol}
@@ -484,45 +499,45 @@ const PotteryDecoration = ({ gameState, updateGameState, onBackToMenu }) => {
               </div>
             </div>
 
-              <div className="w-full h-screen bg-stone-50">
-                <Stage
-                  ref={stageRef}
-                  width={canvasWidth}
-                  height={canvasHeight}
-                  onClick={handleCanvasClick}
-                >
-                  <Layer>
-                    {/* Restored pot - show full image */}
-                    {potImage && (
-                      <KonvaImage
-                        image={potImage}
-                        x={(canvasWidth - 900) / 2}
-                        y={(canvasHeight - 1200) / 2}
-                        width={900}
-                        height={1200}
-                      />
-                    )}
+            <div className="w-full h-screen bg-stone-50">
+              <Stage
+                ref={stageRef}
+                width={canvasWidth}
+                height={canvasHeight}
+                onClick={handleCanvasClick}
+              >
+                <Layer>
+                  {/* Restored pot - show full image */}
+                  {potImage && (
+                    <KonvaImage
+                      image={potImage}
+                      x={(canvasWidth - 900) / 2}
+                      y={(canvasHeight - 1200) / 2}
+                      width={900}
+                      height={1200}
+                    />
+                  )}
 
-                    {/* Decorations */}
-                    {decorations.map(dec => (
-                      <Group key={dec.id} x={dec.x} y={dec.y}>
-                        <Circle
-                          radius={dec.size}
-                          fill={dec.color}
-                          stroke="#000"
-                          strokeWidth={2}
-                        />
-                      </Group>
-                    ))}
-                  </Layer>
-                </Stage>
-              </div>
+                  {/* Decorations */}
+                  {decorations.map(dec => (
+                    <Group key={dec.id} x={dec.x} y={dec.y}>
+                      <Circle
+                        radius={dec.size}
+                        fill={dec.color}
+                        stroke="#000"
+                        strokeWidth={2}
+                      />
+                    </Group>
+                  ))}
+                </Layer>
+              </Stage>
+            </div>
           </div>
         )}
 
         {/* Coloring Mode - Separate Component */}
         {mode === 'color' && (
-          <PotColoring 
+          <PotColoring
             onBackToMenu={() => {
               setMode('select');
               setPotPieces([]);
