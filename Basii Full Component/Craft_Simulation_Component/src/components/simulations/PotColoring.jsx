@@ -36,10 +36,10 @@ const COLOR_PALETTE = [
 
 // Available pots for coloring (using Pot-deco images)
 const AVAILABLE_POTS = [
-  { id: 'pot1', name: 'Ancient Clay Vessel', displayImage: 'Pot (1).jpg', coloringImage: 'Pot-deco (1).png' },
-  { id: 'pot2', name: 'Decorated Urn', displayImage: 'Pot (3).jpg', coloringImage: 'Pot-deco (2).png' },
-  { id: 'pot3', name: 'Traditional Pot', displayImage: 'Pot (4).jpg', coloringImage: 'Pot-deco (3).png' },
-  { id: 'pot4', name: 'Ceremonial Vessel', displayImage: 'Pot (5).jpg', coloringImage: 'Pot-deco (4).png' },
+  { id: 'pot1', name: 'Ancient Clay Vessel', displayImage: 'Pot (1).jpg', coloringImage: 'Pot-deco (2).png' },
+  { id: 'pot2', name: 'Decorated Urn', displayImage: 'Pot (3).jpg', coloringImage: 'Pot-deco (1).png' },
+  { id: 'pot3', name: 'Traditional Pot', displayImage: 'Pot (4).jpg', coloringImage: 'Pot-deco (4).png' },
+  { id: 'pot4', name: 'Ceremonial Vessel', displayImage: 'Pot (5).jpg', coloringImage: 'Pot-deco (3).png' },
 ];
 
 // ============================================================================
@@ -165,30 +165,30 @@ const PotColoring = ({ onBackToMenu }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const img = new Image();
-    
+
     img.onload = () => {
       originalImageRef.current = img;
-      
+
       // Calculate scaling to fit canvas while maintaining aspect ratio
       const scale = Math.min(
         canvasSize.width / img.width,
         canvasSize.height / img.height
       );
-      
+
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Set canvas to scaled size
       canvas.width = scaledWidth;
       canvas.height = scaledHeight;
-      
+
       // Draw the image
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
-      
+
       setIsImageLoaded(true);
     };
-    
+
     img.src = selectedPot.coloringImage;
   }, [selectedPot, canvasSize]);
 
@@ -199,7 +199,7 @@ const PotColoring = ({ onBackToMenu }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const rect = canvas.getBoundingClientRect();
-    
+
     // Calculate click position relative to canvas
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -208,10 +208,10 @@ const PotColoring = ({ onBackToMenu }) => {
 
     // Get current image data
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    
+
     // Apply flood fill
     floodFill(imageData, x, y, selectedColor.hex);
-    
+
     // Put the modified image data back
     ctx.putImageData(imageData, 0, 0);
   }, [isImageLoaded, selectedColor]);
@@ -255,15 +255,15 @@ const PotColoring = ({ onBackToMenu }) => {
       {/* POT SELECTION MODE */}
       {mode === 'select' && (
         <div className="w-full min-h-screen px-8 py-8 overflow-y-auto">
-          <div className="max-w-7xl mx-auto pb-20">
+          <div className="flex flex-col gap-8 animate-fade-in pb-20">
             {/* Header */}
             <div className="text-center mb-12 relative">
               {onBackToMenu && (
                 <button
                   onClick={onBackToMenu}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-xl border-2 border-stone-200 text-museum-primary px-8 py-4 rounded-2xl font-bold text-lg hover:bg-stone-50 hover:border-museum-accent transition-all shadow-lg flex items-center gap-3 group"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-xl border border-stone-200 text-museum-primary px-6 py-3 rounded-xl font-semibold hover:bg-stone-50 hover:border-museum-accent transition-all shadow-md flex items-center gap-2 group"
                 >
-                  <span className="text-2xl group-hover:-translate-x-1 transition-transform">←</span>
+                  <span className="group-hover:-translate-x-1 transition-transform">←</span>
                   <span>BACK TO MENU</span>
                 </button>
               )}
@@ -276,11 +276,11 @@ const PotColoring = ({ onBackToMenu }) => {
             </div>
 
             {/* Pot Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 pb-32">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 pb-32">
               {AVAILABLE_POTS.map((pot) => (
                 <div
                   key={pot.id}
-                  className="bg-white border-2 border-stone-200 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-2xl group"
+                  className="bg-white border border-stone-200 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-xl group flex flex-col h-full"
                   style={{
                     transform: hoveredCard === pot.id ? 'translateY(-12px) scale(1.02)' : 'none',
                     borderColor: hoveredCard === pot.id ? '#C2410C' : '#E5E7EB',
@@ -289,8 +289,8 @@ const PotColoring = ({ onBackToMenu }) => {
                   onMouseLeave={() => setHoveredCard(null)}
                   onClick={() => handleSelectPot(pot)}
                 >
-                  <div className="h-[450px] bg-gradient-to-b from-stone-50 to-white flex items-center justify-center p-12 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-stone-100/30 z-10" />
+                  <div className="h-[400px] bg-stone-50 flex items-center justify-center p-10 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-stone-100/50 z-10" />
                     <img
                       src={pot.displayImage}
                       alt={pot.name}
@@ -301,24 +301,24 @@ const PotColoring = ({ onBackToMenu }) => {
                     />
                   </div>
 
-                  <div className="p-10 bg-white border-t-2 border-stone-100">
+                  <div className="p-10 flex-1 flex flex-col bg-white border-t border-stone-100">
                     <h3 className="text-3xl font-serif font-bold text-museum-primary mb-4 group-hover:text-museum-accent transition-colors">
                       {pot.name}
                     </h3>
-                    <p className="text-xl text-museum-secondary mb-6 leading-relaxed font-light italic">
+                    <p className="text-lg text-museum-secondary mb-8 leading-relaxed flex-1 font-light italic">
                       "Add your creative touch to this ancient pottery design"
                     </p>
 
-                    <div className="flex flex-wrap gap-3 mb-6">
-                      <span className="px-5 py-2 rounded-full bg-amber-50 border-2 border-amber-200 text-sm text-museum-primary font-bold tracking-wider">
+                    <div className="flex flex-wrap gap-3 mb-8">
+                      <span className="px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">
                         🏺 Ancient Design
                       </span>
-                      <span className="px-5 py-2 rounded-full bg-blue-50 border-2 border-blue-200 text-sm text-museum-primary font-bold tracking-wider">
+                      <span className="px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">
                         🎨 Colorable
                       </span>
                     </div>
 
-                    <button className="w-full py-6 bg-gradient-to-r from-museum-primary to-museum-accent text-white font-bold tracking-widest text-xl rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 group-hover:scale-105 active:scale-95">
+                    <button className="w-full py-5 bg-gradient-to-r from-museum-primary to-museum-accent text-white font-bold tracking-widest text-lg rounded-2xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 group-hover:scale-105 active:scale-95">
                       <span className="text-2xl">✨</span> START COLORING
                     </button>
                   </div>
@@ -347,7 +347,7 @@ const PotColoring = ({ onBackToMenu }) => {
                   Coloring: {selectedPot.name}
                 </h2>
               </div>
-              
+
               <div className="flex gap-4">
                 <button
                   onClick={handleReset}
@@ -378,31 +378,30 @@ const PotColoring = ({ onBackToMenu }) => {
                 <p className="text-base text-museum-secondary mb-6 italic">
                   Click a color, then click on the pot to fill
                 </p>
-                
+
                 <div className="space-y-3">
                   {COLOR_PALETTE.map((color) => (
                     <button
                       key={color.id}
                       onClick={() => setSelectedColor(color)}
-                      className={`w-full p-4 rounded-xl border-3 transition-all duration-200 group ${
-                        selectedColor.id === color.id
-                          ? 'border-museum-accent shadow-2xl scale-105 ring-4 ring-museum-accent/30'
-                          : 'border-stone-300 hover:border-stone-400 hover:shadow-lg'
-                      }`}
+                      className={`w-full p-4 rounded-xl border-3 transition-all duration-200 group ${selectedColor.id === color.id
+                        ? 'border-museum-accent shadow-2xl scale-105 ring-4 ring-museum-accent/30'
+                        : 'border-stone-300 hover:border-stone-400 hover:shadow-lg'
+                        }`}
                       style={{
                         backgroundColor: selectedColor.id === color.id ? `${color.hex}15` : 'white'
                       }}
                     >
                       <div className="flex items-center gap-4">
                         {/* Color Swatch */}
-                        <div 
+                        <div
                           className="w-16 h-16 rounded-lg border-2 border-stone-300 shadow-md flex-shrink-0 transition-transform group-hover:scale-110"
-                          style={{ 
+                          style={{
                             backgroundColor: color.hex,
                             boxShadow: selectedColor.id === color.id ? `0 0 20px ${color.hex}80` : 'none'
                           }}
                         />
-                        
+
                         {/* Color Info */}
                         <div className="text-left flex-1">
                           <div className="font-bold text-lg text-museum-primary">
@@ -431,7 +430,7 @@ const PotColoring = ({ onBackToMenu }) => {
             <div className="flex-1 flex items-center justify-center p-12 bg-gradient-to-br from-stone-50 via-amber-50/20 to-stone-100 overflow-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
               <div className="relative">
                 {/* Canvas Container */}
-                <div 
+                <div
                   className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-stone-200"
                   style={{
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
@@ -476,7 +475,7 @@ const PotColoring = ({ onBackToMenu }) => {
                 <h3 className="text-2xl font-serif font-bold text-museum-primary mb-6 pb-3 border-b-2 border-stone-200">
                   💡 Coloring Tips
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
                     <div className="text-3xl mb-2">🎨</div>
@@ -524,9 +523,9 @@ const PotColoring = ({ onBackToMenu }) => {
                   <h4 className="font-bold text-lg text-museum-primary mb-4 text-center">
                     Active Color
                   </h4>
-                  <div 
+                  <div
                     className="w-full h-24 rounded-xl border-3 border-white shadow-lg mb-3"
-                    style={{ 
+                    style={{
                       backgroundColor: selectedColor.hex,
                       boxShadow: `0 8px 16px ${selectedColor.hex}40, inset 0 2px 4px rgba(255,255,255,0.3)`
                     }}
