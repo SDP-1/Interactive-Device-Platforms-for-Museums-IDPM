@@ -7,8 +7,8 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
 
   // Format similarity score color
   const getScoreColor = (score) => {
-    if (score >= 90) return 'bg-emerald-100 text-emerald-700';
-    if (score >= 80) return 'bg-amber-100 text-amber-700';
+    if (score >= 65) return 'bg-emerald-100 text-emerald-700';
+    if (score >= 40) return 'bg-amber-100 text-amber-700';
     return 'bg-stone-100 text-stone-700';
   };
 
