@@ -65,11 +65,17 @@ export const KingForm: React.FC<KingFormProps> = ({
     e.preventDefault();
 
     // Ensure biographies are not empty (Quill may return HTML)
-    if (!formData.biography_en || stripHtml(formData.biography_en).trim() === "") {
+    if (
+      !formData.biography_en ||
+      stripHtml(formData.biography_en).trim() === ""
+    ) {
       alert("Biography (English) is required");
       return;
     }
-    if (!formData.biography_si || stripHtml(formData.biography_si).trim() === "") {
+    if (
+      !formData.biography_si ||
+      stripHtml(formData.biography_si).trim() === ""
+    ) {
       alert("Biography (Sinhala) is required");
       return;
     }

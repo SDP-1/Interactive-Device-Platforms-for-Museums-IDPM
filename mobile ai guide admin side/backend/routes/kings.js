@@ -20,13 +20,11 @@ router.get("/kings", async (req, res) => {
     const kings = await King.find().sort({ created_at: -1 });
     res.json({ success: true, data: kings, total: kings.length });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching kings",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching kings",
+      error: error.message,
+    });
   }
 });
 
@@ -40,13 +38,11 @@ router.get("/kings/:id", async (req, res) => {
         .json({ success: false, message: "King not found" });
     res.json({ success: true, data: king });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching king",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching king",
+      error: error.message,
+    });
   }
 });
 
@@ -60,13 +56,11 @@ router.get("/kings/by-king-id/:king_id", async (req, res) => {
         .json({ success: false, message: "King not found" });
     res.json({ success: true, data: king });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching king",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching king",
+      error: error.message,
+    });
   }
 });
 
@@ -85,7 +79,13 @@ router.post("/kings", async (req, res) => {
 
     // Require names and biographies; imageUrls and capitals are optional
     if (!name_en || !name_si || !biography_en || !biography_si) {
-      return res.status(400).json({ success: false, message: "Missing required fields: names and biographies are required" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message:
+            "Missing required fields: names and biographies are required",
+        });
     }
 
     const king_id = await generateKingId();
@@ -95,7 +95,8 @@ router.post("/kings", async (req, res) => {
     // Normalize imageUrls to an array and apply default if empty
     let normalizedImages = [];
     if (Array.isArray(imageUrls)) normalizedImages = imageUrls.filter(Boolean);
-    else if (typeof imageUrls === "string" && imageUrls.trim() !== "") normalizedImages = [imageUrls.trim()];
+    else if (typeof imageUrls === "string" && imageUrls.trim() !== "")
+      normalizedImages = [imageUrls.trim()];
 
     if (normalizedImages.length === 0) normalizedImages = [DEFAULT_IMAGE];
 
@@ -111,21 +112,17 @@ router.post("/kings", async (req, res) => {
     });
 
     const saved = await king.save();
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "King created successfully",
-        data: saved,
-      });
+    res.status(201).json({
+      success: true,
+      message: "King created successfully",
+      data: saved,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error creating king",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error creating king",
+      error: error.message,
+    });
   }
 });
 
@@ -147,8 +144,10 @@ router.put("/kings/:id", async (req, res) => {
     // Normalize imageUrls only if provided in request
     let normalizedImages = undefined;
     if (typeof imageUrls !== "undefined") {
-      if (Array.isArray(imageUrls)) normalizedImages = imageUrls.filter(Boolean);
-      else if (typeof imageUrls === "string" && imageUrls.trim() !== "") normalizedImages = [imageUrls.trim()];
+      if (Array.isArray(imageUrls))
+        normalizedImages = imageUrls.filter(Boolean);
+      else if (typeof imageUrls === "string" && imageUrls.trim() !== "")
+        normalizedImages = [imageUrls.trim()];
       else normalizedImages = [];
 
       if (normalizedImages.length === 0) normalizedImages = [DEFAULT_IMAGE];
@@ -161,7 +160,8 @@ router.put("/kings/:id", async (req, res) => {
       capital_si: capital_si || null,
       biography_en: biography_en || null,
       biography_si: biography_si || null,
-      imageUrls: typeof normalizedImages !== "undefined" ? normalizedImages : undefined,
+      imageUrls:
+        typeof normalizedImages !== "undefined" ? normalizedImages : undefined,
       updated_at: new Date(),
     };
 
@@ -183,13 +183,11 @@ router.put("/kings/:id", async (req, res) => {
       data: king,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error updating king",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error updating king",
+      error: error.message,
+    });
   }
 });
 
@@ -207,13 +205,11 @@ router.delete("/kings/:id", async (req, res) => {
       data: king,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error deleting king",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error deleting king",
+      error: error.message,
+    });
   }
 });
 
