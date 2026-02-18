@@ -4,6 +4,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import artifactRoutes from "./routes/artifacts.js";
+import kingsRoutes from "./routes/kings.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ mongoose
 
 // Routes
 app.use("/api", artifactRoutes);
+app.use("/api", kingsRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
