@@ -1,0 +1,16 @@
+# Ignore model weights, checkpoints, caches, and temporary files
+*.safetensors
+checkpoint-*/
+checkpoint*/
+*.pt
+*.bin
+*.ckpt
+*.h5
+.cache/
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
