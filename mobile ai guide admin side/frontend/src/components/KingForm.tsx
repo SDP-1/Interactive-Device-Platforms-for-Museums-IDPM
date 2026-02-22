@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { King } from "@/types/King";
+import { King } from "../types/King";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -21,6 +21,8 @@ export const KingForm: React.FC<KingFormProps> = ({
     capital_si: king?.capital_si || "",
     biography_en: king?.biography_en || "",
     biography_si: king?.biography_si || "",
+    aiKnowlageBase_en: king?.aiKnowlageBase_en || "",
+    aiKnowlageBase_si: king?.aiKnowlageBase_si || "",
     imageUrls: king?.imageUrls?.join(",") || "",
   });
 
@@ -77,6 +79,22 @@ export const KingForm: React.FC<KingFormProps> = ({
       stripHtml(formData.biography_si).trim() === ""
     ) {
       alert("Biography (Sinhala) is required");
+      return;
+    }
+
+    // Ensure AI knowledge base fields are not empty
+    if (
+      !formData.aiKnowlageBase_en ||
+      stripHtml(formData.aiKnowlageBase_en).trim() === ""
+    ) {
+      alert("AI Knowledge Base (English) is required");
+      return;
+    }
+    if (
+      !formData.aiKnowlageBase_si ||
+      stripHtml(formData.aiKnowlageBase_si).trim() === ""
+    ) {
+      alert("AI Knowledge Base (Sinhala) is required");
       return;
     }
 
@@ -168,6 +186,32 @@ export const KingForm: React.FC<KingFormProps> = ({
           theme="snow"
           value={formData.biography_si}
           onChange={(v) => handleRichTextChange(v, "biography_si")}
+          modules={modules}
+          formats={formats}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          AI Knowledge Base (English) <span className="text-red-600">*</span>
+        </label>
+        <ReactQuill
+          theme="snow"
+          value={formData.aiKnowlageBase_en}
+          onChange={(v) => handleRichTextChange(v, "aiKnowlageBase_en")}
+          modules={modules}
+          formats={formats}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          AI Knowledge Base (Sinhala) <span className="text-red-600">*</span>
+        </label>
+        <ReactQuill
+          theme="snow"
+          value={formData.aiKnowlageBase_si}
+          onChange={(v) => handleRichTextChange(v, "aiKnowlageBase_si")}
           modules={modules}
           formats={formats}
         />

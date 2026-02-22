@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from rag.classifier import is_related
-from rag.retriever import retrieve_context
-from rag.generator import generate_answer
+from museum_ai.rag.artifact_retriever import retrieve_context
+from museum_ai.rag.artifact_generator import generate_answer
 
 # Load artifacts CSV
 DATA_PATH = "data/artifacts.csv"

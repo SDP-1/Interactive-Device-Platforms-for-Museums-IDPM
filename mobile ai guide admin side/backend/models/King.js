@@ -30,6 +30,14 @@ const kingSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  aiKnowlageBase_en: {
+    type: String,
+    default: null,
+  },
+  aiKnowlageBase_si: {
+    type: String,
+    default: null,
+  },
   imageUrls: [
     {
       type: String,

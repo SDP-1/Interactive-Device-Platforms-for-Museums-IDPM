@@ -7,6 +7,8 @@ export interface King {
   capital_si?: string | null;
   biography_en?: string | null;
   biography_si?: string | null;
+  aiKnowlageBase_en?: string | null;
+  aiKnowlageBase_si?: string | null;
   imageUrls: string[];
   created_at?: string;
   updated_at?: string;
