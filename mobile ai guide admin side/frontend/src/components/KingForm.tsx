@@ -23,6 +23,8 @@ export const KingForm: React.FC<KingFormProps> = ({
     biography_si: king?.biography_si || "",
     aiKnowlageBase_en: king?.aiKnowlageBase_en || "",
     aiKnowlageBase_si: king?.aiKnowlageBase_si || "",
+    period_en: king?.period_en || "",
+    period_si: king?.period_si || "",
     imageUrls: king?.imageUrls?.join(",") || "",
   });
 
@@ -98,6 +100,16 @@ export const KingForm: React.FC<KingFormProps> = ({
       return;
     }
 
+    // Ensure period fields are provided
+    if (!formData.period_en || formData.period_en.trim() === "") {
+      alert("Period (English) is required");
+      return;
+    }
+    if (!formData.period_si || formData.period_si.trim() === "") {
+      alert("Period (Sinhala) is required");
+      return;
+    }
+
     const submitData = {
       ...formData,
       imageUrls: formData.imageUrls
@@ -160,6 +172,30 @@ export const KingForm: React.FC<KingFormProps> = ({
             name="capital_si"
             value={formData.capital_si}
             onChange={handleChange}
+            className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Period (English) <span className="text-red-600">*</span>
+          </label>
+          <input
+            name="period_en"
+            value={formData.period_en}
+            onChange={handleChange}
+            required
+            className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Period (Sinhala) <span className="text-red-600">*</span>
+          </label>
+          <input
+            name="period_si"
+            value={formData.period_si}
+            onChange={handleChange}
+            required
             className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
           />
         </div>

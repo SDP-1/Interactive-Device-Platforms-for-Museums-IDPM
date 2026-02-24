@@ -38,6 +38,14 @@ const kingSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  period_en: {
+    type: String,
+    default: null,
+  },
+  period_si: {
+    type: String,
+    default: null,
+  },
   imageUrls: [
     {
       type: String,

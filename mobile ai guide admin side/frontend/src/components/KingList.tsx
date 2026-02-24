@@ -86,6 +86,12 @@ export const KingList: React.FC<KingListProps> = ({
                 {getText(king.capital_en || "", king.capital_si || "")}
               </p>
             )}
+            {(king.period_en || king.period_si) && (
+              <p className="text-gray-600 text-sm mb-2">
+                <strong>Period:</strong>{" "}
+                {getText(king.period_en || "", king.period_si || "")}
+              </p>
+            )}
             <p
               className="text-gray-700 text-sm mb-4 line-clamp-2"
               dangerouslySetInnerHTML={{

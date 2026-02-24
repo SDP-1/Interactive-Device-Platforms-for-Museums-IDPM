@@ -154,6 +154,7 @@ class _PersonaListPageState extends State<PersonaListPage> {
                     ),
                   );
                 },
+                chatLanguage: _chatLanguage,
               );
             },
           );
@@ -164,10 +165,15 @@ class _PersonaListPageState extends State<PersonaListPage> {
 }
 
 class _PersonaCard extends StatelessWidget {
-  const _PersonaCard({required this.persona, required this.onTap});
+  const _PersonaCard({
+    required this.persona,
+    required this.onTap,
+    required this.chatLanguage,
+  });
 
   final Persona persona;
   final VoidCallback onTap;
+  final String chatLanguage;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +191,7 @@ class _PersonaCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // King icon
+              // King icon (use first image if available)
               Container(
                 width: 64,
                 height: 64,
@@ -194,11 +200,27 @@ class _PersonaCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: kGold, width: 2),
                 ),
-                child: const Icon(
-                  Icons.coronavirus_outlined, // Using as crown icon
-                  color: kGold,
-                  size: 32,
-                ),
+                child:
+                    (persona.imageUrls != null && persona.imageUrls!.isNotEmpty)
+                    ? ClipOval(
+                        child: Image.network(
+                          persona.imageUrls!.first,
+                          fit: BoxFit.cover,
+                          width: 64,
+                          height: 64,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.coronavirus_outlined,
+                                color: kGold,
+                                size: 32,
+                              ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.coronavirus_outlined, // Using as crown icon
+                        color: kGold,
+                        size: 32,
+                      ),
               ),
               const SizedBox(width: 16),
               // Persona details
@@ -207,7 +229,7 @@ class _PersonaCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      persona.kingName,
+                      (chatLanguage == 'si') ? persona.nameSi : persona.nameEn,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -215,23 +237,24 @@ class _PersonaCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.black54,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          persona.reignPeriod,
-                          style: const TextStyle(
-                            fontSize: 14,
+                    if (persona.reignPeriod.isNotEmpty)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 14,
                             color: Colors.black54,
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 4),
+                          Text(
+                            persona.reignPeriod,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -243,7 +266,11 @@ class _PersonaCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            persona.capitalCity,
+                            (chatLanguage == 'si')
+                                ? (persona.capitalSi ?? persona.capitalEn ?? '')
+                                : (persona.capitalEn ??
+                                      persona.capitalSi ??
+                                      ''),
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black54,

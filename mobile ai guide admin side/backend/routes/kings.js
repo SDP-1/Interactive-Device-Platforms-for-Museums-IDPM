@@ -12,6 +12,7 @@ function formatKingResponse(king, language = "en") {
       name: king.name_si || king.name_en || null,
       capital: king.capital_si || king.capital_en || null,
       biography: king.biography_si || king.biography_en || null,
+      period: king.period_si || king.period_en || null,
       aiKnowlageBase: king.aiKnowlageBase_si || king.aiKnowlageBase_en || null,
       imageUrls: king.imageUrls || [],
     };
@@ -21,6 +22,7 @@ function formatKingResponse(king, language = "en") {
     name: king.name_en || king.name_si || null,
     capital: king.capital_en || king.capital_si || null,
     biography: king.biography_en || king.biography_si || null,
+    period: king.period_en || king.period_si || null,
     aiKnowlageBase: king.aiKnowlageBase_en || king.aiKnowlageBase_si || null,
     imageUrls: king.imageUrls || [],
   };
@@ -102,6 +104,8 @@ router.post("/kings", async (req, res) => {
       capital_si,
       biography_en,
       biography_si,
+      period_en,
+      period_si,
       aiKnowlageBase_en,
       aiKnowlageBase_si,
     } = req.body;
@@ -112,6 +116,8 @@ router.post("/kings", async (req, res) => {
       !name_si ||
       !biography_en ||
       !biography_si ||
+      !period_en ||
+      !period_si ||
       !aiKnowlageBase_en ||
       !aiKnowlageBase_si
     ) {
@@ -143,6 +149,8 @@ router.post("/kings", async (req, res) => {
       biography_si,
       aiKnowlageBase_en: aiKnowlageBase_en || null,
       aiKnowlageBase_si: aiKnowlageBase_si || null,
+      period_en: period_en || null,
+      period_si: period_si || null,
       imageUrls: normalizedImages,
     });
 
@@ -172,6 +180,8 @@ router.put("/kings/:id", async (req, res) => {
       capital_si,
       biography_en,
       biography_si,
+      period_en,
+      period_si,
       aiKnowlageBase_en,
       aiKnowlageBase_si,
     } = req.body;
@@ -205,6 +215,8 @@ router.put("/kings/:id", async (req, res) => {
         typeof aiKnowlageBase_si !== "undefined"
           ? aiKnowlageBase_si
           : undefined,
+      period_en: typeof period_en !== "undefined" ? period_en : undefined,
+      period_si: typeof period_si !== "undefined" ? period_si : undefined,
       imageUrls:
         typeof normalizedImages !== "undefined" ? normalizedImages : undefined,
       updated_at: new Date(),

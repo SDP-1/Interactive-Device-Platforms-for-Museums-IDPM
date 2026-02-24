@@ -9,6 +9,8 @@ export interface King {
   biography_si?: string | null;
   aiKnowlageBase_en?: string | null;
   aiKnowlageBase_si?: string | null;
+  period_en?: string | null;
+  period_si?: string | null;
   imageUrls: string[];
   created_at?: string;
   updated_at?: string;

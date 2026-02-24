@@ -5,6 +5,7 @@ import 'package:mobile_ai_guide/services/persona_service.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 enum MessageSender { bot, user, system }
 
@@ -71,10 +72,22 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
   }
 
   String _buildIntroMessage(String chatLang) {
+    final name = (chatLang == 'si')
+        ? widget.persona.nameSi
+        : widget.persona.nameEn;
+    final capital = (chatLang == 'si')
+        ? (widget.persona.capitalSi ?? widget.persona.capitalEn ?? '')
+        : (widget.persona.capitalEn ?? widget.persona.capitalSi ?? '');
     if (chatLang == 'si') {
-      return 'ආයුබෝවන්! මම ${widget.persona.kingName}, ${widget.persona.reignPeriod} කාලයේ ${widget.persona.capitalCity} හි රජකම් කළ රජතුමා. මගේ රාජ්‍යයේ කතා සහ අපේ රාජධානියේ තේජස ගැන ඔබ සමඟ කතා කිරීමට මට සතුටක්. ඔබට කුමක් දැන ගැනීමට අවශ්‍යද?';
+      if (widget.persona.reignPeriod.isNotEmpty) {
+        return 'ආයුබෝවන්! මම $name, ${widget.persona.reignPeriod} කාලයේ $capital හි රජකම් කළ රජතුමා. මගේ රාජ්‍යයේ කතා සහ අපේ රාජධානියේ තේජස ගැන ඔබ සමඟ කතා කිරීමට මට සතුටක්. ඔබට කුමක් දැන ගැනීමට අවශ්‍යද?';
+      }
+      return 'ආයුබෝවන්! මම $name, $capital හි රජකම් කළ රජතුමා. මගේ රාජ්‍යයේ කතා සහ අපේ රාජධානියේ තේජස ගැන ඔබ සමඟ කතා කිරීමට මට සතුටක්. ඔබට කුමක් දැන ගැනීමට අවශ්‍යද?';
     } else {
-      return 'Greetings! I am ${widget.persona.kingName}, who ruled from ${widget.persona.capitalCity} during ${widget.persona.reignPeriod}. I am honored to share stories of my reign and the glory of our kingdom with you. What would you like to know?';
+      if (widget.persona.reignPeriod.isNotEmpty) {
+        return 'Greetings! I am $name, who ruled from $capital during ${widget.persona.reignPeriod}. I am honored to share stories of my reign and the glory of our kingdom with you. What would you like to know?';
+      }
+      return 'Greetings! I am $name, who ruled from $capital. I am honored to share stories of my reign and the glory of our kingdom with you. What would you like to know?';
     }
   }
 
@@ -295,12 +308,22 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.persona.kingName,
+              (_chatLanguage == 'si')
+                  ? widget.persona.nameSi
+                  : widget.persona.nameEn,
               style: const TextStyle(color: Colors.black87, fontSize: 16),
             ),
             const SizedBox(height: 2),
             Text(
-              widget.persona.reignPeriod,
+              widget.persona.reignPeriod.isNotEmpty
+                  ? widget.persona.reignPeriod
+                  : ((_chatLanguage == 'si')
+                        ? (widget.persona.capitalSi ??
+                              widget.persona.capitalEn ??
+                              '')
+                        : (widget.persona.capitalEn ??
+                              widget.persona.capitalSi ??
+                              '')),
               style: const TextStyle(color: Colors.black54, fontSize: 12),
             ),
           ],
@@ -353,11 +376,29 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
                               color: kGold,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.coronavirus_outlined, // Crown icon
-                              color: Colors.white,
-                              size: 18,
-                            ),
+                            child:
+                                (widget.persona.imageUrls != null &&
+                                    widget.persona.imageUrls!.isNotEmpty)
+                                ? ClipOval(
+                                    child: Image.network(
+                                      widget.persona.imageUrls!.first,
+                                      fit: BoxFit.cover,
+                                      width: 36,
+                                      height: 36,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                                Icons.coronavirus_outlined,
+                                                color: Colors.white,
+                                                size: 18,
+                                              ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.coronavirus_outlined, // Crown icon
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
                           ),
                           Expanded(
                             child: _BotBubble(
