@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from rag.classifier import is_related
 from rag.persona_retriever import retrieve_persona_context
 from rag.persona_generator import generate_persona_answer
 
@@ -30,13 +31,17 @@ class PersonaAskRequest(BaseModel):
 @router.post("/ask")
 async def ask_persona(req: PersonaAskRequest):
     """Ask a question to a historical persona. Persona data is fetched from MongoDB when needed."""
-    # Validate persona existence in Mongo
+    # ----------------------------
+    # Validate persona
+    # ----------------------------
     if db is None:
         return {"answer": "Server not configured with MongoDB.", "rejected": True, "reason": "NO_DB"}
 
+    language = (req.language or "en").lower().strip()
+
     king = db[KINGS_COLLECTION].find_one({"king_id": req.king_id})
     if not king:
-        return {"answer": "Persona not found." if req.language == "en" else "චරිතය හමු නොවීය.", "rejected": True, "reason": "PERSONA_NOT_FOUND"}
+        return {"answer": "Persona not found." if language == "en" else "චරිතය හමු නොවීය.", "rejected": True, "reason": "PERSONA_NOT_FOUND"}
 
     king_name_en = king.get("name_en")
     king_name_si = king.get("name_si")
@@ -46,35 +51,50 @@ async def ask_persona(req: PersonaAskRequest):
     reign_period_si = king.get("period_si") or ""
 
     capital_en = king.get("capital_en")
-    capital_si = king.get("capital_si")
 
     # choose name and period for the requested language
-    king_name = king_name_si if req.language == "si" else king_name_en
-    reign_period = reign_period_si if req.language == "si" else reign_period_en
+    king_name = king_name_si if language == "si" else king_name_en
+    reign_period = reign_period_si if language == "si" else reign_period_en
 
-    # Greetings handling
-    question_lower = (req.question or "").lower().strip()
-    greetings = ["hello", "hi", "hey", "greetings", "හායි", "ආයුබෝවන්", "හෙලෝ"]
-    if any(g in question_lower for g in greetings):
-        if req.language == "en":
-            return {"answer": f"Greetings, visitor. I am {king_name}, who ruled during {reign_period}. What would you like to know?", "rejected": False, "reason": None}
-        else:
-            return {"answer": f"ආයුබෝවන්, මම {king_name}. {reign_period} කාලයේ රජු වුනි. ඔබට මොන වගේ ප්‍රශ්නයක් තියේද?", "rejected": False, "reason": None}
+    # ----------------------------
+    # Classify question relevance
+    # ----------------------------
+    # Reuse the same classifier flow used in artifact mode
+    persona_summary = f"{king_name_en or ''}. Reign: {reign_period_en or ''}. Capital: {capital_en or ''}."
+    classification = is_related(req.question, persona_summary)
 
+    # ----------------------------
+    # Handle greetings
+    # ----------------------------
+    if classification == "GREETING":
+        greeting_msg = (
+            f"Greetings, visitor. I am {king_name}, who ruled during {reign_period}. What would you like to know?"
+            if language == "en"
+            else f"ආයුබෝවන්, මම {king_name}. {reign_period} කාලයේ රජු වුනි. ඔබට මොන වගේ ප්‍රශ්නයක් තියේද?"
+        )
+        return {"answer": greeting_msg, "rejected": False, "reason": None}
+
+    # ----------------------------
+    # Retrieve context (RAG)
+    # ----------------------------
     # Try semantic retrieval first
-    context = retrieve_persona_context(king_id=req.king_id, question=req.question, language=req.language)
+    context = retrieve_persona_context(king_id=req.king_id, question=req.question, language=language)
 
+    # If vector retrieval fails, fall back to MongoDB fields
     # If retrieval empty, fall back to aiKnowlageBase or biography from Mongo
     if not context:
-        if req.language == "si":
+        if language == "si":
             context = king.get("aiKnowlageBase_si") or king.get("biography_si") or ""
         else:
             context = king.get("aiKnowlageBase_en") or king.get("biography_en") or ""
 
     if not context:
-        return {"answer": "I don't have information about that." if req.language == "en" else "මට එම තොරතුරු නොමැත.", "rejected": False, "reason": "NO_CONTEXT_FOUND"}
+        return {"answer": "I don't have information about that." if language == "en" else "මට එම තොරතුරු නොමැත.", "rejected": False, "reason": "NO_CONTEXT_FOUND"}
 
-    answer = generate_persona_answer(question=req.question, context=context, language=req.language, king_name=king_name, reign_period=reign_period)
+    # ----------------------------
+    # Generate final answer
+    # ----------------------------
+    answer = generate_persona_answer(question=req.question, context=context, language=language, king_name=king_name, reign_period=reign_period)
 
     # Build persona metadata for response
     persona_meta = {

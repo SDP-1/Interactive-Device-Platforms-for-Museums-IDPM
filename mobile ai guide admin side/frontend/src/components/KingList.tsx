@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { King } from "@/types/King";
+import { King } from "../types/King";
 
 interface KingListProps {
   kings: King[];
@@ -80,6 +80,9 @@ export const KingList: React.FC<KingListProps> = ({
             <h3 className="text-lg font-bold mb-2">
               {getText(king.name_en, king.name_si)}
             </h3>
+            <p className="text-gray-600 text-sm mb-2">
+              <strong>ID:</strong> {king.king_id || king._id}
+            </p>
             {(king.capital_en || king.capital_si) && (
               <p className="text-gray-600 text-sm mb-2">
                 <strong>Capital:</strong>{" "}
@@ -92,15 +95,6 @@ export const KingList: React.FC<KingListProps> = ({
                 {getText(king.period_en || "", king.period_si || "")}
               </p>
             )}
-            <p
-              className="text-gray-700 text-sm mb-4 line-clamp-2"
-              dangerouslySetInnerHTML={{
-                __html: getText(
-                  king.biography_en || "",
-                  king.biography_si || "",
-                ),
-              }}
-            />
 
             <div className="flex gap-2">
               <button

@@ -124,6 +124,19 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
       onSubmit={handleSubmit}
       className="space-y-6 bg-white p-6 rounded-lg shadow"
     >
+      {artifact && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Artifact ID
+          </label>
+          <input
+            type="text"
+            value={artifact.artifact_id || artifact._id || ""}
+            disabled
+            className="mt-1 block w-full border border-gray-300 rounded-md bg-gray-100 py-2 px-3"
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* English Fields */}
         <div>

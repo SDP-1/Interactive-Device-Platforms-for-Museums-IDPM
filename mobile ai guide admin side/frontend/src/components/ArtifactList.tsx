@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Artifact } from "@/types/Artifact";
+import { Artifact } from "../types/Artifact";
 
 interface ArtifactListProps {
   artifacts: Artifact[];
@@ -92,6 +92,9 @@ export const ArtifactList: React.FC<ArtifactListProps> = ({
               {getText(artifact.title_en, artifact.title_si)}
             </h3>
             <p className="text-gray-600 text-sm mb-2">
+              <strong>ID:</strong> {artifact.artifact_id || artifact._id}
+            </p>
+            <p className="text-gray-600 text-sm mb-2">
               <strong>Origin:</strong>{" "}
               {getText(artifact.origin_en, artifact.origin_si)}
             </p>
@@ -101,9 +104,6 @@ export const ArtifactList: React.FC<ArtifactListProps> = ({
             <p className="text-gray-600 text-sm mb-2">
               <strong>Category:</strong>{" "}
               {getText(artifact.category_en, artifact.category_si)}
-            </p>
-            <p className="text-gray-700 text-sm mb-4 line-clamp-2">
-              {getText(artifact.description_en, artifact.description_si)}
             </p>
 
             <div className="flex gap-2">
