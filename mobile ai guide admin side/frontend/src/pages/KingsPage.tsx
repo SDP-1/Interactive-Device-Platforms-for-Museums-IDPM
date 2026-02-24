@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { King } from "@/types/King";
-import { kingService } from "@/services/kingService";
-import { KingForm } from "@/components/KingForm";
-import { KingList } from "@/components/KingList";
+import { King } from "../types/King";
+import { kingService } from "../services/kingService";
+import { KingForm } from "../components/KingForm";
+import { KingList } from "../components/KingList";
 
 export const KingsPage: React.FC = () => {
   const [kings, setKings] = useState<King[]>([]);

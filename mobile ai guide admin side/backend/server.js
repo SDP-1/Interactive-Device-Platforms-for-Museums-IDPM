@@ -5,6 +5,8 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import artifactRoutes from "./routes/artifacts.js";
 import kingsRoutes from "./routes/kings.js";
+import sessionsRoutes from "./routes/sessions.js";
+import { startSessionMonitor } from "./utils/sessionMonitor.js";
 
 dotenv.config();
 
@@ -27,6 +29,8 @@ mongoose
   })
   .then(() => {
     console.log("✓ Connected to MongoDB");
+    // start background monitor to update session is_active flags
+    startSessionMonitor();
   })
   .catch((err) => {
     console.error("✗ MongoDB connection error:", err.message);
@@ -36,6 +40,7 @@ mongoose
 // Routes
 app.use("/api", artifactRoutes);
 app.use("/api", kingsRoutes);
+app.use("/api", sessionsRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

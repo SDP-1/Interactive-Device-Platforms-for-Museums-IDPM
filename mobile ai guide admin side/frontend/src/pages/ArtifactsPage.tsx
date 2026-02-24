@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Artifact } from "@/types/Artifact";
-import { artifactService } from "@/services/artifactService";
-import { ArtifactForm } from "@/components/ArtifactForm";
-import { ArtifactList } from "@/components/ArtifactList";
+import { Artifact } from "../types/Artifact";
+import { artifactService } from "../services/artifactService";
+import { ArtifactForm } from "../components/ArtifactForm";
+import { ArtifactList } from "../components/ArtifactList";
 
 export const ArtifactsPage: React.FC = () => {
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
