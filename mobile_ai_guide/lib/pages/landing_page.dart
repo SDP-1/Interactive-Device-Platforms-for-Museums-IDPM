@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
-import 'package:mobile_ai_guide/pages/home_page.dart';
+import 'package:mobile_ai_guide/pages/session_intro_page.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -15,9 +15,9 @@ class _LandingPageState extends State<LandingPage> {
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
       if (!mounted) return;
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SessionIntroPage()),
+      );
     });
   }
 

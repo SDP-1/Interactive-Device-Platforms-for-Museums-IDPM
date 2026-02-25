@@ -19,6 +19,8 @@ const kDarkDivider = Color(0xFF3A3023);
 const kWarningSurface = Color(0xFFFFF4E6);
 const kWarningBorder = Color(0xFFFFCC80);
 const kWarningIcon = Color(0xFFFFA000);
+const kSuccessSurface = Color(0xFFDCFCE7);
+const kSuccessText = Color(0xFF16A34A);
 const kDivider = Color(0xFFE9E6E0);
 const kWarmPanel = Color(0xFFF7F4ED);
 

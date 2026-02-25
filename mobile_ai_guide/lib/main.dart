@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
 import 'package:mobile_ai_guide/pages/landing_page.dart';
 import 'package:mobile_ai_guide/ui/font_scale.dart';
+import 'package:mobile_ai_guide/pages/mobile_guide_access_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
             );
           },
           home: const LandingPage(),
+          // home: const MobileGuideAccessPage(),
         );
       },
     );
