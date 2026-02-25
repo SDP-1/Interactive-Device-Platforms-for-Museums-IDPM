@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_ai_guide/models/persona.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/services/persona_service.dart';
@@ -137,23 +138,74 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
 
   Future<void> _startListening() async {
     if (!_isListening) {
-      bool available = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Error: ${error.errorMsg}')));
+      // Ensure microphone permission first
+      try {
+        final micStatus = await Permission.microphone.status;
+        if (!micStatus.isGranted) {
+          final result = await Permission.microphone.request();
+          if (!result.isGranted) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(result.isPermanentlyDenied
+                      ? 'Microphone permission permanently denied. Enable it in settings.'
+                      : 'Microphone permission is required to use voice input.'),
+                  action: result.isPermanentlyDenied
+                      ? SnackBarAction(
+                          label: 'Settings',
+                          onPressed: () => openAppSettings(),
+                        )
+                      : null,
+                ),
+              );
+            }
+            return;
           }
-          setState(() => _isListening = false);
-          _modalStateUpdater?.call();
-        },
-        onStatus: (status) {
-          if (status == 'done' || status == 'notListening') {
+        }
+      } catch (e) {
+        // If permission handling fails, continue to initialize STT and let it handle errors.
+      }
+
+      bool available = false;
+      try {
+        available = await _speechToText.initialize(
+          onError: (error) {
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error: ${error.errorMsg}')));
+            }
             setState(() => _isListening = false);
             _modalStateUpdater?.call();
-          }
-        },
-      );
+          },
+          onStatus: (status) {
+            if (status == 'done' || status == 'notListening') {
+              setState(() => _isListening = false);
+              _modalStateUpdater?.call();
+            }
+          },
+        );
+      } on PlatformException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Speech recognition not available on this device.'),
+            ),
+          );
+        }
+        setState(() => _isListening = false);
+        _modalStateUpdater?.call();
+        return;
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Speech init error: ${e.toString()}')),
+          );
+        }
+        setState(() => _isListening = false);
+        _modalStateUpdater?.call();
+        return;
+      }
 
       if (available) {
         setState(() {
@@ -376,29 +428,11 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
                               color: kGold,
                               shape: BoxShape.circle,
                             ),
-                            child:
-                                (widget.persona.imageUrls != null &&
-                                    widget.persona.imageUrls!.isNotEmpty)
-                                ? ClipOval(
-                                    child: Image.network(
-                                      widget.persona.imageUrls!.first,
-                                      fit: BoxFit.cover,
-                                      width: 36,
-                                      height: 36,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const Icon(
-                                                Icons.coronavirus_outlined,
-                                                color: Colors.white,
-                                                size: 18,
-                                              ),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.coronavirus_outlined, // Crown icon
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
+                            child: const Icon(
+                              Icons.coronavirus_outlined, // Crown icon
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                           Expanded(
                             child: _BotBubble(
