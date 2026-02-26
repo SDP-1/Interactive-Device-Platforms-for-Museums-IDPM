@@ -200,7 +200,8 @@ Ask a question about an artifact using AI Mode.
 {
   "artifact_id": "ART001",
   "question": "What was this sword used for?",
-  "language": "en"
+  "language": "en",
+  "session_id": "a6ea7316-dd21-48ce-bbfa-688a4f5bc9fe"
 }
 ```
 
@@ -290,9 +291,17 @@ Converse with a historical figure in their voice.
 {
   "king_id": "Kin005",
   "question": "Tell me about your irrigation projects",
-  "language": "en"
+  "language": "en",
+  "session_id": "a6ea7316-dd21-48ce-bbfa-688a4f5bc9fe"
 }
 ```
+
+### Session Memory (Optional)
+
+- Pass `session_id` in `POST /artifact/ask` and `POST /persona/ask` requests.
+- Backend fetches recent chat history from the session service before generating a reply.
+- Similar repeated questions are detected and responses are instructed to add new details.
+- New question/answer pairs are saved back to the session service after each response.
 
 **Response:**
 

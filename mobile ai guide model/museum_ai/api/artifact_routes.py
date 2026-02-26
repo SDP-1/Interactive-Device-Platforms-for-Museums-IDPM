@@ -4,10 +4,18 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson import ObjectId
+from typing import Optional
 
 from rag.classifier import is_related
 from rag.artifact_retriever import retrieve_context
-from rag.artifact_generator import generate_answer
+from rag.artifact_generator import generate_answer_with_memory
+from utils.session_memory import (
+    build_history_block,
+    fetch_session_history,
+    get_recent_interactions,
+    is_repeated_question,
+    save_chat_interaction,
+)
 
 router = APIRouter(
     prefix="/artifact",
@@ -27,6 +35,7 @@ class AskRequest(BaseModel):
     artifact_id: str
     question: str
     language: str  # "en" or "si"
+    session_id: Optional[str] = None
 
 
 @router.post("/ask")
@@ -57,6 +66,22 @@ async def ask(req: AskRequest):
 
         if not artifact:
             return {"answer": "I don't have information about that artifact.", "rejected": False, "reason": "NO_ARTIFACT"}
+
+        # ----------------------------
+        # Session memory (optional)
+        # ----------------------------
+        session_id = (req.session_id or "").strip()
+        interactions = []
+        if session_id:
+            interactions = fetch_session_history(
+                session_id=session_id,
+                reference_type="artifact",
+                reference_id=artifact_id,
+            )
+
+        recent_interactions = get_recent_interactions(interactions)
+        conversation_history = build_history_block(recent_interactions)
+        repeated_question = is_repeated_question(req.question, recent_interactions)
 
         # ----------------------------
         # Classify question relevance
@@ -112,7 +137,24 @@ async def ask(req: AskRequest):
         # Generate final answer
         # ----------------------------
         # Use the language model with retrieved context to craft the response
-        answer = generate_answer(req.question, context, language)
+        answer = generate_answer_with_memory(
+            question=req.question,
+            context=context,
+            language=language,
+            conversation_history=conversation_history,
+            repeated_question=repeated_question,
+        )
+
+        if session_id:
+            save_chat_interaction(
+                session_id=session_id,
+                question=req.question,
+                reply=answer,
+                reference_type="artifact",
+                reference_id=artifact_id,
+                language=language,
+            )
+
         return {"answer": answer, "rejected": False, "reason": None}
 
     except Exception as e:

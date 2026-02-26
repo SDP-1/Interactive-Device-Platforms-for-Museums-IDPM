@@ -3,10 +3,18 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from typing import Optional
 
 from rag.classifier import is_related
 from rag.persona_retriever import retrieve_persona_context
-from rag.persona_generator import generate_persona_answer
+from rag.persona_generator import generate_persona_answer_with_memory
+from utils.session_memory import (
+    build_history_block,
+    fetch_session_history,
+    get_recent_interactions,
+    is_repeated_question,
+    save_chat_interaction,
+)
 
 load_dotenv()
 
@@ -26,6 +34,7 @@ class PersonaAskRequest(BaseModel):
     king_id: str
     question: str
     language: str  # "en" or "si"
+    session_id: Optional[str] = None
 
 
 @router.post("/ask")
@@ -55,6 +64,22 @@ async def ask_persona(req: PersonaAskRequest):
     # choose name and period for the requested language
     king_name = king_name_si if language == "si" else king_name_en
     reign_period = reign_period_si if language == "si" else reign_period_en
+
+    # ----------------------------
+    # Session memory (optional)
+    # ----------------------------
+    session_id = (req.session_id or "").strip()
+    interactions = []
+    if session_id:
+        interactions = fetch_session_history(
+            session_id=session_id,
+            reference_type="king",
+            reference_id=req.king_id,
+        )
+
+    recent_interactions = get_recent_interactions(interactions)
+    conversation_history = build_history_block(recent_interactions)
+    repeated_question = is_repeated_question(req.question, recent_interactions)
 
     # ----------------------------
     # Classify question relevance
@@ -94,7 +119,25 @@ async def ask_persona(req: PersonaAskRequest):
     # ----------------------------
     # Generate final answer
     # ----------------------------
-    answer = generate_persona_answer(question=req.question, context=context, language=language, king_name=king_name, reign_period=reign_period)
+    answer = generate_persona_answer_with_memory(
+        question=req.question,
+        context=context,
+        language=language,
+        king_name=king_name,
+        reign_period=reign_period,
+        conversation_history=conversation_history,
+        repeated_question=repeated_question,
+    )
+
+    if session_id:
+        save_chat_interaction(
+            session_id=session_id,
+            question=req.question,
+            reply=answer,
+            reference_type="king",
+            reference_id=req.king_id,
+            language=language,
+        )
 
     # Build persona metadata for response
     persona_meta = {

@@ -8,8 +8,10 @@ import 'package:mobile_ai_guide/pages/qr_scanner_page.dart';
 import 'package:mobile_ai_guide/pages/settings_page.dart';
 import 'package:mobile_ai_guide/pages/help_page.dart';
 import 'package:mobile_ai_guide/pages/persona_list_page.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/home/featured_exhibitions.dart';
 import 'package:mobile_ai_guide/widgets/home/quick_actions.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,6 +24,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _current = 0;
   String? _selectedTile;
+
+  @override
+  void initState() {
+    super.initState();
+    _validateSession();
+  }
+
+  Future<void> _validateSession() async {
+    try {
+      await SessionAccessService.requireActiveSession();
+    } on SessionAccessException catch (e) {
+      if (!mounted) return;
+      await SessionGuard.redirectToSessionIntro(context, message: e.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/services/artifact_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/pages/artifact_detail_page.dart';
 import 'package:mobile_ai_guide/widgets/common/alert.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -57,6 +59,14 @@ class _QRScannerPageState extends State<QRScannerPage> {
       }
     } catch (e) {
       if (mounted) {
+        if (e is SessionAccessException) {
+          await SessionGuard.redirectToSessionIntro(
+            context,
+            message: e.message,
+          );
+          return;
+        }
+
         Alert.showError(
           context: context,
           title: 'Artifact Not Found',

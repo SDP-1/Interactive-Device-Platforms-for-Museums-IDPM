@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/api_constants.dart';
 
 class AiGuideService {
@@ -7,8 +9,11 @@ class AiGuideService {
     required String artifactId,
     required String question,
     String language = 'en',
+    String? sessionId,
   }) async {
     try {
+      final resolvedSessionId =
+          sessionId ?? await SessionAccessService.requireActiveSessionId();
       final url = Uri.parse(
         '${ApiConstants.baseAiModelUrl}${ApiConstants.artifactAskEndpoint}',
       );
@@ -20,6 +25,7 @@ class AiGuideService {
               'artifact_id': artifactId,
               'question': question,
               'language': language,
+              'session_id': resolvedSessionId,
             }),
           )
           .timeout(

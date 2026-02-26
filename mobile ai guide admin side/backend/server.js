@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import artifactRoutes from "./routes/artifacts.js";
 import kingsRoutes from "./routes/kings.js";
 import sessionsRoutes from "./routes/sessions.js";
+import chatsRoutes from "./routes/chats.js";
 import { startSessionMonitor } from "./utils/sessionMonitor.js";
 
 dotenv.config();
@@ -41,6 +42,7 @@ mongoose
 app.use("/api", artifactRoutes);
 app.use("/api", kingsRoutes);
 app.use("/api", sessionsRoutes);
+app.use("/api", chatsRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mobile_ai_guide/pages/home_page.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
 import 'package:mobile_ai_guide/pages/landing_page.dart';
+import 'package:mobile_ai_guide/ui/chat_language.dart';
+import 'package:mobile_ai_guide/ui/content_language.dart';
 import 'package:mobile_ai_guide/ui/font_scale.dart';
-import 'package:mobile_ai_guide/pages/mobile_guide_access_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
-  runApp(const MyApp());
+  await LocalStorageService.instance.initialize();
+  await AppChatLanguage.instance.loadForActiveSession();
+  await AppContentLanguage.instance.loadForActiveSession();
+  await AppFontScale.instance.loadForActiveSession();
+
+  bool hasActiveSession;
+  try {
+    await SessionAccessService.requireActiveSession();
+    hasActiveSession = true;
+  } catch (_) {
+    hasActiveSession = false;
+  }
+
+  runApp(MyApp(hasActiveSession: hasActiveSession));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({required this.hasActiveSession, super.key});
+
+  final bool hasActiveSession;
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +82,7 @@ class MyApp extends StatelessWidget {
               child: child!,
             );
           },
-          home: const LandingPage(),
-          // home: const MobileGuideAccessPage(),
+          home: hasActiveSession ? const HomePage() : const LandingPage(),
         );
       },
     );

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/models/persona.dart';
 import 'package:mobile_ai_guide/services/persona_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
 import 'package:mobile_ai_guide/pages/ai_persona_chat_page.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
+import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
+import 'package:mobile_ai_guide/widgets/navigation/bottom_navigation_mixin.dart';
 
 class PersonaListPage extends StatefulWidget {
   const PersonaListPage({super.key});
@@ -12,15 +16,18 @@ class PersonaListPage extends StatefulWidget {
   State<PersonaListPage> createState() => _PersonaListPageState();
 }
 
-class _PersonaListPageState extends State<PersonaListPage> {
+class _PersonaListPageState extends State<PersonaListPage>
+    with BottomNavigationMixin {
   late Future<List<Persona>> _personasFuture;
   String _chatLanguage = 'en';
+  bool _sessionRedirectTriggered = false;
 
   @override
   void initState() {
     super.initState();
     _chatLanguage = AppChatLanguage.instance.value;
     _personasFuture = PersonaService.getPersonas(language: _chatLanguage);
+    currentNavIndex = 3;
   }
 
   void _refreshPersonas() {
@@ -68,6 +75,20 @@ class _PersonaListPageState extends State<PersonaListPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
+            if (snapshot.error is SessionAccessException &&
+                !_sessionRedirectTriggered) {
+              _sessionRedirectTriggered = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                final error = snapshot.error! as SessionAccessException;
+                SessionGuard.redirectToSessionIntro(
+                  context,
+                  message: error.message,
+                );
+              });
+              return const Center(child: CircularProgressIndicator());
+            }
+
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -159,6 +180,10 @@ class _PersonaListPageState extends State<PersonaListPage> {
             },
           );
         },
+      ),
+      bottomNavigationBar: AppBottomNavigationBar(
+        selectedIndex: currentNavIndex,
+        onDestinationSelected: handleNavigation,
       ),
     );
   }

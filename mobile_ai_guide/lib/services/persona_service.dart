@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mobile_ai_guide/models/persona.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/api_constants.dart';
 
 class PersonaService {
@@ -8,6 +10,14 @@ class PersonaService {
 
   /// Get list of available personas (kings)
   static Future<List<Persona>> getPersonas({String language = 'en'}) async {
+    await LocalStorageService.instance.initialize();
+    await SessionAccessService.requireActiveSession();
+    final cachedList = await LocalStorageService.instance
+        .getCachedPersonaList();
+    if (cachedList != null && cachedList.isNotEmpty) {
+      return cachedList;
+    }
+
     try {
       final url = Uri.parse(
         '${ApiConstants.baseBackendUrl}/api/kings?language=$language',
@@ -19,7 +29,7 @@ class PersonaService {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         if (data['success'] == true && data['data'] != null) {
           final list = data['data'] as List<dynamic>;
-          return list.map((item) {
+          final personas = list.map((item) {
             final map = item as Map<String, dynamic>;
             final kingId =
                 (map['king_id'] ?? map['kingId'] ?? map['_id'] ?? '') as String;
@@ -94,6 +104,9 @@ class PersonaService {
                   : null,
             );
           }).toList();
+
+          await LocalStorageService.instance.cachePersonaList(personas);
+          return personas;
         }
         throw Exception('Invalid response format');
       } else {
@@ -102,6 +115,9 @@ class PersonaService {
         );
       }
     } catch (e) {
+      if (cachedList != null && cachedList.isNotEmpty) {
+        return cachedList;
+      }
       throw Exception('Error fetching personas: $e');
     }
   }
@@ -111,6 +127,13 @@ class PersonaService {
     required String kingId,
     String language = 'en',
   }) async {
+    await LocalStorageService.instance.initialize();
+    await SessionAccessService.requireActiveSession();
+    final cached = await LocalStorageService.instance.getCachedPersona(kingId);
+    if (cached != null) {
+      return cached;
+    }
+
     try {
       // Backend exposes king lookup by king_id
       final url = Uri.parse(
@@ -171,7 +194,7 @@ class PersonaService {
                         '')
                     as String?;
 
-          return Persona(
+          final persona = Persona(
             kingId: kingId,
             nameEn: (payload['name_en'] ?? payload['name'] ?? '') as String,
             nameSi: (payload['name_si'] ?? payload['name'] ?? '') as String,
@@ -193,6 +216,9 @@ class PersonaService {
                 ? DateTime.tryParse(payload['updated_at'].toString())
                 : null,
           );
+
+          await LocalStorageService.instance.cachePersona(persona);
+          return persona;
         }
         throw Exception('Invalid response format');
       } else if (response.statusCode == 404) {
@@ -203,6 +229,9 @@ class PersonaService {
         );
       }
     } catch (e) {
+      if (cached != null) {
+        return cached;
+      }
       throw Exception('Error fetching persona: $e');
     }
   }
@@ -212,8 +241,11 @@ class PersonaService {
     required String kingId,
     required String question,
     String language = 'en',
+    String? sessionId,
   }) async {
     try {
+      final resolvedSessionId =
+          sessionId ?? await SessionAccessService.requireActiveSessionId();
       final url = Uri.parse('${ApiConstants.baseAiModelUrl}/persona/ask');
 
       final response = await http.post(
@@ -223,6 +255,7 @@ class PersonaService {
           'king_id': kingId,
           'question': question,
           'language': language,
+          'session_id': resolvedSessionId,
         }),
       );
 

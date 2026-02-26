@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     
     <application
-        android:label="mobile_ai_guide"
+        android:label="Mobile AI Guide"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
