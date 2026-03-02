@@ -85,14 +85,16 @@ export const KingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+    <div className="min-h-screen">
+      <header className="bg-white shadow sticky top-[72px] z-20">
+        <div className="w-full px-3 sm:px-4 lg:px-6 py-2.5 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Kings</h1>
-            <p className="text-gray-600 mt-1">Manage kings content</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Kings ({kings.length})
+            </h1>
+            <p className="text-gray-600 text-sm">Manage kings content</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               onClick={() => setLanguage(language === "en" ? "si" : "en")}
               className="px-4 py-2 bg-gray-200 rounded"
@@ -112,7 +114,7 @@ export const KingsPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-5">
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
@@ -135,24 +137,23 @@ export const KingsPage: React.FC = () => {
           </div>
         )}
 
-        <div>
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold">Kings ({kings.length})</h2>
+        {!showForm && (
+          <div>
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Loading kings...</p>
+              </div>
+            ) : (
+              <KingList
+                kings={kings}
+                language={language}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                isDeleting={deletingId || undefined}
+              />
+            )}
           </div>
-          {loading && !showForm ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Loading kings...</p>
-            </div>
-          ) : (
-            <KingList
-              kings={kings}
-              language={language}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              isDeleting={deletingId || undefined}
-            />
-          )}
-        </div>
+        )}
       </main>
     </div>
   );

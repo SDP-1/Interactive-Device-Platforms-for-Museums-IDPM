@@ -7,6 +7,7 @@ import artifactRoutes from "./routes/artifacts.js";
 import kingsRoutes from "./routes/kings.js";
 import sessionsRoutes from "./routes/sessions.js";
 import chatsRoutes from "./routes/chats.js";
+import dashboardRoutes from "./routes/dashboard.js";
 import { startSessionMonitor } from "./utils/sessionMonitor.js";
 
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api", artifactRoutes);
 app.use("/api", kingsRoutes);
 app.use("/api", sessionsRoutes);
 app.use("/api", chatsRoutes);
+app.use("/api", dashboardRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

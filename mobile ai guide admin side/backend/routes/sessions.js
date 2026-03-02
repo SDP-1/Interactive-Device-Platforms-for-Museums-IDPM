@@ -45,8 +45,96 @@ router.post("/sessions", async (req, res) => {
 // Get list of sessions
 router.get("/sessions", async (req, res) => {
   try {
-    const sessions = await UserSession.find().sort({ createdAt: -1 });
-    return res.json({ success: true, data: sessions });
+    const {
+      page = "1",
+      limit = "10",
+      sort = "createdAt",
+      order = "desc",
+      search = "",
+      status,
+      language,
+      minPrice,
+      maxPrice,
+      startFrom,
+      startTo,
+    } = req.query;
+
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+
+    const allowedSortFields = new Set([
+      "createdAt",
+      "price",
+      "start_time",
+      "end_time",
+      "duration_hours",
+      "is_active",
+      "language",
+      "session_id",
+    ]);
+    const sortField = allowedSortFields.has(String(sort))
+      ? String(sort)
+      : "createdAt";
+    const sortOrder = String(order).toLowerCase() === "asc" ? 1 : -1;
+
+    const query = {};
+
+    if (search && String(search).trim()) {
+      query.$or = [
+        { session_id: { $regex: String(search).trim(), $options: "i" } },
+        { language: { $regex: String(search).trim(), $options: "i" } },
+      ];
+    }
+
+    if (status === "live") query.is_active = true;
+    if (status === "ended") query.is_active = false;
+
+    if (language === "en" || language === "si") {
+      query.language = language;
+    }
+
+    if (typeof minPrice !== "undefined" || typeof maxPrice !== "undefined") {
+      query.price = {};
+      if (typeof minPrice !== "undefined" && String(minPrice) !== "") {
+        query.price.$gte = Number(minPrice);
+      }
+      if (typeof maxPrice !== "undefined" && String(maxPrice) !== "") {
+        query.price.$lte = Number(maxPrice);
+      }
+      if (Object.keys(query.price).length === 0) delete query.price;
+    }
+
+    if (startFrom || startTo) {
+      query.start_time = {};
+      if (startFrom) query.start_time.$gte = new Date(String(startFrom));
+      if (startTo) {
+        const endDate = new Date(String(startTo));
+        endDate.setHours(23, 59, 59, 999);
+        query.start_time.$lte = endDate;
+      }
+      if (Object.keys(query.start_time).length === 0) delete query.start_time;
+    }
+
+    const total = await UserSession.countDocuments(query);
+    const totalPages = Math.max(1, Math.ceil(total / parsedLimit));
+    const safePage = Math.min(parsedPage, totalPages);
+    const skip = (safePage - 1) * parsedLimit;
+
+    const sessions = await UserSession.find(query)
+      .sort({ [sortField]: sortOrder })
+      .skip(skip)
+      .limit(parsedLimit);
+
+    return res.json({
+      success: true,
+      data: sessions,
+      pagination: {
+        page: safePage,
+        limit: parsedLimit,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,

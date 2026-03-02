@@ -21,7 +21,12 @@ const ExtendSessionModal: React.FC<Props> = ({
   const [hours, setHours] = useState<number>(1);
 
   return (
-    <Modal title="Extend Session" isOpen={isOpen} onClose={onClose}>
+    <Modal
+      title="Extend Session"
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClassName="max-w-md"
+    >
       <div className="space-y-3">
         <div className="text-sm text-gray-600">Session:</div>
         <div className="font-medium">{sessionId ?? "-"}</div>

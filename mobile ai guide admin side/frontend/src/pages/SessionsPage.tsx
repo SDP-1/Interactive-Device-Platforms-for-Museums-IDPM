@@ -1,10 +1,23 @@
 import React, { useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listSessions, extendSession } from "../services/sessionService";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  listSessions,
+  extendSession,
+  SessionListQuery,
+} from "../services/sessionService";
 import CreateSessionModal from "../components/CreateSessionModal";
 import SessionDetailsModal from "../components/SessionDetailsModal";
 import ExtendSessionModal from "../components/ExtendSessionModal";
 import QrModal from "../components/QrModal";
+import DataTable, {
+  DataTableColumn,
+  DataTableQueryState,
+} from "../components/DataTable";
 import { UserSession } from "../types/UserSession";
 
 function fmtDate(v?: string | Date | number) {
@@ -16,14 +29,36 @@ function fmtDate(v?: string | Date | number) {
 
 const SessionsPage: React.FC = () => {
   const qc = useQueryClient();
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["sessions"],
-    queryFn: listSessions,
-    refetchInterval: 30_000,
+
+  const [tableQuery, setTableQuery] = useState<DataTableQueryState>({
+    page: 1,
+    limit: 10,
+    sort: "createdAt",
+    order: "desc",
+    search: "",
   });
-  const sessions: UserSession[] = Array.isArray(data)
-    ? (data as UserSession[])
-    : [];
+
+  const queryParams: SessionListQuery = {
+    page: tableQuery.page,
+    limit: tableQuery.limit,
+    sort: tableQuery.sort,
+    order: tableQuery.order,
+    search: tableQuery.search,
+  };
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["sessions", queryParams],
+    queryFn: () => listSessions(queryParams),
+    refetchInterval: 30_000,
+    placeholderData: keepPreviousData,
+  });
+  const sessions: UserSession[] = data?.items || [];
+  const pagination = data?.pagination || {
+    page: tableQuery.page,
+    limit: tableQuery.limit,
+    total: sessions.length,
+    totalPages: 1,
+  };
 
   const extendMut = useMutation<
     UserSession,
@@ -56,11 +91,86 @@ const SessionsPage: React.FC = () => {
     [sessions],
   );
 
+  const sessionColumns: DataTableColumn<UserSession>[] = [
+    {
+      key: "no",
+      header: "No",
+      render: (_row, index) =>
+        (tableQuery.page - 1) * tableQuery.limit + index + 1,
+    },
+    {
+      key: "price",
+      header: "Price",
+      sortable: true,
+      sortKey: "price",
+      exportAccessor: (row) => row.price ?? 0,
+      searchAccessor: (row) => String(row.price ?? 0),
+      render: (row) => `₨${row.price ?? 0}`,
+    },
+    {
+      key: "start",
+      header: "Start",
+      sortable: true,
+      sortKey: "start_time",
+      exportAccessor: (row) => fmtDate(row.start_time),
+      searchAccessor: (row) => fmtDate(row.start_time),
+      render: (row) => fmtDate(row.start_time),
+    },
+    {
+      key: "end",
+      header: "End",
+      sortable: true,
+      sortKey: "end_time",
+      exportAccessor: (row) => fmtDate(row.end_time),
+      searchAccessor: (row) => fmtDate(row.end_time),
+      render: (row) => fmtDate(row.end_time),
+    },
+    {
+      key: "duration",
+      header: "Duration",
+      sortable: true,
+      sortKey: "duration_hours",
+      exportAccessor: (row) => row.duration_hours,
+      searchAccessor: (row) => String(row.duration_hours),
+      render: (row) => `${row.duration_hours}h`,
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortable: true,
+      sortKey: "is_active",
+      exportAccessor: (row) => (row.is_active ? "Live" : "Ended"),
+      searchAccessor: (row) => (row.is_active ? "Live" : "Ended"),
+      render: (row) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${row.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
+        >
+          {row.is_active ? "Live" : "Ended"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      hideable: false,
+      render: (row) => (
+        <div className="flex gap-2">
+          <button
+            onClick={() => setDetailsOpen({ open: true, id: row.session_id })}
+            className="px-3 py-1.5 border-2 border-amber-400 text-amber-600 rounded-xl font-medium hover:bg-amber-50 transition"
+          >
+            Details
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="px-2 sm:px-3 lg:px-4 py-3 sm:py-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 rounded-2xl border border-amber-100 bg-white/90 p-4 shadow-sm">
         <div>
-          <h2 className="text-2xl font-semibold">Sessions</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">Sessions</h2>
           <p className="text-sm text-gray-500">
             Manage sessions (total: {totals.total}, live: {totals.active})
           </p>
@@ -68,7 +178,7 @@ const SessionsPage: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setCreateOpen(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition"
           >
             Create
           </button>
@@ -78,64 +188,25 @@ const SessionsPage: React.FC = () => {
       {isLoading && <div className="text-gray-600">Loading sessions...</div>}
       {error && <div className="text-red-600">Failed to load sessions</div>}
 
-      <div className="overflow-x-auto bg-white rounded shadow">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left">No</th>
-              <th className="px-4 py-2 text-left">Price</th>
-              <th className="px-4 py-2 text-left">Start</th>
-              <th className="px-4 py-2 text-left">End</th>
-              <th className="px-4 py-2 text-left">Duration</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map((s, i) => (
-              <tr key={s.session_id || s._id} className="border-t">
-                <td className="px-4 py-3">{i + 1}</td>
-                <td className="px-4 py-3">₨{s.price ?? 0}</td>
-                <td className="px-4 py-3">{fmtDate(s.start_time)}</td>
-                <td className="px-4 py-3">{fmtDate(s.end_time)}</td>
-                <td className="px-4 py-3">{s.duration_hours}h</td>
-                <td
-                  className={`px-4 py-3 ${s.is_active ? "text-green-600" : "text-gray-600"}`}
-                >
-                  {s.is_active ? "Live" : "Ended"}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        setDetailsOpen({ open: true, id: s.session_id })
-                      }
-                      className="px-3 py-1 bg-blue-600 text-white rounded"
-                    >
-                      Details
-                    </button>
-                    <button
-                      onClick={() =>
-                        setExtendOpen({ open: true, id: s.session_id })
-                      }
-                      className="px-3 py-1 bg-yellow-500 text-white rounded"
-                    >
-                      Extend
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {sessions.length === 0 && (
-              <tr>
-                <td className="px-4 py-6 text-center text-gray-600" colSpan={7}>
-                  No sessions found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        data={sessions}
+        columns={sessionColumns}
+        rowKey={(row) => row.session_id || row._id || "unknown-session"}
+        emptyMessage="No sessions found"
+        loading={isLoading}
+        enableSearch={false}
+        enableSorting
+        enablePagination
+        enableColumnManagement
+        enableExport
+        pageSizeOptions={[10, 25, 50]}
+        serverSide={{
+          enabled: true,
+          query: tableQuery,
+          onQueryChange: setTableQuery,
+          totalRows: pagination.total,
+        }}
+      />
 
       {/* Create modal */}
       <CreateSessionModal
@@ -153,6 +224,10 @@ const SessionsPage: React.FC = () => {
         session={sessions.find(
           (x) => x.session_id === detailsOpen.id || x._id === detailsOpen.id,
         )}
+        onRequestExtend={(id) => {
+          if (!id) return;
+          setExtendOpen({ open: true, id });
+        }}
       />
 
       <ExtendSessionModal

@@ -31,37 +31,58 @@ const CreateSessionModal: React.FC<Props> = ({
 
   return (
     <Modal title="Create Session" isOpen={isOpen} onClose={onClose}>
-      <div className="space-y-3">
-        <label className="block">Duration (hours)</label>
-        <input
-          type="number"
-          min={1}
-          value={duration}
-          onChange={(e) => setDuration(Number(e.target.value))}
-          className="w-full border rounded px-2 py-1"
-        />
+      <div className="space-y-4">
+        <div className="rounded-xl border border-amber-100 bg-amber-50/40 p-3 text-sm text-amber-800">
+          Create a new visitor session with duration, language, and price.
+        </div>
 
-        <label className="block">Language</label>
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="w-full border rounded px-2 py-1"
-        >
-          <option value="en">English</option>
-          <option value="si">Sinhala</option>
-        </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Duration (hours)
+            </label>
+            <input
+              type="number"
+              min={1}
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300"
+            />
+          </div>
 
-        <label className="block">Price</label>
-        <input
-          type="number"
-          min={0}
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          className="w-full border rounded px-2 py-1"
-        />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Language
+            </label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300"
+            >
+              <option value="en">English</option>
+              <option value="si">Sinhala</option>
+            </select>
+          </div>
+        </div>
 
-        <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Price
+          </label>
+          <input
+            type="number"
+            min={0}
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300"
+          />
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
             Cancel
           </button>
           <button
@@ -77,14 +98,13 @@ const CreateSessionModal: React.FC<Props> = ({
                 setDuration(1);
                 setLanguage("en");
                 setPrice(0);
-                // report to parent then close modal so parent can open QR popup
                 if (id && onCreated) onCreated(id);
                 onClose();
               } catch (e: any) {
                 alert(e?.message || "Create failed");
               }
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            className="px-4 py-2 rounded-lg bg-[#071428] text-white hover:bg-[#0B1E3B] disabled:opacity-60"
           >
             {createMut.status === "pending" ? "Creating..." : "Create"}
           </button>

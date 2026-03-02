@@ -55,6 +55,14 @@ export const KingList: React.FC<KingListProps> = ({
   isDeleting,
 }) => {
   const getText = (en: string, si: string) => (language === "en" ? en : si);
+  const sortedKings = [...kings].sort((a, b) => {
+    const aId = String(a.king_id || a._id || "");
+    const bId = String(b.king_id || b._id || "");
+    return aId.localeCompare(bId, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
 
   if (!kings || kings.length === 0)
     return (
@@ -64,51 +72,68 @@ export const KingList: React.FC<KingListProps> = ({
     );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {kings.map((king) => (
+    <div className="grid [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))] gap-6">
+      {sortedKings.map((king) => (
         <div
           key={king._id}
-          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+          className="w-full h-full max-w-[420px] justify-self-center bg-white rounded-2xl shadow-sm overflow-hidden transition duration-200 border border-transparent hover:shadow-md flex flex-col"
         >
           {king.imageUrls && king.imageUrls.length > 0 && (
-            <ImageGallery
-              images={king.imageUrls}
-              title={getText(king.name_en, king.name_si)}
-            />
+            <div className="bg-white p-6">
+              <ImageGallery
+                images={king.imageUrls}
+                title={getText(king.name_en, king.name_si)}
+              />
+            </div>
           )}
-          <div className="p-4">
-            <h3 className="text-lg font-bold mb-2">
+          <div className="p-6 flex flex-col flex-1">
+            <h3 className="text-2xl font-serif font-semibold mb-2 text-gray-800">
               {getText(king.name_en, king.name_si)}
             </h3>
-            <p className="text-gray-600 text-sm mb-2">
-              <strong>ID:</strong> {king.king_id || king._id}
-            </p>
-            {(king.capital_en || king.capital_si) && (
-              <p className="text-gray-600 text-sm mb-2">
-                <strong>Capital:</strong>{" "}
-                {getText(king.capital_en || "", king.capital_si || "")}
-              </p>
-            )}
-            {(king.period_en || king.period_si) && (
-              <p className="text-gray-600 text-sm mb-2">
-                <strong>Period:</strong>{" "}
-                {getText(king.period_en || "", king.period_si || "")}
-              </p>
-            )}
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => onEdit(king)}
-                className="flex-1 bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-600"
-              >
-                Edit
-              </button>
+            <div className="text-sm text-gray-600 space-y-1 mb-4">
+              <p>
+                <span className="font-semibold text-gray-700">ID:</span>{" "}
+                {king.king_id || king._id}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-700">Capital:</span>{" "}
+                {getText(king.capital_en || "", king.capital_si || "") || "-"}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-700">Period:</span>{" "}
+                {getText(king.period_en || "", king.period_si || "") || "-"}
+              </p>
+            </div>
+
+            <div className="flex gap-3 items-center mt-auto">
               <button
                 onClick={() => king._id && onDelete(king._id)}
                 disabled={isDeleting === king._id}
-                className="flex-1 bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 disabled:bg-gray-400"
+                className="w-12 h-12 rounded-xl bg-red-500 text-white flex items-center justify-center hover:bg-red-600 disabled:opacity-60 transition"
               >
-                {isDeleting === king._id ? "Deleting..." : "Delete"}
+                {isDeleting === king._id ? "..." : "🗑"}
+              </button>
+
+              <button
+                onClick={() => onEdit(king)}
+                className="flex-1 border-2 border-amber-400 text-amber-600 py-3 rounded-xl font-medium hover:bg-amber-50 transition flex items-center justify-center gap-2"
+              >
+                View Details
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
               </button>
             </div>
           </div>
