@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'dart:io';
 
 void main() {
@@ -395,10 +396,12 @@ class _ReconstructionStatusScreenState
                 onPressed: !_completed
                     ? null
                     : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Approved. Next step: convert to 3D and show model viewer.',
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const Model3DViewerScreen(
+                              // Sample public .glb; replace with backend URL later.
+                              modelUrl:
+                                  'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
                             ),
                           ),
                         );
@@ -408,6 +411,27 @@ class _ReconstructionStatusScreenState
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class Model3DViewerScreen extends StatelessWidget {
+  const Model3DViewerScreen({super.key, required this.modelUrl});
+
+  final String modelUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('3D model viewer')),
+      body: ModelViewer(
+        src: modelUrl,
+        alt: 'Reconstructed artifact 3D model',
+        ar: false,
+        autoRotate: true,
+        cameraControls: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
     );
   }
