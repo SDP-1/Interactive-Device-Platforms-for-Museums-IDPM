@@ -64,19 +64,27 @@ class SupabaseService {
   }
 
   Future<void> updateArtifactStatus({
-    required String id, 
+    required String id,
     required String status,
     String? adminId,
+    String? imageUrl,
   }) async {
-    final updates = {
+    final updates = <String, dynamic>{
       if (status == 'approved') 'approved_at': DateTime.now().toIso8601String(),
       if (status == 'approved' && adminId != null) 'approved_by': adminId,
+      if (imageUrl != null) 'image_url': imageUrl,
     };
-    
-    // If no real DB updates are needed (e.g., just simulated 'reconstructed'), skip the DB call
+
     if (updates.isEmpty) return;
-    
+
     await _client.from('3D_Artifact_Table').update(updates).eq('id', id);
+  }
+
+  Future<void> updateArtifactImageUrl(String id, String imageUrl) async {
+    await _client
+        .from('3D_Artifact_Table')
+        .update({'image_url': imageUrl})
+        .eq('id', id);
   }
 
   // --- Storage --- //

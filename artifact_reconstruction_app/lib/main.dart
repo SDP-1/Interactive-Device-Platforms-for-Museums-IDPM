@@ -5,11 +5,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth/admin_login_screen.dart';
 import 'services/supabase_service.dart';
+import 'services/huggingface_reconstruction_service.dart';
 import 'models/artifact_model.dart';
+import 'config/reconstruction_config.dart';
+import 'utils/mask_utils.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -287,17 +291,37 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
   Future<void> _pickFromCamera() async {
     final image = await _picker.pickImage(source: ImageSource.camera);
     if (image != null) {
-      setState(() {
-        _selectedImage = image;
-      });
+      await _cropImage(image.path);
     }
   }
 
   Future<void> _pickFromGallery() async {
     final image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      await _cropImage(image.path);
+    }
+  }
+
+  Future<void> _cropImage(String path) async {
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: path,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Artifact',
+          toolbarColor: Theme.of(context).colorScheme.primary,
+          toolbarWidgetColor: Theme.of(context).colorScheme.onPrimary,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+        ),
+        IOSUiSettings(
+          title: 'Crop Artifact',
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
       setState(() {
-        _selectedImage = image;
+        _selectedImage = XFile(croppedFile.path);
       });
     }
   }
@@ -360,7 +384,7 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
                                 child: Image.file(
                                   // ignore: deprecated_member_use
                                   File(_selectedImage!.path),
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ),
@@ -413,14 +437,18 @@ class _ReconstructionStatusScreenState
   bool _completed = false;
   Artifact? _artifact;
 
+  String? _reconstructedImageUrl;
+
   @override
   void initState() {
     super.initState();
-    _uploadAndSimulateReconstruction();
+    _uploadAndReconstruct();
   }
 
-  Future<void> _uploadAndSimulateReconstruction() async {
+  Future<void> _uploadAndReconstruct() async {
     final service = SupabaseService();
+    final hfService = HuggingFaceReconstructionService(apiKey: hfApiKey);
+
     try {
       final newArtifact = Artifact(
         id: '',
@@ -428,24 +456,44 @@ class _ReconstructionStatusScreenState
         createdAt: DateTime.now(),
         approvedBy: service.currentUser?.id,
       );
-      
+
       _artifact = await service.createArtifact(newArtifact);
 
       if (!mounted) return;
-      setState(() => _status = 'Uploading image to storage...');
+      setState(() => _status = 'Uploading image...');
 
       await service.uploadImage(_artifact!.id, File(widget.imagePath));
-      
-      if (!mounted) return;
-      setState(() => _status = 'Running reconstruction (simulated)...');
 
-      await Future<void>.delayed(const Duration(seconds: 3));
-      
       if (!mounted) return;
-      await service.updateArtifactStatus(id: _artifact!.id, status: 'reconstructed');
-      
+      setState(() => _status = 'Generating mask...');
+
+      final maskFile = await generateBottomMask(File(widget.imagePath));
+
+      if (!mounted) return;
+      setState(() => _status = 'Running 2D reconstruction...');
+
+      final imageBytes = await File(widget.imagePath).readAsBytes();
+      final maskBytes = await maskFile.readAsBytes();
+      final resultBytes = await hfService.reconstructImage(
+        imageBytes: imageBytes,
+        maskBytes: maskBytes,
+      );
+
+      if (!mounted) return;
+      setState(() => _status = 'Saving reconstructed image...');
+
+      final tempDir = await Directory.systemTemp.createTemp('reconstructed');
+      final reconstructedFile = File('${tempDir.path}/reconstructed.png');
+      await reconstructedFile.writeAsBytes(resultBytes);
+
+      final reconstructedUrl =
+          await service.uploadImage(_artifact!.id, reconstructedFile);
+      await service.updateArtifactImageUrl(_artifact!.id, reconstructedUrl);
+
+      if (!mounted) return;
       setState(() {
-        _status = 'Reconstruction complete. Review and approve to continue.';
+        _reconstructedImageUrl = reconstructedUrl;
+        _status = '2D reconstruction complete. Review and approve to continue.';
         _completed = true;
       });
     } catch (e) {
@@ -476,10 +524,15 @@ class _ReconstructionStatusScreenState
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    File(widget.imagePath),
-                    fit: BoxFit.cover,
-                  ),
+                  child: _reconstructedImageUrl != null
+                      ? Image.network(
+                          _reconstructedImageUrl!,
+                          fit: BoxFit.contain,
+                        )
+                      : Image.file(
+                          File(widget.imagePath),
+                          fit: BoxFit.contain,
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
