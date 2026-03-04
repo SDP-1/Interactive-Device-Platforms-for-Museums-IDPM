@@ -26,6 +26,20 @@ export const apiService = {
     }
   },
 
+  // Poll approval status without triggering a new GPT generation
+  async checkScenarioStatus(artid, scenarioId) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/scenario-status`, {
+        params: { artid, scenario_id: scenarioId }
+      });
+      return response.data;
+    } catch (error) {
+      // Fail silently — the poll will just try again next cycle
+      return { curator_verified: false };
+    }
+  },
+
+
   // Check API health
   async healthCheck() {
     try {

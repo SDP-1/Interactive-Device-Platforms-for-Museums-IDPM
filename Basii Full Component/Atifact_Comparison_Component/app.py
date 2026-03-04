@@ -31,6 +31,18 @@ import time
 from comparison_engine import ComparisonEngine
 from cache_manager import ExplanationCache
 
+# ── Admin / moderation integration ────────────────────────────────────────
+_ADMIN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+if _ADMIN_DIR not in sys.path:
+    sys.path.insert(0, _ADMIN_DIR)
+try:
+    import admin_db as _admin_db
+    _MODERATION_ENABLED = True
+    print("[Basi-C2] ✅ Moderation queue enabled")
+except Exception as _e:
+    _MODERATION_ENABLED = False
+    print(f"[Basi-C2] ⚠ Moderation queue disabled: {_e}")
+
 # Try to import the new AI explainer with trained model support
 try:
     from ai_explainer_v2 import AIExplainer
@@ -124,7 +136,7 @@ def get_artifact(artifact_id):
 @app.route('/api/artifacts/<artifact_id>/similar', methods=['GET'])
 def get_similar_artifacts(artifact_id):
     """Get similar artifacts for comparison"""
-    num_results = request.args.get('limit', default=5, type=int)
+    num_results = request.args.get('limit', default=6, type=int)
     similar = comparison_engine.find_similar(artifact_id, num_results)
     return jsonify(similar)
 
@@ -135,6 +147,24 @@ def explain_artifact(artifact_id):
     if not artifact:
         return jsonify({'error': 'Artifact not found'}), 404
     
+    # ── Return verified/published explanation if one exists ──────────────
+    if _MODERATION_ENABLED:
+        try:
+            verified = _admin_db.get_verified_explanation(artifact_id)
+            if verified:
+                text = verified.get("edited_explanation") or verified["explanation"]
+                return jsonify({
+                    'explanation': text,
+                    'curator_verified': True,
+                    'verified_by': verified.get('reviewed_by', 'curator'),
+                    'curator_notes': verified.get('curator_notes'),
+                    'verification_date': verified.get('reviewed_at'),
+                    'cached': False,
+                })
+        except Exception as _ve:
+            print(f"[Basi-C2] Verified-explanation lookup failed: {_ve}")
+    # ─────────────────────────────────────────────────────────────────────
+
     # Check cache first for instant response
     cached_explanation = explanation_cache.get(artifact_id)
     if cached_explanation:
@@ -150,6 +180,18 @@ def explain_artifact(artifact_id):
         print(f"✅ SUCCESS: Generated {len(cached_explanation)} characters using T5 model")
         print(f"Preview: {cached_explanation[:100]}...")
         
+        # ── Queue for moderation if not already tracked ───────────────────
+        if _MODERATION_ENABLED:
+            try:
+                existing = _admin_db.list_explanations(artifact_id=artifact_id)
+                if not existing:
+                    _admin_db.save_explanation(artifact_id,
+                                               artifact.get('name', ''),
+                                               cached_explanation)
+            except Exception as _qe:
+                print(f"[Basi-C2] Queue save failed: {_qe}")
+        # ─────────────────────────────────────────────────────────────────
+
         return jsonify({
             'explanation': cached_explanation,
             'cached': True
@@ -160,7 +202,17 @@ def explain_artifact(artifact_id):
     
     # Cache the newly generated explanation
     explanation_cache.set(artifact_id, explanation)
-    
+
+    # ── Save to moderation queue ──────────────────────────────────────────
+    if _MODERATION_ENABLED:
+        try:
+            _admin_db.save_explanation(artifact_id,
+                                       artifact.get('name', ''),
+                                       explanation)
+        except Exception as _qe:
+            print(f"[Basi-C2] Queue save failed: {_qe}")
+    # ─────────────────────────────────────────────────────────────────────
+
     return jsonify({
         'explanation': explanation,
         'cached': False

@@ -7,6 +7,29 @@ import HotspotImage from './HotspotImage';
 
 const API_BASE = '/api';
 
+/**
+ * Truncate text to the end of the last complete sentence within maxChars.
+ * Falls back to the nearest word boundary if no sentence ending is found.
+ * Returns the full text unchanged if it fits within maxChars.
+ */
+const truncateToSentence = (text, maxChars = 220) => {
+  if (!text) return '';
+  if (text.length <= maxChars) return text;
+
+  const slice = text.slice(0, maxChars);
+  // Find the last sentence-ending punctuation (. ! ?) followed optionally by a quote/bracket
+  const sentenceEnd = slice.search(/[.!?][)\]"'\u2019\u201d]?\s*$/);
+  if (sentenceEnd > 30) {
+    // Include the punctuation character itself
+    const endIdx = slice.indexOf(slice[sentenceEnd], sentenceEnd) + 1;
+    return text.slice(0, endIdx);
+  }
+
+  // No sentence boundary found — cut at last word boundary
+  const wordEnd = slice.lastIndexOf(' ');
+  return (wordEnd > 30 ? text.slice(0, wordEnd) : slice) + '\u2026'; // …
+};
+
 const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => {
   const [imageALoaded, setImageALoaded] = useState(false);
   const [imageBLoaded, setImageBLoaded] = useState(false);
@@ -354,8 +377,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 className="flex items-center gap-2 text-orange-500 hover:text-orange-600 
                            text-lg font-bold font-sans"
               >
-                <RefreshCw size={20} className="sm:w-6 sm:h-6" />
-                <span>Regenerate</span>
+              
               </button>
             )}
             <button
@@ -404,11 +426,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                       </div>
                       <div>
                         <span className="font-medium text-amber-800">Function:</span>
-                        <p className="mt-0.5 sm:mt-1 text-amber-700 line-clamp-3">{(apiComparison.artifact1?.function || artifactA.details?.function)?.substring(0, 150)}...</p>
+                        <p className="mt-0.5 sm:mt-1 text-amber-700">{truncateToSentence(apiComparison.artifact1?.function || artifactA.details?.function)}</p>
                       </div>
                       <div>
                         <span className="font-medium text-amber-800">Symbolism:</span>
-                        <p className="mt-0.5 sm:mt-1 text-amber-700 line-clamp-3">{(apiComparison.artifact1?.symbolism || artifactA.details?.symbolism)?.substring(0, 150)}...</p>
+                        <p className="mt-0.5 sm:mt-1 text-amber-700">{truncateToSentence(apiComparison.artifact1?.symbolism || artifactA.details?.symbolism)}</p>
                       </div>
                     </div>
                   </div>
@@ -433,11 +455,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                       </div>
                       <div>
                         <span className="font-medium text-slate-700">Function:</span>
-                        <p className="mt-0.5 sm:mt-1 text-slate-600 line-clamp-3">{(apiComparison.artifact2?.function || artifactB.details?.function)?.substring(0, 150)}...</p>
+                        <p className="mt-0.5 sm:mt-1 text-slate-600">{truncateToSentence(apiComparison.artifact2?.function || artifactB.details?.function)}</p>
                       </div>
                       <div>
                         <span className="font-medium text-slate-700">Symbolism:</span>
-                        <p className="mt-0.5 sm:mt-1 text-slate-600 line-clamp-3">{(apiComparison.artifact2?.symbolism || artifactB.details?.symbolism)?.substring(0, 150)}...</p>
+                        <p className="mt-0.5 sm:mt-1 text-slate-600">{truncateToSentence(apiComparison.artifact2?.symbolism || artifactB.details?.symbolism)}</p>
                       </div>
                     </div>
                   </div>
