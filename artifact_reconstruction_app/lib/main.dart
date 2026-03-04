@@ -1,9 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'dart:io';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'screens/auth/admin_login_screen.dart';
+import 'services/supabase_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Supabase.initialize(
+    url: 'https://jxwsajoubxetenzzosgc.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4d3Nham91YnhldGVuenpvc2djIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MDc4NTUsImV4cCI6MjA4ODE4Mzg1NX0.pGG0xwiXQxJEqvh3mn4HIu-e9c5gyZc4casNw87uaGE',
+  );
+
   runApp(const ArtifactReconstructionApp());
 }
 
@@ -60,11 +74,22 @@ class RoleSelectionScreen extends StatelessWidget {
                           'Capture/upload images, approve reconstruction, convert to 3D, generate QR.',
                       icon: Icons.admin_panel_settings_outlined,
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const AdminHomeScreen(),
-                          ),
-                        );
+                        final supabaseAuth = SupabaseService().currentUser;
+                        if (supabaseAuth != null) {
+                          // Already logged in
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const AdminHomeScreen(),
+                            ),
+                          );
+                        } else {
+                          // Needs to log in
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const AdminLoginScreen(),
+                            ),
+                          );
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
@@ -154,7 +179,25 @@ class AdminHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin')),
+      appBar: AppBar(
+        title: const Text('Admin'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await SupabaseService().signOut();
+              if (!context.mounted) return;
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute<void>(
+                  builder: (_) => const RoleSelectionScreen(),
+                ),
+                (route) => false,
+              );
+            },
+            tooltip: 'Logout',
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -197,8 +240,32 @@ class VisitorHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Visitor')),
-      body: const Center(
-        child: Text('Visitor home (next: scan QR to view 3D model).'),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Scan QR to view 3D model',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const VisitorQrScannerScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.qr_code_scanner_outlined),
+                label: const Text('Scan QR code'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -425,13 +492,138 @@ class Model3DViewerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('3D model viewer')),
-      body: ModelViewer(
-        src: modelUrl,
-        alt: 'Reconstructed artifact 3D model',
-        ar: false,
-        autoRotate: true,
-        cameraControls: true,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Column(
+        children: [
+          Expanded(
+            child: ModelViewer(
+              src: modelUrl,
+              alt: 'Reconstructed artifact 3D model',
+              ar: false,
+              autoRotate: true,
+              cameraControls: true,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: FilledButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => AdminArtifactQrScreen(
+                      artifactData: modelUrl,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.qr_code_2_outlined),
+              label: const Text('Generate QR for this model'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AdminArtifactQrScreen extends StatelessWidget {
+  const AdminArtifactQrScreen({super.key, required this.artifactData});
+
+  /// For now we encode the model URL directly.
+  /// Later this can be an artifactId or deep link.
+  final String artifactData;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Artifact QR code')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Share this artifact',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Visitors can scan this QR code in the app to view the 3D model.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: Center(
+                child: QrImageView(
+                  data: artifactData,
+                  version: QrVersions.auto,
+                  size: 240,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              artifactData,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class VisitorQrScannerScreen extends StatefulWidget {
+  const VisitorQrScannerScreen({super.key});
+
+  @override
+  State<VisitorQrScannerScreen> createState() => _VisitorQrScannerScreenState();
+}
+
+class _VisitorQrScannerScreenState extends State<VisitorQrScannerScreen> {
+  bool _handlingCode = false;
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_handlingCode) return;
+    final barcode = capture.barcodes.firstOrNull;
+    final raw = barcode?.rawValue;
+    if (raw == null || raw.isEmpty) {
+      return;
+    }
+    setState(() {
+      _handlingCode = true;
+    });
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => Model3DViewerScreen(modelUrl: raw),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan artifact QR')),
+      body: Stack(
+        children: [
+          MobileScanner(
+            onDetect: _onDetect,
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.black54,
+              child: const Text(
+                'Point the camera at a QR code generated by the admin app.',
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
