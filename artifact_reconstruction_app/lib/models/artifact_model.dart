@@ -29,7 +29,7 @@ class Artifact {
 
   factory Artifact.fromMap(Map<String, dynamic> map) {
     return Artifact(
-      id: map['id'] as String,
+      id: map['id'].toString(),
       name: map['name'] as String,
       category: map['category'] as String?,
       era: map['era'] as String?,
@@ -48,15 +48,15 @@ class Artifact {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      if (id.isNotEmpty) 'id': id,
       'name': name,
-      'category': category,
-      'era': era,
-      'origin': origin,
-      'description': description,
-      'image_url': imageUrl,
-      'model_url': modelUrl,
-      'qr_code_data': qrCodeData,
+      if (category != null) 'category': category,
+      if (era != null) 'era': era,
+      if (origin != null) 'origin': origin,
+      if (description != null) 'description': description,
+      if (imageUrl != null) 'image_url': imageUrl,
+      if (modelUrl != null) 'model_url': modelUrl,
+      if (qrCodeData != null) 'qr_code_data': qrCodeData,
       'created_at': createdAt.toIso8601String(),
       if (approvedAt != null) 'approved_at': approvedAt!.toIso8601String(),
       if (approvedBy != null) 'approved_by': approvedBy,

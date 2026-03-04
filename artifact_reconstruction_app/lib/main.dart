@@ -9,6 +9,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth/admin_login_screen.dart';
 import 'services/supabase_service.dart';
+import 'models/artifact_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -410,26 +411,49 @@ class _ReconstructionStatusScreenState
     extends State<ReconstructionStatusScreen> {
   String _status = 'Uploading image...';
   bool _completed = false;
+  Artifact? _artifact;
 
   @override
   void initState() {
     super.initState();
-    _simulateReconstructionFlow();
+    _uploadAndSimulateReconstruction();
   }
 
-  Future<void> _simulateReconstructionFlow() async {
-    await Future<void>.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    setState(() {
-      _status = 'Running reconstruction...';
-    });
+  Future<void> _uploadAndSimulateReconstruction() async {
+    final service = SupabaseService();
+    try {
+      final newArtifact = Artifact(
+        id: '',
+        name: 'New Artifact ${DateTime.now().millisecondsSinceEpoch}',
+        createdAt: DateTime.now(),
+        approvedBy: service.currentUser?.id,
+      );
+      
+      _artifact = await service.createArtifact(newArtifact);
 
-    await Future<void>.delayed(const Duration(seconds: 3));
-    if (!mounted) return;
-    setState(() {
-      _status = 'Reconstruction complete. Review and approve to continue.';
-      _completed = true;
-    });
+      if (!mounted) return;
+      setState(() => _status = 'Uploading image to storage...');
+
+      await service.uploadImage(_artifact!.id, File(widget.imagePath));
+      
+      if (!mounted) return;
+      setState(() => _status = 'Running reconstruction (simulated)...');
+
+      await Future<void>.delayed(const Duration(seconds: 3));
+      
+      if (!mounted) return;
+      await service.updateArtifactStatus(id: _artifact!.id, status: 'reconstructed');
+      
+      setState(() {
+        _status = 'Reconstruction complete. Review and approve to continue.';
+        _completed = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Error: ${e.toString()}';
+      });
+    }
   }
 
   @override
@@ -460,18 +484,33 @@ class _ReconstructionStatusScreenState
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: !_completed
+                onPressed: !_completed || _artifact == null
                     ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const Model3DViewerScreen(
-                              // Sample public .glb; replace with backend URL later.
-                              modelUrl:
-                                  'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+                    : () async {
+                        setState(() => _status = 'Approving...');
+                        try {
+                          await SupabaseService().updateArtifactStatus(
+                            id: _artifact!.id,
+                            status: 'approved',
+                            adminId: SupabaseService().currentUser?.id,
+                          );
+                          if (!context.mounted) return;
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const Model3DViewerScreen(
+                                // Sample public .glb; replace with backend URL later.
+                                modelUrl:
+                                    'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                          setState(() => _status = 'Failed to approve. Try again.');
+                        }
                       },
                 child: const Text('Approve & convert to 3D'),
               ),
