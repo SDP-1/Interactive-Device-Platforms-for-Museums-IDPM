@@ -79,6 +79,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 onSaved: () {
                   setState(() => _selectedTile = 'Saved');
+                  Navigator.of(context).pushNamed('/saved');
                 },
               ),
               const SizedBox(height: 16),
@@ -114,6 +115,10 @@ class _HomePageState extends State<HomePage> {
                   settings: const RouteSettings(name: '/browse'),
                 ),
               );
+            } else if (i == 2) {
+              // Navigate to Saved artifacts
+              setState(() => _current = 2);
+              Navigator.of(context).pushNamed('/saved');
             } else if (i == 3) {
               // Navigate to Kings Persona List
               Navigator.of(context).push(

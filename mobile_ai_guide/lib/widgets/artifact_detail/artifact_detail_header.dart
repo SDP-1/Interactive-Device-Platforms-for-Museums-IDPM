@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_ai_guide/ui/colors.dart' as app;
 
 class ArtifactDetailHeader extends StatefulWidget {
-  const ArtifactDetailHeader({required this.imageUrls, super.key});
+  const ArtifactDetailHeader({
+    required this.imageUrls,
+    this.isBookmarked = false,
+    this.onBookmarkPressed,
+    super.key,
+  });
 
   final List<String> imageUrls;
+  final bool isBookmarked;
+  final VoidCallback? onBookmarkPressed;
 
   @override
   State<ArtifactDetailHeader> createState() => _ArtifactDetailHeaderState();
@@ -250,8 +258,11 @@ class _ArtifactDetailHeaderState extends State<ArtifactDetailHeader> {
                       ),
                       const SizedBox(width: 12),
                       _CircleIconButton(
-                        icon: Icons.bookmark_outline,
-                        onPressed: () {},
+                        icon: widget.isBookmarked
+                            ? Icons.bookmark
+                            : Icons.bookmark_outline,
+                        onPressed: widget.onBookmarkPressed ?? () {},
+                        color: app.kAccentOrange,
                       ),
                     ],
                   ),
@@ -266,10 +277,15 @@ class _ArtifactDetailHeaderState extends State<ArtifactDetailHeader> {
 }
 
 class _CircleIconButton extends StatelessWidget {
-  const _CircleIconButton({required this.icon, required this.onPressed});
+  const _CircleIconButton({
+    required this.icon,
+    required this.onPressed,
+    this.color,
+  });
 
   final IconData icon;
   final VoidCallback onPressed;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +303,7 @@ class _CircleIconButton extends StatelessWidget {
       ),
       child: IconButton(
         icon: Icon(icon),
-        color: Colors.black,
+        color: color ?? Colors.black,
         onPressed: onPressed,
       ),
     );

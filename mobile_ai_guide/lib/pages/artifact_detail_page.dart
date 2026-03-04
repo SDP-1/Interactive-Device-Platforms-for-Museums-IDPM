@@ -22,10 +22,19 @@ class ArtifactDetailPage extends StatefulWidget {
 
 class _ArtifactDetailPageState extends State<ArtifactDetailPage>
     with BottomNavigationMixin {
+  bool _isSaved = false;
   @override
   void initState() {
     super.initState();
     currentNavIndex = 1; // Explore selected by default
+    // check saved state
+    () async {
+      final saved = await LocalStorageService.instance.isArtifactSaved(
+        widget.artifact.artifactId,
+      );
+      if (!mounted) return;
+      setState(() => _isSaved = saved);
+    }();
   }
 
   @override
@@ -44,7 +53,27 @@ class _ArtifactDetailPageState extends State<ArtifactDetailPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ArtifactDetailHeader(imageUrls: artifact.imageUrls),
+                      ArtifactDetailHeader(
+                        imageUrls: artifact.imageUrls,
+                        isBookmarked: _isSaved,
+                        onBookmarkPressed: () async {
+                          await LocalStorageService.instance
+                              .toggleArtifactBookmark(artifact);
+                          if (!mounted) return;
+                          final saved = await LocalStorageService.instance
+                              .isArtifactSaved(artifact.artifactId);
+                          setState(() => _isSaved = saved);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                saved
+                                    ? 'Saved to artifacts'
+                                    : 'Removed from saved',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       ArtifactDetailInfo(
                         title: artifact.getTitle(contentLanguage),
                         gallery: artifact.getGallery(contentLanguage) ?? '',

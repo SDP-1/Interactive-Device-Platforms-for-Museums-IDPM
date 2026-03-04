@@ -5,6 +5,7 @@ import 'package:mobile_ai_guide/services/local_storage_service.dart';
 import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
 import 'package:mobile_ai_guide/pages/landing_page.dart';
+import 'package:mobile_ai_guide/pages/saved_artifacts_page.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
 import 'package:mobile_ai_guide/ui/content_language.dart';
 import 'package:mobile_ai_guide/ui/font_scale.dart';
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
             );
           },
           home: hasActiveSession ? const HomePage() : const LandingPage(),
+          routes: {'/saved': (_) => const SavedArtifactsPage()},
         );
       },
     );
