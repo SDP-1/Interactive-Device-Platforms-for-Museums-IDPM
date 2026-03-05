@@ -6,6 +6,7 @@ import { KingsPage } from "@/pages/KingsPage";
 import SessionsPage from "@/pages/SessionsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import FeedbackPage from "@/pages/FeedbackPage";
+import FeaturedExhibitsPage from "@/pages/FeaturedExhibitsPage";
 import Layout from "@/components/Layout";
 
 const queryClient = new QueryClient();
@@ -19,6 +20,10 @@ export const App: React.FC = () => {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/artifacts" element={<ArtifactsPage />} />
             <Route path="/kings" element={<KingsPage />} />
+            <Route
+              path="/featured-exhibits"
+              element={<FeaturedExhibitsPage />}
+            />
             <Route path="/sessions" element={<SessionsPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
           </Routes>

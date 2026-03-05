@@ -430,7 +430,7 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-200"
+        className="w-full bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 disabled:opacity-60 transition duration-200"
       >
         {isLoading
           ? "Saving..."

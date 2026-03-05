@@ -125,9 +125,9 @@ export const ArtifactList: React.FC<ArtifactListProps> = ({
               <button
                 onClick={() => artifact._id && onDelete(artifact._id)}
                 disabled={isDeleting === artifact._id}
-                className="w-12 h-12 rounded-xl bg-red-500 text-white flex items-center justify-center hover:bg-red-600 disabled:opacity-60 transition"
+                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 disabled:opacity-60 transition"
               >
-                {isDeleting === artifact._id ? "..." : "🗑"}
+                {isDeleting === artifact._id ? "..." : "Delete"}
               </button>
 
               <button

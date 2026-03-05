@@ -111,7 +111,7 @@ export const ArtifactsPage: React.FC = () => {
                 handleCloseForm();
                 setShowForm(!showForm);
               }}
-              className="px-6 py-2 bg-green-600 text-white rounded"
+              className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition"
             >
               {showForm ? "Cancel" : "Add New Artifact"}
             </button>
