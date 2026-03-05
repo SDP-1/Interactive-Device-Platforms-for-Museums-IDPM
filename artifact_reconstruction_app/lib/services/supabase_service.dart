@@ -87,6 +87,27 @@ class SupabaseService {
         .eq('id', id);
   }
 
+  /// Updates artifact metadata (name, category, era, origin, description).
+  /// Only non-null fields are updated.
+  Future<void> updateArtifactMetadata({
+    required String id,
+    String? name,
+    String? category,
+    String? era,
+    String? origin,
+    String? description,
+  }) async {
+    final updates = <String, dynamic>{
+      if (name != null) 'name': name,
+      if (category != null) 'category': category,
+      if (era != null) 'era': era,
+      if (origin != null) 'origin': origin,
+      if (description != null) 'description': description,
+    };
+    if (updates.isEmpty) return;
+    await _client.from('3D_Artifact_Table').update(updates).eq('id', id);
+  }
+
   // --- Storage --- //
 
   Future<String> uploadImage(String artifactId, File imageFile) async {

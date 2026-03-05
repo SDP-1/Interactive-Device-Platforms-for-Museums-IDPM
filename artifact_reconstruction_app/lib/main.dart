@@ -1013,10 +1013,7 @@ class _ReconstructionStatusScreenState
                                 if (!context.mounted) return;
                                 Navigator.of(context).push(
                                   MaterialPageRoute<void>(
-                                    builder: (_) => const Model3DViewerScreen(
-                                      modelUrl:
-                                          'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-                                    ),
+                                    builder: (_) => ArtifactDetailsScreen(artifact: _artifact!),
                                   ),
                                 );
                               } catch (e) {
@@ -1045,6 +1042,465 @@ class _ReconstructionStatusScreenState
           ),
         ),
       ),
+    );
+  }
+}
+
+class ArtifactDetailsScreen extends StatefulWidget {
+  const ArtifactDetailsScreen({super.key, required this.artifact});
+
+  final Artifact artifact;
+
+  @override
+  State<ArtifactDetailsScreen> createState() => _ArtifactDetailsScreenState();
+}
+
+class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _categoryController;
+  late final TextEditingController _eraController;
+  late final TextEditingController _originController;
+  late final TextEditingController _descriptionController;
+  bool _saved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.artifact.name);
+    _categoryController = TextEditingController(text: widget.artifact.category ?? '');
+    _eraController = TextEditingController(text: widget.artifact.era ?? '');
+    _originController = TextEditingController(text: widget.artifact.origin ?? '');
+    _descriptionController = TextEditingController(text: widget.artifact.description ?? '');
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _categoryController.dispose();
+    _eraController.dispose();
+    _originController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  bool get _hasEnteredData {
+    final name = _nameController.text.trim();
+    final category = _categoryController.text.trim();
+    final era = _eraController.text.trim();
+    final origin = _originController.text.trim();
+    final description = _descriptionController.text.trim();
+    return name.isNotEmpty &&
+        (category.isNotEmpty ||
+            era.isNotEmpty ||
+            origin.isNotEmpty ||
+            description.isNotEmpty ||
+            name != (widget.artifact.name));
+  }
+
+  Future<void> _save() async {
+    if (!_hasEnteredData) return;
+    try {
+      await SupabaseService().updateArtifactMetadata(
+        id: widget.artifact.id,
+        name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+        category: _categoryController.text.trim().isEmpty ? null : _categoryController.text.trim(),
+        era: _eraController.text.trim().isEmpty ? null : _eraController.text.trim(),
+        origin: _originController.text.trim().isEmpty ? null : _originController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() => _saved = true);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Artifact details saved.')));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const ArtifactListScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Save failed: $e')));
+    }
+  }
+
+  void _convertTo3D() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const Model3DViewerScreen(
+          modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceWarm,
+        foregroundColor: AppTheme.stone800,
+        title: const Text('Artifact details'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Optionally add era, description, and other details. Save to store them, then convert to 3D.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.stone600),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+                hintText: 'Artifact name',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _categoryController,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                border: OutlineInputBorder(),
+                hintText: 'e.g. Ceramic, Pottery',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _eraController,
+              decoration: const InputDecoration(
+                labelText: 'Era',
+                border: OutlineInputBorder(),
+                hintText: 'e.g. Roman, 1st century AD',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _originController,
+              decoration: const InputDecoration(
+                labelText: 'Origin',
+                border: OutlineInputBorder(),
+                hintText: 'e.g. Italy, Greece',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+                hintText: 'Short description of the artifact',
+                alignLabelWithHint: true,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _hasEnteredData && !_saved ? _save : null,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.stone200),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Save'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _convertTo3D,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Convert to 3D'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ArtifactListScreen extends StatefulWidget {
+  const ArtifactListScreen({super.key});
+
+  @override
+  State<ArtifactListScreen> createState() => _ArtifactListScreenState();
+}
+
+class _ArtifactListScreenState extends State<ArtifactListScreen> {
+  List<Artifact> _artifacts = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArtifacts();
+  }
+
+  Future<void> _loadArtifacts() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final list = await SupabaseService().getArtifacts();
+      if (!mounted) return;
+      setState(() {
+        _artifacts = list;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceWarm,
+        foregroundColor: AppTheme.stone800,
+        title: const Text('Artifacts'),
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_error!, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: _loadArtifacts,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : _artifacts.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No artifacts yet.',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.stone600),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadArtifacts,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        itemCount: _artifacts.length,
+                        itemBuilder: (context, index) {
+                          final artifact = _artifacts[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            clipBehavior: Clip.antiAlias,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => ArtifactDetailViewScreen(artifact: artifact),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          artifact.imageUrl!,
+                                          width: 64,
+                                          height: 64,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => const SizedBox(
+                                            width: 64,
+                                            height: 64,
+                                            child: Icon(Icons.image_not_supported),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      Container(
+                                        width: 64,
+                                        height: 64,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.stone200,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(Icons.image_outlined),
+                                      ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            artifact.name,
+                                            style: Theme.of(context).textTheme.titleMedium,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (artifact.era != null && artifact.era!.isNotEmpty)
+                                            Text(
+                                              artifact.era!,
+                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.stone600),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(Icons.chevron_right),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+    );
+  }
+}
+
+class ArtifactDetailViewScreen extends StatelessWidget {
+  const ArtifactDetailViewScreen({super.key, required this.artifact});
+
+  final Artifact artifact;
+
+  void _convertTo3D(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const Model3DViewerScreen(
+          modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceWarm,
+        foregroundColor: AppTheme.stone800,
+        title: const Text('Artifact'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: Image.network(
+                    artifact.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: AppTheme.stone200,
+                      child: const Center(child: Icon(Icons.broken_image, size: 48)),
+                    ),
+                  ),
+                ),
+              )
+            else
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: AppTheme.stone200,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(child: Icon(Icons.image_outlined, size: 48)),
+              ),
+            const SizedBox(height: 20),
+            Text(
+              artifact.name,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            if (artifact.category != null && artifact.category!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _DetailRow(label: 'Category', value: artifact.category!),
+            ],
+            if (artifact.era != null && artifact.era!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _DetailRow(label: 'Era', value: artifact.era!),
+            ],
+            if (artifact.origin != null && artifact.origin!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _DetailRow(label: 'Origin', value: artifact.origin!),
+            ],
+            if (artifact.description != null && artifact.description!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _DetailRow(label: 'Description', value: artifact.description!),
+            ],
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => _convertTo3D(context),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('Convert to 3D'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppTheme.stone600),
+        ),
+        const SizedBox(height: 2),
+        Text(value, style: Theme.of(context).textTheme.bodyMedium),
+      ],
     );
   }
 }
