@@ -859,7 +859,7 @@ class _ReconstructionStatusScreenState
           imageBytes: imageBytes,
           mimeType: mimeType,
           prompt:
-              'Restore ONLY the missing parts of the EXACT ceramic cup or artifact shown. Do NOT change its shape, handle, or design. Keep the original material, color, and lighting. Do NOT generate new objects or artistic forms. Photorealistic, realistic restoration.',
+              'Output one image of the COMPLETE, WHOLE object with no missing pieces. Restore ALL missing or broken parts of this ceramic cup or artifact so it looks fully intact. Keep the exact same shape, handle, design, material, color, and lighting. Do NOT leave broken edges, gaps, or empty areas. Do NOT add new objects. Photorealistic, full restoration of the entire object.',
         );
       } else {
         if (!mounted) return;

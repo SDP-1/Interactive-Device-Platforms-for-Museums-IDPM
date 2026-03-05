@@ -7,9 +7,9 @@ import '../config/reconstruction_config.dart';
 /// Reconstructs broken artifact images by describing the desired restoration.
 /// No mask: the model infers what to fix from the image and prompt.
 class GeminiReconstructionService {
-  /// Default: image-capable model from API list (Gemini 2.0 Flash Image Generation Experimental).
-  /// Override with GEMINI_MODEL_ID if needed (e.g. gemini-2.5-flash-image for Nano Banana).
-  static const _defaultModelId = 'gemini-2.0-flash-exp-image-generation';
+  /// Default: Nano Banana (Gemini 2.5 Flash Image) for 2D reconstruction.
+  /// Override with GEMINI_MODEL_ID if needed (e.g. gemini-2.0-flash-exp-image-generation).
+  static const _defaultModelId = 'gemini-2.5-flash-image';
   static String _modelId() =>
       geminiModelId.isNotEmpty ? geminiModelId : _defaultModelId;
   static String _baseUrl(String apiKey) =>
@@ -28,7 +28,7 @@ class GeminiReconstructionService {
   Future<List<int>> reconstructImage({
     required List<int> imageBytes,
     String prompt =
-        'Restore ONLY the missing or broken parts of this artifact. Keep the exact same shape, handle, design, material, color, and lighting. Do NOT add new objects or change the style. Photorealistic restoration of the original object.',
+        'Output one image of the COMPLETE, WHOLE object. Restore ALL missing or broken parts so the object looks fully intact. Same shape, material, color, lighting. No gaps or broken edges. Photorealistic, full restoration.',
     String mimeType = 'image/png',
   }) async {
     final imageB64 = base64Encode(imageBytes);

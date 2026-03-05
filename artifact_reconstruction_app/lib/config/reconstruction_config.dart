@@ -11,13 +11,14 @@ const String hfApiKey = String.fromEnvironment(
 /// Gemini API key for 2D reconstruction (image + prompt → image).
 /// When set, the app uses Gemini instead of Hugging Face for reconstruction.
 ///
-/// Set via: flutter run --dart-define=GEMINI_API_KEY=your_gemini_key
-/// Or for release: flutter build apk --dart-define=GEMINI_API_KEY=your_gemini_key
+/// Pass at run time so the correct key is always used (avoids stale builds):
+///   flutter run --dart-define=GEMINI_API_KEY=your_gemini_key
+///   flutter build apk --dart-define=GEMINI_API_KEY=your_gemini_key
 /// Get a key at: https://aistudio.google.com/app/apikey
-/// Never commit real keys to version control.
+/// New free accounts still have quota limits; 429 = enable billing or use HF (omit key).
 const String geminiApiKey = String.fromEnvironment(
   'GEMINI_API_KEY',
-  defaultValue: 'AIzaSyA6pL4rJqFsa29AgPc17Lo-fuT5uru8rXg',
+  defaultValue: '',
 );
 
 /// Optional. Gemini model ID for reconstruction (e.g. image-capable model).
