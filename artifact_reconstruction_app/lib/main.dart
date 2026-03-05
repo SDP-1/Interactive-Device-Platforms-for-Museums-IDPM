@@ -8,9 +8,11 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:image_cropper/image_cropper.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'theme/app_theme.dart';
 import 'screens/auth/admin_login_screen.dart';
 import 'services/supabase_service.dart';
 import 'services/huggingface_reconstruction_service.dart';
+import 'services/gemini_reconstruction_service.dart';
 import 'models/artifact_model.dart';
 import 'config/reconstruction_config.dart';
 import 'utils/mask_utils.dart';
@@ -34,10 +36,7 @@ class ArtifactReconstructionApp extends StatelessWidget {
     return MaterialApp(
       title: 'Artifact Reconstruction',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-      ),
+      theme: AppTheme.lightTheme,
       home: const RoleSelectionScreen(),
     );
   }
@@ -49,75 +48,239 @@ class RoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select role'),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.surfaceDark,
+              AppTheme.surfaceDarkMid,
+              AppTheme.surfaceDark,
+            ],
+          ),
+        ),
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 12),
-              Text(
-                'Artifact 3D reconstruction',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Choose how you want to use the app.',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              // Header – Sound Narration style
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                child: Row(
                   children: [
-                    _RoleCard(
-                      title: 'Admin',
-                      subtitle:
-                          'Capture/upload images, approve reconstruction, convert to 3D, generate QR.',
-                      icon: Icons.admin_panel_settings_outlined,
-                      onTap: () {
-                        final supabaseAuth = SupabaseService().currentUser;
-                        if (supabaseAuth != null) {
-                          // Already logged in
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const AdminHomeScreen(),
-                            ),
-                          );
-                        } else {
-                          // Needs to log in
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const AdminLoginScreen(),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _RoleCard(
-                      title: 'Visitor',
-                      subtitle: 'Scan QR codes and view 3D models.',
-                      icon: Icons.qr_code_scanner_outlined,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const VisitorHomeScreen(),
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppTheme.primary, AppTheme.primaryDark],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                        );
-                      },
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.architecture_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Artifact Reconstruction',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Interactive Museum Experience',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.primary.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Android first • .glb models',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
+              // Hero section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        AppTheme.primaryDark.withValues(alpha: 0.25),
+                        AppTheme.surfaceDarkMid,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: AppTheme.primary.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Discover 3D',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [
+                            Color(0xFFFBBF24),
+                            Color(0xFFF97316),
+                          ],
+                        ).createShader(bounds),
+                        child: Text(
+                          'Reconstructed Artifacts',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Capture broken artifacts, restore them with AI, and share 3D models with visitors via QR codes.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+              // Role cards grid – gradient cards like Sound Narration dashboard
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _RoleCard(
+                        title: 'Admin',
+                        subtitle: 'Capture, reconstruct, approve & generate QR',
+                        icon: Icons.admin_panel_settings_outlined,
+                        gradientColors: const [
+                          AppTheme.primary,
+                          AppTheme.primaryDark,
+                        ],
+                        onTap: () {
+                          final supabaseAuth = SupabaseService().currentUser;
+                          if (supabaseAuth != null) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const AdminHomeScreen(),
+                              ),
+                            );
+                          } else {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const AdminLoginScreen(),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _RoleCard(
+                        title: 'Visitor',
+                        subtitle: 'Scan QR codes and view 3D models',
+                        icon: Icons.qr_code_scanner_outlined,
+                        gradientColors: const [
+                          Color(0xFF6366F1),
+                          Color(0xFF4F46E5),
+                        ],
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const VisitorHomeScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Footer – Sound Narration style
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+                child: Container(
+                  padding: const EdgeInsets.only(top: 20),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: AppTheme.primary.withValues(alpha: 0.15),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [AppTheme.primary, AppTheme.primaryDark],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.architecture_outlined,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Museum IDP',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Preserving heritage through technology',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -132,44 +295,91 @@ class _RoleCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
+    required this.gradientColors,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
+  final List<Color> gradientColors;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: gradientColors,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: gradientColors.first.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
           child: Row(
             children: [
-              Icon(icon, size: 32),
-              const SizedBox(width: 12),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 28, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          'Explore',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.chevron_right,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              const Icon(Icons.chevron_right),
             ],
           ),
         ),
@@ -184,8 +394,24 @@ class AdminHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.surfaceWarm,
       appBar: AppBar(
-        title: const Text('Admin'),
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Text('Admin'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -205,30 +431,64 @@ class AdminHomeScreen extends StatelessWidget {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Admin',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Start by capturing or uploading an image of the broken artifact.',
-                textAlign: TextAlign.center,
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 40),
               ),
               const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const AdminCaptureUploadScreen(),
+              Text(
+                'Capture or upload artifact',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppTheme.stone800,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Start by capturing or uploading an image of the broken artifact.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.stone600,
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AdminCaptureUploadScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.camera_alt_outlined),
+                  label: const Text('Capture or upload image'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.camera_alt_outlined),
-                label: const Text('Capture or upload image'),
+                  ),
+                ),
               ),
             ],
           ),
@@ -244,29 +504,86 @@ class VisitorHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Visitor')),
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.qr_code_scanner_outlined, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Text('Visitor'),
+          ],
+        ),
+      ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.qr_code_scanner_outlined, color: Colors.white, size: 40),
+              ),
+              const SizedBox(height: 24),
               Text(
                 'Scan QR to view 3D model',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppTheme.stone800,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const VisitorQrScannerScreen(),
+              const SizedBox(height: 12),
+              Text(
+                'Point your camera at an artifact QR code to open the 3D model.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.stone600,
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const VisitorQrScannerScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.qr_code_scanner_outlined),
+                  label: const Text('Scan QR code'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.qr_code_scanner_outlined),
-                label: const Text('Scan QR code'),
+                  ),
+                ),
               ),
             ],
           ),
@@ -329,10 +646,14 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Capture or upload artifact')),
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Capture or upload artifact'),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
               Row(
@@ -342,6 +663,13 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
                       onPressed: _pickFromCamera,
                       icon: const Icon(Icons.camera_alt_outlined),
                       label: const Text('Camera'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: AppTheme.stone200),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -350,68 +678,107 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
                       onPressed: _pickFromGallery,
                       icon: const Icon(Icons.photo_library_outlined),
                       label: const Text('Gallery'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: AppTheme.stone200),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
               Expanded(
-                child: Center(
-                  child: _selectedImage == null
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.image_outlined,
-                              size: 64,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'No image selected.\nUse Camera or Gallery above.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.file(
-                                  // ignore: deprecated_member_use
-                                  File(_selectedImage!.path),
-                                  fit: BoxFit.contain,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: _selectedImage == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.image_outlined,
+                                size: 64,
+                                color: AppTheme.stone400,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No image selected.\nUse Camera or Gallery above.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.stone600,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _selectedImage!.name,
-                              style: Theme.of(context).textTheme.bodySmall,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.file(
+                                    // ignore: deprecated_member_use
+                                    File(_selectedImage!.path),
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Text(
+                                  _selectedImage!.name,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.stone600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _selectedImage == null
-                    ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => ReconstructionStatusScreen(
-                              imagePath: _selectedImage!.path,
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _selectedImage == null
+                      ? null
+                      : () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => ReconstructionStatusScreen(
+                                imagePath: _selectedImage!.path,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                child: const Text('Next: send for reconstruction'),
+                          );
+                        },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppTheme.stone200,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text('Next: send for reconstruction'),
+                ),
               ),
             ],
           ),
@@ -436,6 +803,7 @@ class _ReconstructionStatusScreenState
   String _status = 'Uploading image...';
   bool _completed = false;
   Artifact? _artifact;
+  int? _seed;
 
   String? _reconstructedImageUrl;
 
@@ -445,39 +813,72 @@ class _ReconstructionStatusScreenState
     _uploadAndReconstruct();
   }
 
-  Future<void> _uploadAndReconstruct() async {
+  Future<void> _uploadAndReconstruct({bool newSeed = false}) async {
+    if (newSeed) {
+      setState(() {
+        _completed = false;
+        _reconstructedImageUrl = null;
+        _status = 'Regenerating with different seed...';
+      });
+      _seed = DateTime.now().millisecondsSinceEpoch % 1000000;
+    }
+
     final service = SupabaseService();
     final hfService = HuggingFaceReconstructionService(apiKey: hfApiKey);
 
     try {
-      final newArtifact = Artifact(
-        id: '',
-        name: 'New Artifact ${DateTime.now().millisecondsSinceEpoch}',
-        createdAt: DateTime.now(),
-        approvedBy: service.currentUser?.id,
-      );
+      if (_artifact == null) {
+        final newArtifact = Artifact(
+          id: '',
+          name: 'New Artifact ${DateTime.now().millisecondsSinceEpoch}',
+          createdAt: DateTime.now(),
+          approvedBy: service.currentUser?.id,
+        );
 
-      _artifact = await service.createArtifact(newArtifact);
+        _artifact = await service.createArtifact(newArtifact);
+      }
 
       if (!mounted) return;
-      setState(() => _status = 'Uploading image...');
+      if (!newSeed) setState(() => _status = 'Uploading image...');
 
       await service.uploadImage(_artifact!.id, File(widget.imagePath));
 
-      if (!mounted) return;
-      setState(() => _status = 'Generating mask...');
-
-      final maskFile = await generateBottomMask(File(widget.imagePath));
-
-      if (!mounted) return;
-      setState(() => _status = 'Running 2D reconstruction...');
-
       final imageBytes = await File(widget.imagePath).readAsBytes();
-      final maskBytes = await maskFile.readAsBytes();
-      final resultBytes = await hfService.reconstructImage(
-        imageBytes: imageBytes,
-        maskBytes: maskBytes,
-      );
+      final List<int> resultBytes;
+
+      if (geminiApiKey.isNotEmpty) {
+        if (!mounted) return;
+        setState(() => _status = 'Running 2D reconstruction (Gemini)...');
+
+        final geminiService = GeminiReconstructionService(apiKey: geminiApiKey);
+        final mimeType = widget.imagePath.toLowerCase().endsWith('.jpg') ||
+                widget.imagePath.toLowerCase().endsWith('.jpeg')
+            ? 'image/jpeg'
+            : 'image/png';
+        resultBytes = await geminiService.reconstructImage(
+          imageBytes: imageBytes,
+          mimeType: mimeType,
+          prompt:
+              'Restore ONLY the missing parts of the EXACT ceramic cup or artifact shown. Do NOT change its shape, handle, or design. Keep the original material, color, and lighting. Do NOT generate new objects or artistic forms. Photorealistic, realistic restoration.',
+        );
+      } else {
+        if (!mounted) return;
+        setState(() => _status = 'Generating mask...');
+
+        final maskFile = await generateBottomMask(File(widget.imagePath));
+
+        if (!mounted) return;
+        setState(() => _status = 'Running 2D reconstruction...');
+
+        final maskBytes = await maskFile.readAsBytes();
+        resultBytes = await hfService.reconstructImage(
+          imageBytes: imageBytes,
+          maskBytes: maskBytes,
+          prompt:
+            'Restore ONLY the missing parts of the EXACT ceramic cup shown. Do NOT change the cup’s shape, handle, or design. Keep the original material, color, and lighting. Do NOT generate new objects or artistic forms. Photorealistic, realistic restoration.',
+          seed: _seed,
+        );
+      }
 
       if (!mounted) return;
       setState(() => _status = 'Saving reconstructed image...');
@@ -507,65 +908,138 @@ class _ReconstructionStatusScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reconstruction status')),
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Reconstruction status'),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Status',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(_status),
-              const SizedBox(height: 24),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: _reconstructedImageUrl != null
-                      ? Image.network(
-                          _reconstructedImageUrl!,
-                          fit: BoxFit.contain,
-                        )
-                      : Image.file(
-                          File(widget.imagePath),
-                          fit: BoxFit.contain,
-                        ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Status',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppTheme.stone800,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _status,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.stone600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: !_completed || _artifact == null
-                    ? null
-                    : () async {
-                        setState(() => _status = 'Approving...');
-                        try {
-                          await SupabaseService().updateArtifactStatus(
-                            id: _artifact!.id,
-                            status: 'approved',
-                            adminId: SupabaseService().currentUser?.id,
-                          );
-                          if (!context.mounted) return;
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const Model3DViewerScreen(
-                                // Sample public .glb; replace with backend URL later.
-                                modelUrl:
-                                    'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-                              ),
-                            ),
-                          );
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
-                          );
-                          setState(() => _status = 'Failed to approve. Try again.');
-                        }
-                      },
-                child: const Text('Approve & convert to 3D'),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: _reconstructedImageUrl != null
+                        ? Image.network(
+                            _reconstructedImageUrl!,
+                            fit: BoxFit.contain,
+                          )
+                        : Image.file(
+                            File(widget.imagePath),
+                            fit: BoxFit.contain,
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: !_completed ? null : () => _uploadAndReconstruct(newSeed: true),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Try Again'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: AppTheme.stone200),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: !_completed || _artifact == null
+                          ? null
+                          : () async {
+                              setState(() => _status = 'Approving...');
+                              try {
+                                await SupabaseService().updateArtifactStatus(
+                                  id: _artifact!.id,
+                                  status: 'approved',
+                                  adminId: SupabaseService().currentUser?.id,
+                                );
+                                if (!context.mounted) return;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const Model3DViewerScreen(
+                                      modelUrl:
+                                          'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+                                    ),
+                                  ),
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                                setState(() => _status = 'Failed to approve. Try again.');
+                              }
+                            },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: AppTheme.stone200,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Approve & 3D'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -583,7 +1057,12 @@ class Model3DViewerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('3D model viewer')),
+      backgroundColor: AppTheme.surfaceDark,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceDarkMid,
+        foregroundColor: Colors.white,
+        title: const Text('3D model viewer'),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -593,23 +1072,34 @@ class Model3DViewerScreen extends StatelessWidget {
               ar: false,
               autoRotate: true,
               cameraControls: true,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: AppTheme.surfaceDark,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: FilledButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => AdminArtifactQrScreen(
-                      artifactData: modelUrl,
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AdminArtifactQrScreen(
+                        artifactData: modelUrl,
+                      ),
                     ),
+                  );
+                },
+                icon: const Icon(Icons.qr_code_2_outlined),
+                label: const Text('Generate QR for this model'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                );
-              },
-              icon: const Icon(Icons.qr_code_2_outlined),
-              label: const Text('Generate QR for this model'),
+                ),
+              ),
             ),
           ),
         ],
@@ -628,37 +1118,81 @@ class AdminArtifactQrScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Artifact QR code')),
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Artifact QR code'),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Share this artifact',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Visitors can scan this QR code in the app to view the 3D model.',
-              style: Theme.of(context).textTheme.bodyMedium,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Share this artifact',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppTheme.stone800,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Visitors can scan this QR code in the app to view the 3D model.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.stone600,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             Expanded(
               child: Center(
-                child: QrImageView(
-                  data: artifactData,
-                  version: QrVersions.auto,
-                  size: 240,
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: QrImageView(
+                    data: artifactData,
+                    version: QrVersions.auto,
+                    size: 240,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               artifactData,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.stone500,
+              ),
             ),
           ],
         ),
@@ -697,7 +1231,12 @@ class _VisitorQrScannerScreenState extends State<VisitorQrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan artifact QR')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceDarkMid,
+        foregroundColor: Colors.white,
+        title: const Text('Scan artifact QR'),
+      ),
       body: Stack(
         children: [
           MobileScanner(
@@ -706,11 +1245,20 @@ class _VisitorQrScannerScreenState extends State<VisitorQrScannerScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.black54,
-              child: const Text(
+              margin: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
                 'Point the camera at a QR code generated by the admin app.',
-                style: TextStyle(color: Colors.white),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),

@@ -16,11 +16,17 @@ class HuggingFaceReconstructionService {
   /// [imageBytes] - original broken image (PNG or JPEG)
   /// [maskBytes] - mask image, same size (white = inpaint, black = keep)
   /// [prompt] - describes the complete artifact
+  /// [negativePrompt] - things to avoid
+  /// [numInferenceSteps] - quality/step count
+  /// [seed] - random seed for variety
   Future<List<int>> reconstructImage({
     required List<int> imageBytes,
     required List<int> maskBytes,
     String prompt =
-        'Restore ONLY the missing parts of the EXACT ceramic cup shown. Do NOT change the cup’s shape, handle, or design. Keep the original material, color, and lighting. Do NOT generate new objects or artistic forms. Photorealistic, realistic restoration.',
+        'Restore ONLY missing parts. Keep original material, erosion, cracks, proportions, lighting, and historical authenticity. Do not redesign or stylize.',
+    String negativePrompt = 'blurry, artistic, low quality, distorted, missing parts',
+    int numInferenceSteps = 35,
+    int? seed,
   }) async {
     final imageB64 = base64Encode(imageBytes);
     final maskB64 = base64Encode(maskBytes);
@@ -29,6 +35,11 @@ class HuggingFaceReconstructionService {
       'inputs': prompt,
       'image': imageB64,
       'mask_image': maskB64,
+      'parameters': {
+        'negative_prompt': negativePrompt,
+        'num_inference_steps': numInferenceSteps,
+        if (seed != null) 'seed': seed,
+      },
     });
 
     final response = await http.post(
