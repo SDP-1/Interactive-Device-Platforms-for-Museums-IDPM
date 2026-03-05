@@ -108,6 +108,10 @@ class SupabaseService {
     await _client.from('3D_Artifact_Table').update(updates).eq('id', id);
   }
 
+  Future<void> deleteArtifact(String id) async {
+    await _client.from('3D_Artifact_Table').delete().eq('id', id);
+  }
+
   // --- Storage --- //
 
   Future<String> uploadImage(String artifactId, File imageFile) async {

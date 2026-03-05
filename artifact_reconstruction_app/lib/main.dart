@@ -414,18 +414,26 @@ class AdminHomeScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await SupabaseService().signOut();
-              if (!context.mounted) return;
-              Navigator.of(context).pushAndRemoveUntil(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () {
+              Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const RoleSelectionScreen(),
+                  builder: (_) => const UserProfileScreen(),
                 ),
-                (route) => false,
               );
             },
-            tooltip: 'Logout',
+            tooltip: 'Profile',
+          ),
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ArtifactListScreen(),
+                ),
+              );
+            },
+            tooltip: 'List of artifacts',
           ),
         ],
       ),
@@ -492,6 +500,98 @@ class AdminHomeScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class UserProfileScreen extends StatelessWidget {
+  const UserProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = SupabaseService().currentUser;
+    final email = user?.email ?? '—';
+    final name = (user?.userMetadata?['name'] as String?) ?? (user?.email ?? 'User');
+
+    return Scaffold(
+      backgroundColor: AppTheme.surfaceWarm,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceWarm,
+        foregroundColor: AppTheme.stone800,
+        title: const Text('Profile'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            CircleAvatar(
+              radius: 48,
+              backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              name,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppTheme.stone800,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              email,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.stone600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ListTile(
+              leading: const Icon(Icons.email_outlined),
+              title: const Text('Email'),
+              subtitle: Text(email),
+              tileColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.badge_outlined),
+              title: const Text('Name'),
+              subtitle: Text(name),
+              tileColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  await SupabaseService().signOut();
+                  if (!context.mounted) return;
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute<void>(builder: (_) => const RoleSelectionScreen()),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Sign out'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.stone800,
+                  side: const BorderSide(color: AppTheme.stone200),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1047,9 +1147,10 @@ class _ReconstructionStatusScreenState
 }
 
 class ArtifactDetailsScreen extends StatefulWidget {
-  const ArtifactDetailsScreen({super.key, required this.artifact});
+  const ArtifactDetailsScreen({super.key, required this.artifact, this.isEditMode = false});
 
   final Artifact artifact;
+  final bool isEditMode;
 
   @override
   State<ArtifactDetailsScreen> createState() => _ArtifactDetailsScreenState();
@@ -1062,6 +1163,7 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
   late final TextEditingController _originController;
   late final TextEditingController _descriptionController;
   bool _saved = false;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -1089,6 +1191,7 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
     final era = _eraController.text.trim();
     final origin = _originController.text.trim();
     final description = _descriptionController.text.trim();
+    if (widget.isEditMode) return name.isNotEmpty;
     return name.isNotEmpty &&
         (category.isNotEmpty ||
             era.isNotEmpty ||
@@ -1098,24 +1201,35 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
   }
 
   Future<void> _save() async {
-    if (!_hasEnteredData) return;
+    if (!_hasEnteredData && !widget.isEditMode) return;
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    setState(() => _saving = true);
     try {
       await SupabaseService().updateArtifactMetadata(
         id: widget.artifact.id,
-        name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+        name: name,
         category: _categoryController.text.trim().isEmpty ? null : _categoryController.text.trim(),
         era: _eraController.text.trim().isEmpty ? null : _eraController.text.trim(),
         origin: _originController.text.trim().isEmpty ? null : _originController.text.trim(),
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       );
       if (!mounted) return;
-      setState(() => _saved = true);
+      setState(() {
+        _saved = true;
+        _saving = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Artifact details saved.')));
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => const ArtifactListScreen()),
-      );
+      if (widget.isEditMode) {
+        Navigator.of(context).pop(true);
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(builder: (_) => const ArtifactListScreen()),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
+      setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Save failed: $e')));
     }
   }
@@ -1137,94 +1251,191 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.surfaceWarm,
         foregroundColor: AppTheme.stone800,
-        title: const Text('Artifact details'),
+        title: Text(widget.isEditMode ? 'Edit artifact' : 'Artifact details'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Optionally add era, description, and other details. Save to store them, then convert to 3D.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.stone600),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
-                hintText: 'Artifact name',
+            if (!widget.isEditMode) ...[
+              Text(
+                'Add a name and any details you know. You can skip optional fields and add them later.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.stone600,
+                  height: 1.4,
+                ),
               ),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _categoryController,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
-                hintText: 'e.g. Ceramic, Pottery',
+              const SizedBox(height: 24),
+            ],
+            if (widget.isEditMode) const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _eraController,
-              decoration: const InputDecoration(
-                labelText: 'Era',
-                border: OutlineInputBorder(),
-                hintText: 'e.g. Roman, 1st century AD',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Basic info',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _nameController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      labelText: 'Name *',
+                      hintText: 'e.g. Roman ceramic cup',
+                      filled: true,
+                      fillColor: AppTheme.surfaceWarm,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      prefixIcon: const Icon(Icons.label_outline, size: 22),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Optional details',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppTheme.stone600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Era, origin and description help visitors learn more.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.stone500),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _categoryController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      labelText: 'Category',
+                      hintText: 'e.g. Ceramic, Pottery, Sculpture',
+                      filled: true,
+                      fillColor: AppTheme.surfaceWarm,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: const Icon(Icons.category_outlined, size: 22),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: _eraController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      labelText: 'Era or period',
+                      hintText: 'e.g. Roman, 1st century AD',
+                      filled: true,
+                      fillColor: AppTheme.surfaceWarm,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: const Icon(Icons.schedule_outlined, size: 22),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: _originController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      labelText: 'Origin or place',
+                      hintText: 'e.g. Italy, Greece, Egypt',
+                      filled: true,
+                      fillColor: AppTheme.surfaceWarm,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: const Icon(Icons.place_outlined, size: 22),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: _descriptionController,
+                    maxLines: 4,
+                    minLines: 2,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      hintText: 'A short description for visitors...',
+                      filled: true,
+                      fillColor: AppTheme.surfaceWarm,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      alignLabelWithHint: true,
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ],
               ),
-              onChanged: (_) => setState(() {}),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _originController,
-              decoration: const InputDecoration(
-                labelText: 'Origin',
-                border: OutlineInputBorder(),
-                hintText: 'e.g. Italy, Greece',
+            const SizedBox(height: 28),
+            if (_saved && widget.isEditMode)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: AppTheme.success, size: 22),
+                    const SizedBox(width: 10),
+                    Text('Changes saved', style: TextStyle(color: AppTheme.success, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-                hintText: 'Short description of the artifact',
-                alignLabelWithHint: true,
-              ),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 24),
+            if (_saved && widget.isEditMode) const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: _hasEnteredData && !_saved ? _save : null,
+                    onPressed: (_hasEnteredData && !_saved && !_saving) ? _save : null,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppTheme.stone200),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Save'),
+                    child: _saving
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Save details'),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _convertTo3D,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                if (!widget.isEditMode) ...[
+                  const SizedBox(width: 14),
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton.icon(
+                      onPressed: _convertTo3D,
+                      icon: const Icon(Icons.view_in_ar, size: 20),
+                      label: const Text('Convert to 3D'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
                     ),
-                    child: const Text('Convert to 3D'),
                   ),
-                ),
+                ],
               ],
             ),
           ],
@@ -1315,16 +1526,18 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
                         itemCount: _artifacts.length,
                         itemBuilder: (context, index) {
                           final artifact = _artifacts[index];
-                          return Card(
+                            return Card(
                             margin: const EdgeInsets.only(bottom: 8),
                             clipBehavior: Clip.antiAlias,
                             child: InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(
+                              onTap: () async {
+                                await Navigator.of(context).push(
                                   MaterialPageRoute<void>(
                                     builder: (_) => ArtifactDetailViewScreen(artifact: artifact),
                                   ),
                                 );
+                                if (!mounted) return;
+                                _loadArtifacts();
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
@@ -1377,6 +1590,50 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
                                       ),
                                     ),
                                     const Icon(Icons.chevron_right),
+                                    PopupMenuButton<String>(
+                                      icon: const Icon(Icons.more_vert),
+                                      onSelected: (value) async {
+                                        if (value == 'edit') {
+                                          await Navigator.of(context).push<bool>(
+                                            MaterialPageRoute<bool>(
+                                              builder: (_) => ArtifactDetailsScreen(artifact: artifact, isEditMode: true),
+                                            ),
+                                          );
+                                          if (!mounted) return;
+                                          _loadArtifacts();
+                                        } else if (value == 'delete') {
+                                          final confirm = await showDialog<bool>(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              title: const Text('Delete artifact?'),
+                                              content: const Text('This cannot be undone.'),
+                                              actions: [
+                                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                                FilledButton(
+                                                  style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                                  onPressed: () => Navigator.pop(ctx, true),
+                                                  child: const Text('Delete'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                          if (confirm != true || !mounted) return;
+                                          try {
+                                            await SupabaseService().deleteArtifact(artifact.id);
+                                            if (!mounted) return;
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Artifact deleted.')));
+                                            _loadArtifacts();
+                                          } catch (e) {
+                                            if (!mounted) return;
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+                                          }
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                        const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
@@ -1389,12 +1646,32 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
   }
 }
 
-class ArtifactDetailViewScreen extends StatelessWidget {
+class ArtifactDetailViewScreen extends StatefulWidget {
   const ArtifactDetailViewScreen({super.key, required this.artifact});
 
   final Artifact artifact;
 
-  void _convertTo3D(BuildContext context) {
+  @override
+  State<ArtifactDetailViewScreen> createState() => _ArtifactDetailViewScreenState();
+}
+
+class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
+  late Artifact _artifact;
+
+  @override
+  void initState() {
+    super.initState();
+    _artifact = widget.artifact;
+  }
+
+  Future<void> _refetchArtifact() async {
+    try {
+      final a = await SupabaseService().getArtifactById(_artifact.id);
+      if (mounted) setState(() => _artifact = a);
+    } catch (_) {}
+  }
+
+  void _convertTo3D() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const Model3DViewerScreen(
@@ -1404,23 +1681,73 @@ class ArtifactDetailViewScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _editArtifact() async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => ArtifactDetailsScreen(artifact: _artifact, isEditMode: true),
+      ),
+    );
+    await _refetchArtifact();
+  }
+
+  Future<void> _deleteArtifact() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete artifact?'),
+        content: const Text('This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await SupabaseService().deleteArtifact(_artifact.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Artifact deleted.')));
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final artifact = _artifact;
     return Scaffold(
       backgroundColor: AppTheme.surfaceWarm,
       appBar: AppBar(
         backgroundColor: AppTheme.surfaceWarm,
         foregroundColor: AppTheme.stone800,
         title: const Text('Artifact'),
+        actions: [
+          IconButton(icon: const Icon(Icons.edit_outlined), onPressed: _editArtifact, tooltip: 'Edit'),
+          IconButton(icon: const Icon(Icons.delete_outline), onPressed: _deleteArtifact, tooltip: 'Delete'),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              'Reconstructed image',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppTheme.stone600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
             if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 child: AspectRatio(
                   aspectRatio: 4 / 3,
                   child: Image.network(
@@ -1438,42 +1765,78 @@ class ArtifactDetailViewScreen extends StatelessWidget {
                 height: 200,
                 decoration: BoxDecoration(
                   color: AppTheme.stone200,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Center(child: Icon(Icons.image_outlined, size: 48)),
               ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Text(
               artifact.name,
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppTheme.stone800,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            if (artifact.category != null && artifact.category!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _DetailRow(label: 'Category', value: artifact.category!),
-            ],
-            if (artifact.era != null && artifact.era!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _DetailRow(label: 'Era', value: artifact.era!),
-            ],
-            if (artifact.origin != null && artifact.origin!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _DetailRow(label: 'Origin', value: artifact.origin!),
-            ],
-            if (artifact.description != null && artifact.description!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _DetailRow(label: 'Description', value: artifact.description!),
-            ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => _convertTo3D(context),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text('Convert to 3D'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: (artifact.category != null && artifact.category!.isNotEmpty) ||
+                      (artifact.era != null && artifact.era!.isNotEmpty) ||
+                      (artifact.origin != null && artifact.origin!.isNotEmpty) ||
+                      (artifact.description != null && artifact.description!.isNotEmpty)
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (artifact.category != null && artifact.category!.isNotEmpty) ...[
+                          _DetailRow(label: 'Category', value: artifact.category!),
+                          const SizedBox(height: 14),
+                        ],
+                        if (artifact.era != null && artifact.era!.isNotEmpty) ...[
+                          _DetailRow(label: 'Era', value: artifact.era!),
+                          const SizedBox(height: 14),
+                        ],
+                        if (artifact.origin != null && artifact.origin!.isNotEmpty) ...[
+                          _DetailRow(label: 'Origin', value: artifact.origin!),
+                          const SizedBox(height: 14),
+                        ],
+                        if (artifact.description != null && artifact.description!.isNotEmpty)
+                          _DetailRow(label: 'Description', value: artifact.description!),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 20, color: AppTheme.stone500),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'No details added yet. Tap Edit to add category, era, or description.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.stone500),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+            const SizedBox(height: 28),
+            FilledButton.icon(
+              onPressed: _convertTo3D,
+              icon: const Icon(Icons.view_in_ar, size: 22),
+              label: const Text('Convert to 3D'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ],
