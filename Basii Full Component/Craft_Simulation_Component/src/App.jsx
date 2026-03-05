@@ -71,18 +71,22 @@ function App() {
   return (
     <div className="min-h-screen bg-museum-bg font-sans flex flex-col text-museum-secondary">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 px-6 py-4 bg-white/90 backdrop-blur-xl border-b border-stone-200 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-50 px-6 py-4 bg-white/90 backdrop-blur-xl border-b border-stone-200 flex items-center gap-8 shadow-sm w-full">
+        <div className="flex items-center gap-4 flex-1 shrink-0 basis-0">
           <h1 className="text-2xl font-serif font-bold text-museum-primary flex items-center gap-3 drop-shadow-sm">
             <span className="text-3xl">🏛️</span>
             Sri Lankan Cultural Museum
           </h1>
         </div>
 
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-4 flex-shrink-0">
           {!currentCraft && (
             <button
-              onClick={() => window.location.href = 'http://localhost:8000/main_dashboard.html'}
+              onClick={() => {
+                // Navigate to main_dashboard.html on port 8000
+                const hostname = window.location.hostname;
+                window.location.href = `http://${hostname}:8000/Basii%20Full%20Component/main_dashboard.html`;
+              }}
               className="px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 border border-stone-200 hover:bg-stone-100 text-stone-700 hover:border-museum-accent"
             >
               <span>🏠</span> Dashboard
