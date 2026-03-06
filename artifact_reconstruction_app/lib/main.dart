@@ -264,7 +264,7 @@ class RoleSelectionScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Museum IDP',
+                            'Virtual Museum 1.0',
                             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
