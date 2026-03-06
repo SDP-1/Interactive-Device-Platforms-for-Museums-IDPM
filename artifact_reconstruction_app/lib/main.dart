@@ -1020,7 +1020,7 @@ class _ReconstructionStatusScreenState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -1035,20 +1035,47 @@ class _ReconstructionStatusScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Status',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.stone800,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          'Status',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.stone800,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (!_completed) ...[
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
                       _status,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.stone600,
+                        color: _status.startsWith('Error') ? AppTheme.error : AppTheme.stone600,
+                        height: 1.3,
                       ),
                     ),
+                    if (!_completed) ...[
+                      const SizedBox(height: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          backgroundColor: AppTheme.stone200,
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                          minHeight: 4,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1868,10 +1895,25 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-class Model3DViewerScreen extends StatelessWidget {
+class Model3DViewerScreen extends StatefulWidget {
   const Model3DViewerScreen({super.key, required this.modelUrl});
 
   final String modelUrl;
+
+  @override
+  State<Model3DViewerScreen> createState() => _Model3DViewerScreenState();
+}
+
+class _Model3DViewerScreenState extends State<Model3DViewerScreen> {
+  bool _modelLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _modelLoading = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1882,45 +1924,71 @@ class Model3DViewerScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         title: const Text('3D model viewer'),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ModelViewer(
-              src: modelUrl,
-              alt: 'Reconstructed artifact 3D model',
-              ar: false,
-              autoRotate: true,
-              cameraControls: true,
-              backgroundColor: AppTheme.surfaceDark,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => AdminArtifactQrScreen(
-                        artifactData: modelUrl,
+          Column(
+            children: [
+              Expanded(
+                child: ModelViewer(
+                  src: widget.modelUrl,
+                  alt: 'Reconstructed artifact 3D model',
+                  ar: false,
+                  autoRotate: true,
+                  cameraControls: true,
+                  backgroundColor: AppTheme.surfaceDark,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => AdminArtifactQrScreen(
+                            artifactData: widget.modelUrl,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.qr_code_2_outlined),
+                    label: const Text('Generate QR for this model'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.qr_code_2_outlined),
-                label: const Text('Generate QR for this model'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
+          if (_modelLoading)
+            Container(
+              color: AppTheme.surfaceDark,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(
+                      color: AppTheme.primary,
+                      strokeWidth: 2,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Loading 3D model…',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
