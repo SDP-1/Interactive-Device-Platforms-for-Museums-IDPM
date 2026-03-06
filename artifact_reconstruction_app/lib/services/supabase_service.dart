@@ -87,6 +87,13 @@ class SupabaseService {
         .eq('id', id);
   }
 
+  Future<void> updateArtifactModelUrl(String id, String modelUrl) async {
+    await _client
+        .from('3D_Artifact_Table')
+        .update({'model_url': modelUrl})
+        .eq('id', id);
+  }
+
   /// Updates artifact metadata (name, category, era, origin, description).
   /// Only non-null fields are updated.
   Future<void> updateArtifactMetadata({

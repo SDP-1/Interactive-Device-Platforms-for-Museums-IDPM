@@ -7,6 +7,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:image_cropper/image_cropper.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/admin_login_screen.dart';
@@ -15,11 +16,17 @@ import 'services/huggingface_reconstruction_service.dart';
 import 'services/gemini_reconstruction_service.dart';
 import 'models/artifact_model.dart';
 import 'config/reconstruction_config.dart';
+import 'config/meshy_config.dart';
+import 'services/meshy_image_to_3d_service.dart';
 import 'utils/mask_utils.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  try {
+    await dotenv.load(fileName: 'assets/.env.example');
+  } catch (_) {}
+
   await Supabase.initialize(
     url: 'https://jxwsajoubxetenzzosgc.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4d3Nham91YnhldGVuenpvc2djIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MDc4NTUsImV4cCI6MjA4ODE4Mzg1NX0.pGG0xwiXQxJEqvh3mn4HIu-e9c5gyZc4casNw87uaGE',
@@ -1261,12 +1268,60 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
     }
   }
 
-  void _convertTo3D() {
+  bool _convertingTo3D = false;
+
+  Future<void> _convertTo3D() async {
+    final artifact = widget.artifact;
+    if (artifact.modelUrl != null && artifact.modelUrl!.isNotEmpty) {
+      if (!context.mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!),
+        ),
+      );
+      return;
+    }
+    if (artifact.imageUrl == null || artifact.imageUrl!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reconstructed image is required. Approve the reconstruction first.')),
+      );
+      return;
+    }
+    if (meshyApiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Set MESHY_API_KEY in assets/.env.example or use --dart-define=MESHY_API_KEY=your_key')),
+      );
+      return;
+    }
+    setState(() => _convertingTo3D = true);
+    String? modelUrl;
+    try {
+      final bytes = await MeshyImageTo3DService().convertImageToGlb(artifact.imageUrl!);
+      if (bytes == null || bytes.isEmpty) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('3D conversion failed.')));
+        return;
+      }
+      final dir = await Directory.systemTemp.createTemp('meshy_glb');
+      final file = File('${dir.path}/model.glb');
+      await file.writeAsBytes(bytes);
+      modelUrl = await SupabaseService().uploadModel(artifact.id, file);
+      await SupabaseService().updateArtifactModelUrl(artifact.id, modelUrl);
+    } on MeshyException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('3D conversion error: ${e.message}')));
+      return;
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      return;
+    } finally {
+      if (mounted) setState(() => _convertingTo3D = false);
+    }
+    if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const Model3DViewerScreen(
-          modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-        ),
+        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!),
       ),
     );
   }
@@ -1452,9 +1507,11 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   Expanded(
                     flex: 2,
                     child: FilledButton.icon(
-                      onPressed: _convertTo3D,
-                      icon: const Icon(Icons.view_in_ar, size: 20),
-                      label: const Text('Convert to 3D'),
+                      onPressed: _convertingTo3D ? null : _convertTo3D,
+                      icon: _convertingTo3D
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Icon(Icons.view_in_ar, size: 20),
+                      label: Text(_convertingTo3D ? 'Converting…' : (widget.artifact.modelUrl != null && widget.artifact.modelUrl!.isNotEmpty ? 'View 3D' : 'Convert to 3D')),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
@@ -1465,6 +1522,30 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                 ],
               ],
             ),
+            if (!widget.isEditMode &&
+                widget.artifact.modelUrl != null &&
+                widget.artifact.modelUrl!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => Model3DViewerScreen(modelUrl: widget.artifact.modelUrl!),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.view_in_ar_outlined, size: 20),
+                  label: const Text('Display 3D model'),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppTheme.primary),
+                    foregroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -1684,6 +1765,7 @@ class ArtifactDetailViewScreen extends StatefulWidget {
 
 class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
   late Artifact _artifact;
+  bool _convertingTo3D = false;
 
   @override
   void initState() {
@@ -1698,12 +1780,59 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
     } catch (_) {}
   }
 
-  void _convertTo3D() {
+  Future<void> _convertTo3D() async {
+    final artifact = _artifact;
+    if (artifact.modelUrl != null && artifact.modelUrl!.isNotEmpty) {
+      if (!context.mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!),
+        ),
+      );
+      return;
+    }
+    if (artifact.imageUrl == null || artifact.imageUrl!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reconstructed image is required.')),
+      );
+      return;
+    }
+    if (meshyApiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Set MESHY_API_KEY in assets/.env.example or use --dart-define=MESHY_API_KEY=your_key')),
+      );
+      return;
+    }
+    setState(() => _convertingTo3D = true);
+    String? modelUrl;
+    try {
+      final bytes = await MeshyImageTo3DService().convertImageToGlb(artifact.imageUrl!);
+      if (bytes == null || bytes.isEmpty) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('3D conversion failed.')));
+        return;
+      }
+      final dir = await Directory.systemTemp.createTemp('meshy_glb');
+      final file = File('${dir.path}/model.glb');
+      await file.writeAsBytes(bytes);
+      modelUrl = await SupabaseService().uploadModel(artifact.id, file);
+      await SupabaseService().updateArtifactModelUrl(artifact.id, modelUrl);
+      await _refetchArtifact();
+    } on MeshyException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('3D conversion error: ${e.message}')));
+      return;
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      return;
+    } finally {
+      if (mounted) setState(() => _convertingTo3D = false);
+    }
+    if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const Model3DViewerScreen(
-          modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-        ),
+        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!),
       ),
     );
   }
@@ -1857,15 +1986,39 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
             ),
             const SizedBox(height: 28),
             FilledButton.icon(
-              onPressed: _convertTo3D,
-              icon: const Icon(Icons.view_in_ar, size: 22),
-              label: const Text('Convert to 3D'),
+              onPressed: _convertingTo3D ? null : _convertTo3D,
+              icon: _convertingTo3D
+                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.view_in_ar, size: 22),
+              label: Text(_convertingTo3D ? 'Converting…' : (_artifact.modelUrl != null && _artifact.modelUrl!.isNotEmpty ? 'View 3D' : 'Convert to 3D')),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
+            if (_artifact.modelUrl != null && _artifact.modelUrl!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => Model3DViewerScreen(modelUrl: _artifact.modelUrl!),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.view_in_ar_outlined, size: 22),
+                  label: const Text('Display 3D model'),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppTheme.primary),
+                    foregroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
