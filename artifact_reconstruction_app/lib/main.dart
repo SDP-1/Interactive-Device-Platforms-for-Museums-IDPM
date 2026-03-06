@@ -271,7 +271,7 @@ class RoleSelectionScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Virtual Museum 1.0',
+                            'Museum 1.0',
                             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -1580,30 +1580,6 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                 ],
               ],
             ),
-            if (!widget.isEditMode &&
-                widget.artifact.modelUrl != null &&
-                widget.artifact.modelUrl!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => Model3DViewerScreen(modelUrl: widget.artifact.modelUrl!),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.view_in_ar_outlined, size: 20),
-                  label: const Text('Display 3D model'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppTheme.primary),
-                    foregroundColor: AppTheme.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -2113,28 +2089,6 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
-            if (_artifact.modelUrl != null && _artifact.modelUrl!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => Model3DViewerScreen(modelUrl: _artifact.modelUrl!),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.view_in_ar_outlined, size: 22),
-                  label: const Text('Display 3D model'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppTheme.primary),
-                    foregroundColor: AppTheme.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
