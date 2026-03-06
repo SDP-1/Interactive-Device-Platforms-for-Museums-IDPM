@@ -2,6 +2,8 @@
 .env
 **/fine_tuned_model_id.txt
 **/fine_tuning_job_id.txt
+model_evaluation_results.json
+
 
 # Python
 __pycache__/
