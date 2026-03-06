@@ -1484,6 +1484,64 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                 ),
               ),
             if (_saved && widget.isEditMode) const SizedBox(height: 16),
+            if (_convertingTo3D)
+              Container(
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Status',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.stone800,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Converting to 3D…',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.stone600,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        backgroundColor: AppTheme.stone200,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                        minHeight: 4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Row(
               children: [
                 Expanded(
@@ -1985,6 +2043,64 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                     ),
             ),
             const SizedBox(height: 28),
+            if (_convertingTo3D)
+              Container(
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Status',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.stone800,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Converting to 3D…',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.stone600,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        backgroundColor: AppTheme.stone200,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                        minHeight: 4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             FilledButton.icon(
               onPressed: _convertingTo3D ? null : _convertTo3D,
               icon: _convertingTo3D
