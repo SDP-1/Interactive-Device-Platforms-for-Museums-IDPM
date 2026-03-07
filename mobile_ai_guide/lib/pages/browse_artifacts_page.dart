@@ -197,73 +197,81 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     }
 
                     final artifacts = snapshot.data!;
-                    return CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Container(
-                            color: kFilterBackground,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const FilterRow(
-                                  filters: _filters,
-                                  selected: 'All',
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    12,
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        setState(() {
+                          _artifactsFuture = ArtifactService.getAllArtifacts();
+                        });
+                        await _artifactsFuture;
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Container(
+                              color: kFilterBackground,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const FilterRow(
+                                    filters: _filters,
+                                    selected: 'All',
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Artifacts: ',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade700,
-                                          fontWeight: FontWeight.w500,
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      12,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Artifacts: ',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade700,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        '${artifacts.length}',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade900,
-                                          fontWeight: FontWeight.w700,
+                                        Text(
+                                          '${artifacts.length}',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade900,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.all(12),
-                          sliver: SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  childAspectRatio: 0.72,
-                                ),
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final artifact = artifacts[index];
-                              return ArtifactGridCard(
-                                artifact: artifact,
-                                language: contentLanguage,
-                              );
-                            }, childCount: artifacts.length),
+                          SliverPadding(
+                            padding: const EdgeInsets.all(12),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: 0.72,
+                                  ),
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final artifact = artifacts[index];
+                                return ArtifactGridCard(
+                                  artifact: artifact,
+                                  language: contentLanguage,
+                                );
+                              }, childCount: artifacts.length),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   },
                 ),

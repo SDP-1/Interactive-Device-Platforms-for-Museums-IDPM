@@ -38,17 +38,10 @@ export const FeaturedExhibitForm: React.FC<Props> = ({
             for (const a of exhibit.artifacts as any[]) {
               if (typeof a === "string") {
                 const found = (res.data || []).find(
-                  (x: Artifact) => x._id === a,
+                  (x: Artifact) => x._id === a || x.artifact_id === a,
                 );
                 if (found) init.push(found);
-                else {
-                  try {
-                    const single = await artifactService.getById(a);
-                    if (single.success) init.push(single.data);
-                  } catch (err) {
-                    // ignore
-                  }
-                }
+                // if not found in the list, skip (we don't call getById by artifact_id here)
               } else if (typeof a === "object") {
                 init.push(a as Artifact);
               }
@@ -65,7 +58,12 @@ export const FeaturedExhibitForm: React.FC<Props> = ({
   }, []);
 
   const addArtifact = (artifact: Artifact) => {
-    if (selectedArtifacts.find((s) => s._id === artifact._id)) return;
+    if (
+      selectedArtifacts.find(
+        (s) => s._id === artifact._id || s.artifact_id === artifact.artifact_id,
+      )
+    )
+      return;
     setSelectedArtifacts((p) => [...p, artifact]);
   };
 
@@ -110,7 +108,9 @@ export const FeaturedExhibitForm: React.FC<Props> = ({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return alert("Please provide a name for the exhibit");
-    const ids = selectedArtifacts.map((s) => s._id!).filter(Boolean);
+    const ids = selectedArtifacts
+      .map((s) => s.artifact_id || s._id)
+      .filter(Boolean) as string[];
     onSubmit({
       name,
       description,

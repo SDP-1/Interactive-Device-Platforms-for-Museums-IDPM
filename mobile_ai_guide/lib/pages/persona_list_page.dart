@@ -111,7 +111,7 @@ class _PersonaListPageState extends State<PersonaListPage>
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
-                      snapshot.error.toString(),
+                      'Please check your connection and try again.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,

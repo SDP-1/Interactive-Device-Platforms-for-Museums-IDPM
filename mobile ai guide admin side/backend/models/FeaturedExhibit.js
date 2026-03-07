@@ -6,17 +6,16 @@ const featuredExhibitSchema = new mongoose.Schema({
   imageUrl: { type: String, default: null },
   estimated_visit_minutes: { type: Number, default: 30 },
   // referenced artifacts in this exhibit
+  // referenced artifacts in this exhibit (store artifact.artifact_id strings)
   artifacts: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Artifact",
+      type: String,
     },
   ],
-  // explicit ordering of artifact IDs (may match `artifacts` order)
+  // explicit ordering of artifact IDs (artifact_id strings)
   order: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Artifact",
+      type: String,
     },
   ],
   created_at: { type: Date, default: Date.now },

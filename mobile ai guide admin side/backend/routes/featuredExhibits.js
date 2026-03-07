@@ -4,38 +4,52 @@ import Artifact from "../models/Artifact.js";
 
 const router = express.Router();
 
-// Get all featured exhibits (populate artifacts and respect explicit order when present)
+// Helper to load artifact docs for a list of artifact_id strings
+async function loadArtifactsByArtifactId(ids = []) {
+  if (!Array.isArray(ids) || ids.length === 0) return [];
+  const docs = await Artifact.find({ artifact_id: { $in: ids } });
+  const byArtifactId = {};
+  docs.forEach((d) => {
+    byArtifactId[d.artifact_id] = d;
+  });
+  return { docs, byArtifactId };
+}
+
+// Get all featured exhibits (return artifacts populated by artifact_id and respect explicit order when present)
 router.get("/featured-exhibits", async (req, res) => {
   try {
-    const exhibits = await FeaturedExhibit.find()
-      .sort({ created_at: -1 })
-      .populate("artifacts");
+    const exhibits = await FeaturedExhibit.find().sort({ created_at: -1 });
 
-    const normalized = exhibits.map((ex) => {
-      const obj = ex.toObject();
-      let orderedArtifacts = obj.artifacts || [];
-      if (obj.order && obj.order.length > 0) {
-        const artifactsById = {};
-        (obj.artifacts || []).forEach(
-          (a) => (artifactsById[a._id.toString()] = a),
-        );
-        orderedArtifacts = obj.order
-          .map((id) => artifactsById[id.toString()])
-          .filter(Boolean);
-        const orderedIds = new Set(obj.order.map((i) => i.toString()));
-        (obj.artifacts || []).forEach((a) => {
-          if (!orderedIds.has(a._id.toString())) orderedArtifacts.push(a);
-        });
-      }
-      const displayImage =
-        obj.imageUrl ||
-        (orderedArtifacts &&
-          orderedArtifacts[0] &&
-          orderedArtifacts[0].imageUrls &&
-          orderedArtifacts[0].imageUrls[0]) ||
-        null;
-      return { ...obj, artifacts: orderedArtifacts, imageUrl: displayImage };
-    });
+    const normalized = await Promise.all(
+      exhibits.map(async (ex) => {
+        const obj = ex.toObject();
+        const artifactIds = obj.artifacts || [];
+        const { docs: artifactDocs, byArtifactId } =
+          await loadArtifactsByArtifactId(artifactIds);
+
+        // build orderedArtifacts from `order` (which are artifact_id strings) if present
+        let orderedArtifacts = artifactDocs;
+        if (Array.isArray(obj.order) && obj.order.length > 0) {
+          orderedArtifacts = obj.order
+            .map((aid) => byArtifactId[aid])
+            .filter(Boolean);
+          const orderedSet = new Set(obj.order);
+          artifactDocs.forEach((a) => {
+            if (!orderedSet.has(a.artifact_id)) orderedArtifacts.push(a);
+          });
+        }
+
+        const displayImage =
+          obj.imageUrl ||
+          (orderedArtifacts &&
+            orderedArtifacts[0] &&
+            orderedArtifacts[0].imageUrls &&
+            orderedArtifacts[0].imageUrls[0]) ||
+          null;
+
+        return { ...obj, artifacts: orderedArtifacts, imageUrl: displayImage };
+      }),
+    );
 
     res.json({ success: true, data: normalized, total: normalized.length });
   } catch (error) {
@@ -50,32 +64,28 @@ router.get("/featured-exhibits", async (req, res) => {
 // Get single exhibit with populated artifacts (ordered)
 router.get("/featured-exhibits/:id", async (req, res) => {
   try {
-    const exhibit = await FeaturedExhibit.findById(req.params.id).populate(
-      "artifacts",
-    );
+    const exhibit = await FeaturedExhibit.findById(req.params.id);
     if (!exhibit)
       return res
         .status(404)
         .json({ success: false, message: "Exhibit not found" });
 
-    // If an explicit order exists, map artifacts to that order
-    let orderedArtifacts = exhibit.artifacts || [];
-    if (exhibit.order && exhibit.order.length > 0) {
-      const artifactsById = {};
-      (exhibit.artifacts || []).forEach(
-        (a) => (artifactsById[a._id.toString()] = a),
-      );
-      orderedArtifacts = exhibit.order
-        .map((id) => artifactsById[id.toString()])
+    const obj = exhibit.toObject();
+    const artifactIds = obj.artifacts || [];
+    const { docs: artifactDocs, byArtifactId } =
+      await loadArtifactsByArtifactId(artifactIds);
+
+    let orderedArtifacts = artifactDocs;
+    if (Array.isArray(obj.order) && obj.order.length > 0) {
+      orderedArtifacts = obj.order
+        .map((aid) => byArtifactId[aid])
         .filter(Boolean);
-      // append any artifacts not in order at the end
-      const orderedIds = new Set(exhibit.order.map((i) => i.toString()));
-      (exhibit.artifacts || []).forEach((a) => {
-        if (!orderedIds.has(a._id.toString())) orderedArtifacts.push(a);
+      const orderedSet = new Set(obj.order);
+      artifactDocs.forEach((a) => {
+        if (!orderedSet.has(a.artifact_id)) orderedArtifacts.push(a);
       });
     }
 
-    const obj = exhibit.toObject();
     const displayImage =
       obj.imageUrl ||
       (orderedArtifacts &&
@@ -106,19 +116,21 @@ router.post("/featured-exhibits", async (req, res) => {
         .status(400)
         .json({ success: false, message: "Missing exhibit name" });
 
-    // Validate artifact ids (optional)
+    // Validate artifact identifiers by artifact_id field
     let validatedArtifacts = [];
     if (Array.isArray(artifacts) && artifacts.length > 0) {
       validatedArtifacts = await Artifact.find({
-        _id: { $in: artifacts },
-      }).select("_id");
+        artifact_id: { $in: artifacts },
+      }).select("artifact_id imageUrls title_en title_si imageUrls");
     }
 
     // choose exhibit image: explicit imageUrl or first artifact image if available
     let imageUrl = req.body.imageUrl || null;
     if (!imageUrl && Array.isArray(artifacts) && artifacts.length > 0) {
       try {
-        const first = await Artifact.findById(artifacts[0]).select("imageUrls");
+        const first = await Artifact.findOne({
+          artifact_id: artifacts[0],
+        }).select("imageUrls");
         if (first && first.imageUrls && first.imageUrls.length > 0)
           imageUrl = first.imageUrls[0];
       } catch (err) {
@@ -131,10 +143,11 @@ router.post("/featured-exhibits", async (req, res) => {
       description: description || null,
       imageUrl: imageUrl || null,
       estimated_visit_minutes: estimated_visit_minutes || 30,
-      artifacts: validatedArtifacts.map((a) => a._id),
+      // store artifact_id strings
+      artifacts: validatedArtifacts.map((a) => a.artifact_id),
       order: Array.isArray(order)
         ? order
-        : validatedArtifacts.map((a) => a._id),
+        : validatedArtifacts.map((a) => a.artifact_id),
     });
 
     const saved = await exhibit.save();
@@ -154,6 +167,7 @@ router.post("/featured-exhibits", async (req, res) => {
 router.put("/featured-exhibits/:id", async (req, res) => {
   try {
     const { name, description, estimated_visit_minutes, artifacts } = req.body;
+
     const updateData = {
       ...(typeof name !== "undefined" ? { name } : {}),
       ...(typeof description !== "undefined" ? { description } : {}),
@@ -163,9 +177,18 @@ router.put("/featured-exhibits/:id", async (req, res) => {
       ...(typeof req.body.imageUrl !== "undefined"
         ? { imageUrl: req.body.imageUrl }
         : {}),
-      ...(typeof artifacts !== "undefined" ? { artifacts } : {}),
       updated_at: new Date(),
     };
+
+    // If client provided artifacts array (of artifact_id strings), validate and store artifact_id strings
+    if (typeof artifacts !== "undefined" && Array.isArray(artifacts)) {
+      const validated = await Artifact.find({
+        artifact_id: { $in: artifacts },
+      }).select("artifact_id");
+      updateData.artifacts = validated.map((a) => a.artifact_id);
+      // if order not explicitly provided, keep artifacts order
+      updateData.order = validated.map((a) => a.artifact_id);
+    }
 
     const exhibit = await FeaturedExhibit.findByIdAndUpdate(
       req.params.id,
@@ -189,7 +212,7 @@ router.put("/featured-exhibits/:id", async (req, res) => {
 // Update ordering of artifacts within an exhibit
 router.put("/featured-exhibits/:id/order", async (req, res) => {
   try {
-    const { order } = req.body; // array of artifact ids
+    const { order } = req.body; // array of artifact_id strings
     if (!Array.isArray(order))
       return res.status(400).json({
         success: false,
@@ -202,7 +225,12 @@ router.put("/featured-exhibits/:id/order", async (req, res) => {
         .status(404)
         .json({ success: false, message: "Exhibit not found" });
 
-    exhibit.order = order;
+    // Optionally validate that provided order values exist
+    const validated = await Artifact.find({
+      artifact_id: { $in: order },
+    }).select("artifact_id");
+    const validIds = validated.map((a) => a.artifact_id);
+    exhibit.order = order.filter((o) => validIds.includes(o));
     exhibit.updated_at = new Date();
     await exhibit.save();
 

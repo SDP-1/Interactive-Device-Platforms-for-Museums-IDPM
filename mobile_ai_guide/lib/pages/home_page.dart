@@ -10,6 +10,7 @@ import 'package:mobile_ai_guide/pages/help_page.dart';
 import 'package:mobile_ai_guide/pages/persona_list_page.dart';
 import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/home/featured_exhibitions.dart';
+import 'package:mobile_ai_guide/services/featured_exhibits_service.dart';
 import 'package:mobile_ai_guide/widgets/home/quick_actions.dart';
 import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
@@ -24,6 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _current = 0;
   String? _selectedTile;
+  Key _featuredKey = UniqueKey();
 
   @override
   void initState() {
@@ -50,9 +52,21 @@ class _HomePageState extends State<HomePage> {
           preferredSize: Size.fromHeight(90),
           child: MuseumHeader(),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
+        body: RefreshIndicator(
+          onRefresh: () async {
+            // refresh featured exhibits and rebuild the section
+            try {
+              await FeaturedExhibitsService.fetchFeaturedExhibits();
+            } catch (_) {
+              // ignore - UI will show friendly error
+            }
+            if (!mounted) return;
+            setState(() => _featuredKey = UniqueKey());
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const WelcomeSection(),
@@ -79,11 +93,14 @@ class _HomePageState extends State<HomePage> {
                 },
                 onSaved: () {
                   setState(() => _selectedTile = 'Saved');
-                  Navigator.of(context).pushNamed('/saved');
+                  Navigator.of(context).pushNamed('/saved').then((_) {
+                    if (!mounted) return;
+                    setState(() => _selectedTile = null);
+                  });
                 },
               ),
               const SizedBox(height: 16),
-              const FeaturedExhibitionsSection(),
+              FeaturedExhibitionsSection(key: _featuredKey),
               const SizedBox(height: 16),
               QuickActionsRow(
                 onSettingsTap: () {
@@ -101,47 +118,52 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        bottomNavigationBar: AppBottomNavigationBar(
-          selectedIndex: _current,
-          onDestinationSelected: (i) {
-            if (i == 0) {
-              // Already on home page, do nothing
-              setState(() => _current = 0);
-            } else if (i == 1) {
-              // Navigate to Browse Artifacts (Explore)
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const BrowseArtifactsPage(),
-                  settings: const RouteSettings(name: '/browse'),
-                ),
-              );
-            } else if (i == 2) {
-              // Navigate to Saved artifacts
-              setState(() => _current = 2);
-              Navigator.of(context).pushNamed('/saved');
-            } else if (i == 3) {
-              // Navigate to Kings Persona List
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PersonaListPage(),
-                  settings: const RouteSettings(name: '/personas'),
-                ),
-              );
-            } else {
-              // Handle other navigation items
-              setState(() => _current = i);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${['Home', 'Explore', 'Saved', 'Kings'][i]} - Coming Soon',
-                  ),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            }
-          },
-        ),
       ),
+      bottomNavigationBar: AppBottomNavigationBar(
+        selectedIndex: _current,
+        onDestinationSelected: (i) {
+          if (i == 0) {
+            // Already on home page, do nothing
+            setState(() => _current = 0);
+          } else if (i == 1) {
+            // Navigate to Browse Artifacts (Explore)
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const BrowseArtifactsPage(),
+                settings: const RouteSettings(name: '/browse'),
+              ),
+            );
+          } else if (i == 2) {
+            // Navigate to Saved artifacts
+            setState(() => _current = 2);
+            Navigator.of(context).pushNamed('/saved').then((_) {
+              if (!mounted) return;
+              // restore selection to Home after returning
+              setState(() => _current = 0);
+            });
+          } else if (i == 3) {
+            // Navigate to Kings Persona List
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PersonaListPage(),
+                settings: const RouteSettings(name: '/personas'),
+              ),
+            );
+          } else {
+            // Handle other navigation items
+            setState(() => _current = i);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${['Home', 'Explore', 'Saved', 'Kings'][i]} - Coming Soon',
+                ),
+                duration: const Duration(seconds: 1),
+              ),
+            );
+          }
+        },
+      ),
+    ),
     );
   }
 }

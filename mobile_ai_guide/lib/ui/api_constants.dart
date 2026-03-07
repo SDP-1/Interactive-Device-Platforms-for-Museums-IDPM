@@ -10,5 +10,6 @@ class ApiConstants {
 
   static const String artifactAskEndpoint = '/artifact/ask';
   static const String artifactEndpoint = '/api/artifacts';
+  static const String featuredExhibitsEndpoint = '/api/featured-exhibits';
   static const String sessionEndpoint = '/api/sessions';
 }
