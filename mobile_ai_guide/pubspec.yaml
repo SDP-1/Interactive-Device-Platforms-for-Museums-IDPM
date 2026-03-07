@@ -43,10 +43,16 @@ dependencies:
   flutter_dotenv: ^6.0.0
   flutter_html: ^3.0.0-beta.2
   url_launcher: ^6.3.1
+  sqflite: ^2.4.2
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  audioplayers: ^5.2.0
+  geolocator: ^14.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -67,6 +73,14 @@ flutter:
 
   assets:
     - .env
+    - assets/beep.mp3
+    - assets/images/
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/museum-guide.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

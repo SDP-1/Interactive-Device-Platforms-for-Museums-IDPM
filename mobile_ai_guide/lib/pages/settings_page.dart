@@ -3,6 +3,8 @@ import 'package:mobile_ai_guide/ui/colors.dart' as app;
 import 'package:mobile_ai_guide/ui/content_language.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
 import 'package:mobile_ai_guide/ui/font_scale.dart';
+import 'package:mobile_ai_guide/services/proximity_service.dart';
+import 'dart:async';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -15,7 +17,25 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _showFontSlider = false;
   bool _showContentLanguage = false;
   bool _showChatLanguage = false;
+  bool _showGpsSecurity = false;
   double _fontScale = AppFontScale.instance.value;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_initializeGpsSecurity());
+  }
+
+  Future<void> _initializeGpsSecurity() async {
+    final initialized = await ProximityService.instance.initialize();
+    if (initialized) {
+      await ProximityService.instance.checkOnce();
+    }
+  }
+
+  void _toggleGpsSecurity() {
+    setState(() => _showGpsSecurity = !_showGpsSecurity);
+  }
 
   void _toggleContentLanguage() {
     setState(() => _showContentLanguage = !_showContentLanguage);
@@ -92,10 +112,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: 'Audio Settings',
                 subtitle: 'Voice & Sound',
               ),
-              const _SettingsTile(
-                icon: Icons.shield_outlined,
-                title: 'GPS Security Info',
-                subtitle: 'Privacy & Location',
+              _GpsSecurityTile(
+                isExpanded: _showGpsSecurity,
+                onToggle: _toggleGpsSecurity,
               ),
               _FontSizeSettingTile(
                 isExpanded: _showFontSlider,
@@ -233,6 +252,142 @@ class _ContentLanguageSettingTile extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _GpsSecurityTile extends StatelessWidget {
+  const _GpsSecurityTile({required this.isExpanded, required this.onToggle});
+
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: app.kGold.withOpacity(0.16),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.gps_fixed,
+                    color: app.kGold,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'GPS Security Info',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Privacy & Location',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: Colors.black38,
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: const _GpsSecurityDetailsPanel(),
+          crossFadeState: isExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
+      ],
+    );
+  }
+}
+
+class _GpsSecurityDetailsPanel extends StatelessWidget {
+  const _GpsSecurityDetailsPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: app.kWarmPanel,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            ValueListenableBuilder<ProximityStatus>(
+              valueListenable: ProximityService.instance.statusNotifier,
+              builder: (context, status, _) {
+                String label;
+                Color color;
+                if (status == ProximityStatus.safe) {
+                  label = 'Device Working Normally';
+                  color = Colors.green;
+                } else if (status == ProximityStatus.warning) {
+                  label = 'Warning: Near Allowed Boundary';
+                  color = Colors.orange;
+                } else {
+                  label = 'Out of Range';
+                  color = Colors.red;
+                }
+                return Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(label),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            ValueListenableBuilder<double>(
+              valueListenable: ProximityService.instance.distanceNotifier,
+              builder: (context, distance, _) {
+                return Text(
+                  'Distance: ${distance.toStringAsFixed(1)} m',
+                  style: const TextStyle(fontSize: 12),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

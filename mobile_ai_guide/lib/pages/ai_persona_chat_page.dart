@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_ai_guide/models/persona.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/services/persona_service.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 enum MessageSender { bot, user, system }
 
@@ -44,6 +49,8 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
   void Function()? _modalStateUpdater;
   late final VoidCallback _chatLanguageListener;
 
+  String get _conversationKey => 'persona_${widget.persona.kingId}';
+
   @override
   void initState() {
     super.initState();
@@ -61,20 +68,90 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
     AppChatLanguage.instance.notifier.addListener(_chatLanguageListener);
     _initializeTts();
     _initializeSpeechToText();
-    _messages.addAll([
-      ChatMessage(
+    _loadInitialMessages();
+  }
+
+  Future<void> _loadInitialMessages() async {
+    try {
+      await SessionAccessService.requireActiveSession();
+      final records = await LocalStorageService.instance.getChatHistory(
+        artifactId: _conversationKey,
+      );
+
+      if (!mounted) return;
+
+      if (records.isNotEmpty) {
+        setState(() {
+          _messages.addAll(
+            records.map(
+              (record) => ChatMessage(
+                text: record.text,
+                sender: _senderFromStored(record.sender),
+                time: record.time,
+                isWarning: record.isWarning,
+              ),
+            ),
+          );
+        });
+        return;
+      }
+
+      final intro = ChatMessage(
         text: _buildIntroMessage(_chatLanguage),
         sender: MessageSender.bot,
-        time: DateTime.now().subtract(const Duration(minutes: 4)),
-      ),
-    ]);
+        time: DateTime.now(),
+      );
+
+      setState(() {
+        _messages.add(intro);
+      });
+
+      await _persistMessage(intro);
+    } on SessionAccessException catch (e) {
+      if (!mounted) return;
+      await SessionGuard.redirectToSessionIntro(context, message: e.message);
+    }
+  }
+
+  MessageSender _senderFromStored(String sender) {
+    switch (sender) {
+      case 'user':
+        return MessageSender.user;
+      case 'system':
+        return MessageSender.system;
+      case 'bot':
+      default:
+        return MessageSender.bot;
+    }
+  }
+
+  Future<void> _persistMessage(ChatMessage message) async {
+    await LocalStorageService.instance.saveChatMessage(
+      artifactId: _conversationKey,
+      sender: message.sender.name,
+      text: message.text,
+      isWarning: message.isWarning,
+      time: message.time,
+    );
   }
 
   String _buildIntroMessage(String chatLang) {
+    final name = (chatLang == 'si')
+        ? widget.persona.nameSi
+        : widget.persona.nameEn;
+    final capital = (chatLang == 'si')
+        ? (widget.persona.capitalSi ?? widget.persona.capitalEn ?? '')
+        : (widget.persona.capitalEn ?? widget.persona.capitalSi ?? '');
     if (chatLang == 'si') {
-      return 'ආයුබෝවන්! මම ${widget.persona.kingName}, ${widget.persona.reignPeriod} කාලයේ ${widget.persona.capitalCity} හි රජකම් කළ රජතුමා. මගේ රාජ්‍යයේ කතා සහ අපේ රාජධානියේ තේජස ගැන ඔබ සමඟ කතා කිරීමට මට සතුටක්. ඔබට කුමක් දැන ගැනීමට අවශ්‍යද?';
+      if (widget.persona.reignPeriod.isNotEmpty) {
+        return 'ආයුබෝවන්! මම $name, ${widget.persona.reignPeriod} කාලයේ $capital හි රජකම් කළ රජතුමා. මගේ රාජ්‍යයේ කතා සහ අපේ රාජධානියේ තේජස ගැන ඔබ සමඟ කතා කිරීමට මට සතුටක්. ඔබට කුමක් දැන ගැනීමට අවශ්‍යද?';
+      }
+      return 'ආයුබෝවන්! මම $name, $capital හි රජකම් කළ රජතුමා. මගේ රාජ්‍යයේ කතා සහ අපේ රාජධානියේ තේජස ගැන ඔබ සමඟ කතා කිරීමට මට සතුටක්. ඔබට කුමක් දැන ගැනීමට අවශ්‍යද?';
     } else {
-      return 'Greetings! I am ${widget.persona.kingName}, who ruled from ${widget.persona.capitalCity} during ${widget.persona.reignPeriod}. I am honored to share stories of my reign and the glory of our kingdom with you. What would you like to know?';
+      if (widget.persona.reignPeriod.isNotEmpty) {
+        return 'Greetings! I am $name, who ruled from $capital during ${widget.persona.reignPeriod}. I am honored to share stories of my reign and the glory of our kingdom with you. What would you like to know?';
+      }
+      return 'Greetings! I am $name, who ruled from $capital. I am honored to share stories of my reign and the glory of our kingdom with you. What would you like to know?';
     }
   }
 
@@ -124,23 +201,76 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
 
   Future<void> _startListening() async {
     if (!_isListening) {
-      bool available = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Error: ${error.errorMsg}')));
+      // Ensure microphone permission first
+      try {
+        final micStatus = await Permission.microphone.status;
+        if (!micStatus.isGranted) {
+          final result = await Permission.microphone.request();
+          if (!result.isGranted) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    result.isPermanentlyDenied
+                        ? 'Microphone permission permanently denied. Enable it in settings.'
+                        : 'Microphone permission is required to use voice input.',
+                  ),
+                  action: result.isPermanentlyDenied
+                      ? SnackBarAction(
+                          label: 'Settings',
+                          onPressed: () => openAppSettings(),
+                        )
+                      : null,
+                ),
+              );
+            }
+            return;
           }
-          setState(() => _isListening = false);
-          _modalStateUpdater?.call();
-        },
-        onStatus: (status) {
-          if (status == 'done' || status == 'notListening') {
+        }
+      } catch (e) {
+        // If permission handling fails, continue to initialize STT and let it handle errors.
+      }
+
+      bool available = false;
+      try {
+        available = await _speechToText.initialize(
+          onError: (error) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${error.errorMsg}')),
+              );
+            }
             setState(() => _isListening = false);
             _modalStateUpdater?.call();
-          }
-        },
-      );
+          },
+          onStatus: (status) {
+            if (status == 'done' || status == 'notListening') {
+              setState(() => _isListening = false);
+              _modalStateUpdater?.call();
+            }
+          },
+        );
+      } on PlatformException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Speech recognition not available on this device.'),
+            ),
+          );
+        }
+        setState(() => _isListening = false);
+        _modalStateUpdater?.call();
+        return;
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Speech init error: ${e.toString()}')),
+          );
+        }
+        setState(() => _isListening = false);
+        _modalStateUpdater?.call();
+        return;
+      }
 
       if (available) {
         setState(() {
@@ -251,11 +381,17 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
 
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
+    final userMessage = ChatMessage(
+      text: text.trim(),
+      sender: MessageSender.user,
+    );
+
     setState(() {
-      _messages.add(ChatMessage(text: text.trim(), sender: MessageSender.user));
+      _messages.add(userMessage);
       _isLoading = true;
     });
     _controller.clear();
+    await _persistMessage(userMessage);
 
     try {
       final response = await PersonaService.askPersona(
@@ -265,23 +401,39 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
       );
 
       if (mounted) {
+        final botMessage = ChatMessage(
+          text: response,
+          sender: MessageSender.bot,
+        );
         setState(() {
-          _messages.add(ChatMessage(text: response, sender: MessageSender.bot));
+          _messages.add(botMessage);
           _isLoading = false;
         });
+        await _persistMessage(botMessage);
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _messages.add(
-            ChatMessage(
-              text: 'Error: ${e.toString()}',
-              sender: MessageSender.system,
-              isWarning: true,
-            ),
+        if (e is SessionAccessException) {
+          setState(() {
+            _isLoading = false;
+          });
+          await SessionGuard.redirectToSessionIntro(
+            context,
+            message: e.message,
           );
+          return;
+        }
+
+        final errorMessage = ChatMessage(
+          text: 'Error: ${e.toString()}',
+          sender: MessageSender.system,
+          isWarning: true,
+        );
+        setState(() {
+          _messages.add(errorMessage);
           _isLoading = false;
         });
+        await _persistMessage(errorMessage);
       }
     }
   }
@@ -295,12 +447,22 @@ class _AiPersonaChatPageState extends State<AiPersonaChatPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.persona.kingName,
+              (_chatLanguage == 'si')
+                  ? widget.persona.nameSi
+                  : widget.persona.nameEn,
               style: const TextStyle(color: Colors.black87, fontSize: 16),
             ),
             const SizedBox(height: 2),
             Text(
-              widget.persona.reignPeriod,
+              widget.persona.reignPeriod.isNotEmpty
+                  ? widget.persona.reignPeriod
+                  : ((_chatLanguage == 'si')
+                        ? (widget.persona.capitalSi ??
+                              widget.persona.capitalEn ??
+                              '')
+                        : (widget.persona.capitalEn ??
+                              widget.persona.capitalSi ??
+                              '')),
               style: const TextStyle(color: Colors.black54, fontSize: 12),
             ),
           ],

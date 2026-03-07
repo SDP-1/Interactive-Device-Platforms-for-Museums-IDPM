@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { Artifact } from '../types/Artifact';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,

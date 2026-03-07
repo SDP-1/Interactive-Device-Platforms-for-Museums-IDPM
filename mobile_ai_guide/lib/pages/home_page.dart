@@ -8,8 +8,11 @@ import 'package:mobile_ai_guide/pages/qr_scanner_page.dart';
 import 'package:mobile_ai_guide/pages/settings_page.dart';
 import 'package:mobile_ai_guide/pages/help_page.dart';
 import 'package:mobile_ai_guide/pages/persona_list_page.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/home/featured_exhibitions.dart';
+import 'package:mobile_ai_guide/services/featured_exhibits_service.dart';
 import 'package:mobile_ai_guide/widgets/home/quick_actions.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,63 +25,98 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _current = 0;
   String? _selectedTile;
+  Key _featuredKey = UniqueKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _validateSession();
+  }
+
+  Future<void> _validateSession() async {
+    try {
+      await SessionAccessService.requireActiveSession();
+    } on SessionAccessException catch (e) {
+      if (!mounted) return;
+      await SessionGuard.redirectToSessionIntro(context, message: e.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: app.kCream,
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(90),
-        child: MuseumHeader(),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const WelcomeSection(),
-            const SizedBox(height: 8),
-            ActionGrid(
-              selectedTile: _selectedTile,
-              onBrowse: () {
-                setState(() => _selectedTile = 'Browse');
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const BrowseArtifactsPage(),
-                    settings: const RouteSettings(name: '/browse'),
-                  ),
-                );
-              },
-              onScanQR: () {
-                setState(() => _selectedTile = 'Scan QR');
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const QRScannerPage()),
-                );
-              },
-              onTours: () {
-                setState(() => _selectedTile = 'Tours');
-              },
-              onSaved: () {
-                setState(() => _selectedTile = 'Saved');
-              },
-            ),
-            const SizedBox(height: 16),
-            const FeaturedExhibitionsSection(),
-            const SizedBox(height: 16),
-            QuickActionsRow(
-              onSettingsTap: () {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
-              },
-              onHelpTap: () {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const HelpPage()));
-              },
-            ),
-            const SizedBox(height: 24),
-          ],
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: app.kCream,
+        appBar: const PreferredSize(
+          preferredSize: Size.fromHeight(90),
+          child: MuseumHeader(),
+        ),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            // refresh featured exhibits and rebuild the section
+            try {
+              await FeaturedExhibitsService.fetchFeaturedExhibits();
+            } catch (_) {
+              // ignore - UI will show friendly error
+            }
+            if (!mounted) return;
+            setState(() => _featuredKey = UniqueKey());
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const WelcomeSection(),
+              const SizedBox(height: 8),
+              ActionGrid(
+                selectedTile: _selectedTile,
+                onBrowse: () {
+                  setState(() => _selectedTile = 'Browse');
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const BrowseArtifactsPage(),
+                      settings: const RouteSettings(name: '/browse'),
+                    ),
+                  );
+                },
+                onScanQR: () {
+                  setState(() => _selectedTile = 'Scan QR');
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const QRScannerPage()),
+                  );
+                },
+                onTours: () {
+                  setState(() => _selectedTile = 'Tours');
+                },
+                onSaved: () {
+                  setState(() => _selectedTile = 'Saved');
+                  Navigator.of(context).pushNamed('/saved').then((_) {
+                    if (!mounted) return;
+                    setState(() => _selectedTile = null);
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              FeaturedExhibitionsSection(key: _featuredKey),
+              const SizedBox(height: 16),
+              QuickActionsRow(
+                onSettingsTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  );
+                },
+                onHelpTap: () {
+                  Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const HelpPage()));
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: AppBottomNavigationBar(
@@ -95,6 +133,14 @@ class _HomePageState extends State<HomePage> {
                 settings: const RouteSettings(name: '/browse'),
               ),
             );
+          } else if (i == 2) {
+            // Navigate to Saved artifacts
+            setState(() => _current = 2);
+            Navigator.of(context).pushNamed('/saved').then((_) {
+              if (!mounted) return;
+              // restore selection to Home after returning
+              setState(() => _current = 0);
+            });
           } else if (i == 3) {
             // Navigate to Kings Persona List
             Navigator.of(context).push(
@@ -117,6 +163,7 @@ class _HomePageState extends State<HomePage> {
           }
         },
       ),
+    ),
     );
   }
 }

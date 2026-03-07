@@ -1,176 +1,165 @@
 import os
-import pandas as pd
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
+from dotenv import load_dotenv
+from pymongo import MongoClient
+from bson import ObjectId
+from typing import Optional
 
 from rag.classifier import is_related
-from rag.retriever import retrieve_context
-from rag.generator import generate_answer
-
-# Load artifacts CSV
-DATA_PATH = "data/artifacts.csv"
-if os.path.exists(DATA_PATH):
-    try:
-        df = pd.read_csv(DATA_PATH, encoding='utf-8-sig')
-    except:
-        df = pd.read_csv(DATA_PATH, encoding='latin-1')
-else:
-    df = pd.DataFrame()
+from rag.artifact_retriever import retrieve_context
+from rag.artifact_generator import generate_answer_with_memory
+from utils.session_memory import (
+    build_history_block,
+    fetch_session_history,
+    get_recent_interactions,
+    is_repeated_question,
+    save_chat_interaction,
+)
 
 router = APIRouter(
     prefix="/artifact",
     tags=["Artifact Mode"]
 )
 
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME") or os.getenv("MONGO_DB")
+mongo_client = MongoClient(MONGO_URI) if MONGO_URI else None
+db = mongo_client[DB_NAME] if mongo_client and DB_NAME else None
+ARTIFACTS_COLLECTION = os.getenv("MONGO_COLLECTION", "artifacts")
+
 
 class AskRequest(BaseModel):
     artifact_id: str
     question: str
     language: str  # "en" or "si"
-
-
-@router.get("/{artifact_id}")
-async def get_artifact_info(artifact_id: str, language: str = "en"):
-    """
-    Get artifact information when QR code is scanned.
-    Returns basic artifact details in the requested language.
-    """
-    if df.empty:
-        raise HTTPException(status_code=404, detail="No artifacts loaded")
-    
-    if artifact_id not in df["Artifact_id"].astype(str).values:
-        raise HTTPException(status_code=404, detail="Artifact not found")
-    
-    row = df[df["Artifact_id"] == artifact_id].iloc[0]
-    
-    # Select language-specific fields
-    if language == "si":
-        return {
-            "artifact_id": str(row["Artifact_id"]),
-            "name": row.get("Name", ""),
-            "period": row.get("Period", ""),
-            "origin": row.get("origin", ""),
-            "description": row.get("Description_si", ""),
-            "facts": row.get("facts_si", ""),
-            "faq": row.get("faq_si", "")
-        }
-    else:
-        return {
-            "artifact_id": str(row["Artifact_id"]),
-            "name": row.get("Name", ""),
-            "period": row.get("Period", ""),
-            "origin": row.get("origin", ""),
-            "description": row.get("Description_en", ""),
-            "facts": row.get("facts_en", ""),
-            "faq": row.get("faq_en", "")
-        }
+    session_id: Optional[str] = None
 
 
 @router.post("/ask")
 async def ask(req: AskRequest):
     """
-    Ask a question about an artifact using AI Mode.
-    The system will:
-    1. Validate the artifact exists
-    2. Classify if the question is related to the artifact
-    3. Retrieve relevant context using RAG
-    4. Generate an answer using GPT-4o-mini
+    Ask a question about an artifact using AI Mode. Only the /ask endpoint is exposed.
     """
     try:
         # ----------------------------
         # Validate artifact
         # ----------------------------
-        if df.empty or req.artifact_id not in df["Artifact_id"].astype(str).values:
-            return {
-                "answer": "Artifact not found." if req.language == "en" else "කලා නිර්මාණය හමු නොවීය.",
-                "rejected": True,
-                "reason": "ARTIFACT_NOT_FOUND"
-            }
+        if db is None:
+            return {"answer": "Server not configured with MongoDB.", "rejected": True, "reason": "NO_DB"}
 
-        # Load row
-        row = df[df["Artifact_id"] == req.artifact_id].iloc[0]
+        artifact_id = (req.artifact_id or "").strip()
+        language = (req.language or "en").lower().strip()
 
-        # Short artifact summary for classifier
-        summary = f"{row['Name']} - {row['Period']} - {row['origin']}"
+        # Try to fetch the artifact from MongoDB
+        coll = db[ARTIFACTS_COLLECTION]
+        artifact = coll.find_one({"artifact_id": artifact_id}) or coll.find_one({"Artifact_id": artifact_id})
+
+        if not artifact:
+            # Optional: try _id lookup if artifact_id looks like ObjectId
+            try:
+                artifact = coll.find_one({"_id": ObjectId(artifact_id)})
+            except Exception:
+                artifact = None
+
+        if not artifact:
+            return {"answer": "I don't have information about that artifact.", "rejected": False, "reason": "NO_ARTIFACT"}
 
         # ----------------------------
-        # Step 1: Classification
+        # Session memory (optional)
         # ----------------------------
-        classification = is_related(req.question, summary)
-        
-        # Handle greetings with friendly responses
+        session_id = (req.session_id or "").strip()
+        interactions = []
+        if session_id:
+            interactions = fetch_session_history(
+                session_id=session_id,
+                reference_type="artifact",
+                reference_id=artifact_id,
+            )
+
+        recent_interactions = get_recent_interactions(interactions)
+        conversation_history = build_history_block(recent_interactions)
+        repeated_question = is_repeated_question(req.question, recent_interactions)
+
+        # ----------------------------
+        # Classify question relevance
+        # ----------------------------
+        # Use classifier to ensure the visitor's question is about the artifact
+        # (returns YES / NO / GREETING)
+        classification = is_related(req.question, artifact_id)
+
+        # ----------------------------
+        # Handle greetings
+        # ----------------------------
         if classification == "GREETING":
-            artifact_name = row['Name']
             greeting_msg = (
-                f"Hello! I'm your AI museum guide. You're viewing {artifact_name}. Feel free to ask me anything about this artifact!"
-                if req.language == "en"
-                else f"හායි! මම ඔබගේ කෘතිම බුද්ධි කෞතුකාගාර මාර්ගෝපදේශකයා. ඔබ දැන් {artifact_name} දෙස බලයි. මේ කලා නිර්මාණය පිළිබඳ ඕනෑම දෙයක් මගෙන් විමසන්න!"
+                "Hello! I'm your AI museum guide. Feel free to ask me about this artifact!"
+                if language == "en"
+                else "හායි! මම ඔබගේ කෘතිම බුද්ධි කෞතුකාගාර මාර්ගෝපදේශකයා. ඔබට මේ කලා නිර්මාණය පිළිබඳ මගේ අත්දැකීම් විමසන්න."
             )
-            return {
-                "answer": greeting_msg,
-                "rejected": False,
-                "reason": None
-            }
-        
+            return {"answer": greeting_msg, "rejected": False, "reason": None}
+
+        # ----------------------------
+        # Reject out-of-scope questions
+        # ----------------------------
         if classification != "YES":
-            rejection_msg = (
-                "I can only answer questions about the artifact you are viewing."
-                if req.language == "en"
-                else "මම ඔබ දැක ඇති කලා නිර්මාණය පිළිබඳ ප්‍රශ්නවලට පමණක් පිළිතුරු දිය හැකිය."
-            )
-            return {
-                "answer": rejection_msg,
-                "rejected": True,
-                "reason": "OUT_OF_SCOPE"
-            }
+            return {"answer": "I can only answer questions about the artifact you referenced." if language == "en" else "මම ඔබ සඳහන් කළ කලා නිර්මාණය පිළිබඳ ප්‍රශ්නවලට පමණක් පිළිතුරු දිය හැක.", "rejected": True, "reason": "OUT_OF_SCOPE"}
 
         # ----------------------------
-        # Step 2: Retrieval (RAG)
+        # Retrieve context (RAG)
         # ----------------------------
-        context = retrieve_context(
-            artifact_id=req.artifact_id,
-            question=req.question,
-            language=req.language
-        )
+        # Fetch relevant document chunks from the vector DB for the artifact
+        context = retrieve_context(artifact_id=artifact_id, question=req.question, language=language)
 
-        # If DB empty or context empty
+        # If vector retrieval fails, fall back to MongoDB fields
         if not context:
-            no_info_msg = (
-                "I don't know that information."
-                if req.language == "en"
-                else "මට එම තොරතුරු නොදනී."
-            )
-            return {
-                "answer": no_info_msg,
-                "rejected": False,
-                "reason": "NO_CONTEXT_FOUND"
-            }
+            if language == "si":
+                context = (
+                    artifact.get("aiKnowlageBase_si")
+                    or artifact.get("description_si")
+                    or artifact.get("culturalSignificance_si")
+                    or ""
+                )
+            else:
+                context = (
+                    artifact.get("aiKnowlageBase_en")
+                    or artifact.get("description_en")
+                    or artifact.get("culturalSignificance_en")
+                    or ""
+                )
+
+        if not context:
+            return {"answer": "I don't have information about that artifact.", "rejected": False, "reason": "NO_CONTEXT_FOUND"}
 
         # ----------------------------
-        # Step 3: LLM Answer
+        # Generate final answer
         # ----------------------------
-        answer = generate_answer(req.question, context, req.language)
-
-        return {
-            "answer": answer,
-            "rejected": False,
-            "reason": None
-        }
-    
-    except Exception as e:
-        error_msg = (
-            "An error occurred while processing your question."
-            if req.language == "en"
-            else "ඔබගේ ප්‍රශ්නය සැකසීමේදී දෝෂයක් ඇති විය."
+        # Use the language model with retrieved context to craft the response
+        answer = generate_answer_with_memory(
+            question=req.question,
+            context=context,
+            language=language,
+            conversation_history=conversation_history,
+            repeated_question=repeated_question,
         )
-        return {
-            "answer": error_msg,
-            "rejected": True,
-            "reason": "INTERNAL_ERROR",
-            "error": str(e) if os.getenv("DEBUG") == "true" else None
-        }
 
+        if session_id:
+            save_chat_interaction(
+                session_id=session_id,
+                question=req.question,
+                reply=answer,
+                reference_type="artifact",
+                reference_id=artifact_id,
+                language=language,
+            )
 
-def get_artifacts_count():
-    """Helper function to get count of loaded artifacts."""
-    return len(df) if not df.empty else 0
+        return {"answer": answer, "rejected": False, "reason": None}
+
+    except Exception as e:
+        # ----------------------------
+        # Error handling
+        # ----------------------------
+        # Return a safe error response; include debug details only when DEBUG=true
+        return {"answer": "An error occurred while processing your question.", "rejected": True, "reason": "INTERNAL_ERROR", "error": str(e) if os.getenv("DEBUG") == "true" else None}

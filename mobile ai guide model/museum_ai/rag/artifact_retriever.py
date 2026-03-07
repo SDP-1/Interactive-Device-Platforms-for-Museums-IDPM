@@ -21,6 +21,8 @@ qdrant = QdrantClient(
 # ----------------------------
 def retrieve_context(artifact_id: str, question: str, language: str, top_k: int = 3):
     query_vector = embed_text(question)
+    artifact_id = (artifact_id or "").strip()
+    language = (language or "en").lower().strip()
 
     try:
         # Use query_points method (correct Qdrant API)
@@ -48,6 +50,49 @@ def retrieve_context(artifact_id: str, question: str, language: str, top_k: int 
     # Combine all retrieved chunks into one context
     # results.points contains ScoredPoint objects
     return " ".join([point.payload.get("text", "") for point in results.points])
+
+
+def artifact_exists(artifact_id: str, language: str = None) -> bool:
+    """Check whether any points exist for the given artifact_id (optionally filtered by language).
+
+    Uses Qdrant's count API when available; falls back to a safe False on errors.
+    """
+    try:
+        # Build filter conditions
+        artifact_id = (artifact_id or "").strip()
+        lang = (language or "").lower().strip()
+        must_conditions = [
+            FieldCondition(key="artifact_id", match=MatchValue(value=artifact_id))
+        ]
+        if lang:
+            must_conditions.append(FieldCondition(key="language", match=MatchValue(value=lang)))
+
+        count_result = qdrant.count(
+            collection_name="artifacts",
+            filter=Filter(must=must_conditions)
+        )
+
+        # qdrant.count returns an object with a .count attribute
+        if hasattr(count_result, "count"):
+            if int(count_result.count) > 0:
+                return True
+
+        # If language-specific check returned 0, retry without language filter
+        if lang:
+            count_result = qdrant.count(
+                collection_name="artifacts",
+                filter=Filter(
+                    must=[FieldCondition(key="artifact_id", match=MatchValue(value=artifact_id))]
+                ),
+            )
+            if hasattr(count_result, "count"):
+                return int(count_result.count) > 0
+
+        # Fallback: interpret truthy integer
+        return int(count_result) > 0
+    except Exception:
+        # On any errors, be conservative and report False (no artifact)
+        return False
 
 
 

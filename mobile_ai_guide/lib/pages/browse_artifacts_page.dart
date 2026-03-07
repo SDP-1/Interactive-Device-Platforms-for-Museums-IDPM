@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/services/artifact_service.dart';
 import 'package:mobile_ai_guide/models/artifact.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/browse_artifacts/artifact_grid_card.dart';
 import 'package:mobile_ai_guide/widgets/browse_artifacts/filter_row.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/ui/content_language.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 import 'package:mobile_ai_guide/widgets/navigation/bottom_navigation_mixin.dart';
 
@@ -19,6 +21,7 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
     with BottomNavigationMixin {
   static const _filters = ['All', 'Ancient', 'Medieval', 'Renaissance'];
   late Future<List<Artifact>> _artifactsFuture;
+  bool _sessionRedirectTriggered = false;
 
   @override
   void initState() {
@@ -105,6 +108,21 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
+                      if (snapshot.error is SessionAccessException &&
+                          !_sessionRedirectTriggered) {
+                        _sessionRedirectTriggered = true;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) return;
+                          final error =
+                              snapshot.error! as SessionAccessException;
+                          SessionGuard.redirectToSessionIntro(
+                            context,
+                            message: error.message,
+                          );
+                        });
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -179,73 +197,81 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     }
 
                     final artifacts = snapshot.data!;
-                    return CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Container(
-                            color: kFilterBackground,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const FilterRow(
-                                  filters: _filters,
-                                  selected: 'All',
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    12,
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        setState(() {
+                          _artifactsFuture = ArtifactService.getAllArtifacts();
+                        });
+                        await _artifactsFuture;
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Container(
+                              color: kFilterBackground,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const FilterRow(
+                                    filters: _filters,
+                                    selected: 'All',
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Artifacts: ',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade700,
-                                          fontWeight: FontWeight.w500,
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      12,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Artifacts: ',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade700,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        '${artifacts.length}',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade900,
-                                          fontWeight: FontWeight.w700,
+                                        Text(
+                                          '${artifacts.length}',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade900,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.all(12),
-                          sliver: SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  childAspectRatio: 0.72,
-                                ),
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final artifact = artifacts[index];
-                              return ArtifactGridCard(
-                                artifact: artifact,
-                                language: contentLanguage,
-                              );
-                            }, childCount: artifacts.length),
+                          SliverPadding(
+                            padding: const EdgeInsets.all(12),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: 0.72,
+                                  ),
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final artifact = artifacts[index];
+                                return ArtifactGridCard(
+                                  artifact: artifact,
+                                  language: contentLanguage,
+                                );
+                              }, childCount: artifacts.length),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   },
                 ),

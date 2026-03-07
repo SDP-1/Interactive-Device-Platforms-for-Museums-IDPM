@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
+import 'package:mobile_ai_guide/models/featured_exhibit.dart';
+import 'package:mobile_ai_guide/services/featured_exhibits_service.dart';
+import 'package:mobile_ai_guide/pages/featured_exhibitions_page.dart';
+import 'package:mobile_ai_guide/pages/exhibit_artifacts_page.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 
-class FeaturedExhibitionsSection extends StatelessWidget {
+class FeaturedExhibitionsSection extends StatefulWidget {
   const FeaturedExhibitionsSection({super.key});
+
+  @override
+  State<FeaturedExhibitionsSection> createState() =>
+      _FeaturedExhibitionsSectionState();
+}
+
+class _FeaturedExhibitionsSectionState
+    extends State<FeaturedExhibitionsSection> {
+  late Future<List<FeaturedExhibit>> _future;
+  bool _sessionRedirectTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = FeaturedExhibitsService.fetchFeaturedExhibits();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,23 +37,132 @@ class FeaturedExhibitionsSection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          _HeaderRow(),
-          SizedBox(height: 12),
-          ExhibitionItem(
-            imageUrl:
-                'https://curiosmos.com/wp-content/uploads/2020/09/Sigiriya-4.jpg',
-            title: 'Ancient Kingdoms',
-            artifacts: '12 artifacts',
-            duration: '45 min tour',
+        children: [
+          _HeaderRow(
+            onViewAll: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const FeaturedExhibitionsPage(),
+                ),
+              );
+            },
           ),
-          SizedBox(height: 12),
-          ExhibitionItem(
-            imageUrl:
-                'https://live.staticflickr.com/8107/8538025666_ab2728dcbb_b.jpg',
-            title: 'Traditional Arts',
-            artifacts: '18 artifacts',
-            duration: '30 min tour',
+          const SizedBox(height: 12),
+          FutureBuilder<List<FeaturedExhibit>>(
+            future: _future,
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 120,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snap.hasError) {
+                // handle session redirect specially
+                if (snap.error is SessionAccessException &&
+                    !_sessionRedirectTriggered) {
+                  _sessionRedirectTriggered = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    SessionGuard.redirectToSessionIntro(
+                      context,
+                      message: (snap.error as SessionAccessException).message,
+                    );
+                  });
+                  return const SizedBox(
+                    height: 120,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 56,
+                            color: Colors.red.shade300,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Unable to load featured exhibitions',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Please check your connection and try again.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey.shade700),
+                          ),
+                          const SizedBox(height: 12),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: app.kGold,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _future =
+                                    FeaturedExhibitsService.fetchFeaturedExhibits();
+                                _sessionRedirectTriggered = false;
+                              });
+                            },
+                            child: const Text(
+                              'Retry',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              final items = snap.data ?? [];
+              final showCount = items.length >= 3 ? 3 : items.length;
+              if (showCount == 0) {
+                return const Text('No featured exhibitions available');
+              }
+              return Column(
+                children: List.generate(showCount, (i) {
+                  final ex = items[i];
+                  return Column(
+                    children: [
+                      ExhibitionItem(
+                        imageUrl: ex.imageUrl ?? '',
+                        title: ex.name,
+                        artifacts: '${ex.artifacts.length} artifacts',
+                        duration: '${ex.estimatedVisitMinutes ?? 30} min tour',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ExhibitArtifactsPage(exhibit: ex),
+                            ),
+                          );
+                        },
+                      ),
+                      if (i < showCount - 1) const SizedBox(height: 12),
+                    ],
+                  );
+                }),
+              );
+            },
           ),
         ],
       ),
@@ -40,21 +171,26 @@ class FeaturedExhibitionsSection extends StatelessWidget {
 }
 
 class _HeaderRow extends StatelessWidget {
-  const _HeaderRow();
+  const _HeaderRow({this.onViewAll});
+
+  final VoidCallback? onViewAll;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
-        Expanded(
+      children: [
+        const Expanded(
           child: Text(
             'Featured Exhibitions',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
         ),
-        Text(
-          'View All',
-          style: TextStyle(color: app.kGold, fontWeight: FontWeight.w700),
+        GestureDetector(
+          onTap: onViewAll,
+          child: const Text(
+            'View All',
+            style: TextStyle(color: app.kGold, fontWeight: FontWeight.w700),
+          ),
         ),
       ],
     );
@@ -68,18 +204,20 @@ class ExhibitionItem extends StatelessWidget {
     required this.title,
     required this.artifacts,
     required this.duration,
+    this.onTap,
   });
 
   final String imageUrl;
   final String title;
   final String artifacts;
   final String duration;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () {},
+      onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
