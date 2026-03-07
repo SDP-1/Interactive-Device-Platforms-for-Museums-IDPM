@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from api.artifact_routes import router as artifact_router, get_artifacts_count
-from api.persona_routes import router as persona_router, get_personas_count
+from api.artifact_routes import router as artifact_router
+from api.persona_routes import router as persona_router
 
 load_dotenv()
 
@@ -35,13 +35,10 @@ async def root():
         "message": "Museum AI Guide API",
         "version": "1.0.0",
         "endpoints": {
-            "health": "/health",
-            "artifact_info": "/artifact/{artifact_id}",
-            "ask_artifact": "/artifact/ask",
-            "personas": "/personas",
-            "persona_info": "/persona/{king_id}",
-            "ask_persona": "/persona/ask"
-        }
+                "health": "/health",
+                "ask_artifact": "/artifact/ask",
+                "ask_persona": "/persona/ask"
+            }
     }
 
 
@@ -50,8 +47,8 @@ async def health():
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "artifacts_loaded": get_artifacts_count(),
-        "personas_loaded": get_personas_count(),
+        "artifacts_loaded": None,
+        "personas_loaded": None,
         "data_path": "data/artifacts.csv",
-        "personas_path": "data/Ancient_Kings.csv"
+        "personas_path": "mongodb:kings collection"
     }

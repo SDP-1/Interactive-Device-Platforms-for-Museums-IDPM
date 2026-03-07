@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .action-btn {
+    @apply text-xs px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer;
+  }
+  .nav-link {
+    @apply w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-gray-300 hover:bg-gray-700 hover:text-white transition-colors;
+  }
+  .nav-link.active {
+    @apply bg-gray-700 text-white;
+  }
+  .input {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-indigo-400;
+  }
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}

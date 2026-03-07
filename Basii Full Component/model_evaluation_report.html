@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Model Accuracy Evaluation — Museum AI Systems</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    min-height: 100vh;
+  }
+  /* ─── HEADER ─── */
+  .page-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    color: #fff;
+    padding: 2.5rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .page-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; }
+  .page-header p  { font-size: 0.88rem; color: #94a3b8; margin-top: 4px; }
+  .header-badge {
+    background: #f97316;
+    color: #fff;
+    padding: 6px 18px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  /* ─── LAYOUT ─── */
+  .container { max-width: 1300px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+  /* ─── SUMMARY BAR ─── */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .summary-tile {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    border-left: 4px solid transparent;
+  }
+  .summary-tile .tile-val {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+  .summary-tile .tile-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  /* ─── CHART ─── */
+  .chart-section {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    margin-bottom: 2rem;
+  }
+  .chart-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1.2rem; color:#334155; }
+  .chart-wrap { position: relative; height: 240px; }
+  /* ─── MODEL SECTION ─── */
+  .model-section {
+    background: #fff;
+    border-radius: 14px;
+    padding: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    margin-bottom: 1.5rem;
+  }
+  .model-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .model-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .model-title  { font-size: 1.15rem; font-weight: 700; }
+  .model-sub    { font-size: 0.82rem; color: #64748b; margin-top: 3px; }
+  /* ─── METRICS GRID ─── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+  .metric-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+  .m-label { font-size: 0.73rem; font-weight: 500; color: #64748b; text-transform: uppercase;
+              letter-spacing: 0.04em; margin-bottom: 4px; }
+  .m-value  { font-size: 1.35rem; font-weight: 700; }
+  .m-unit   { font-size: 0.75rem; font-weight: 400; color: #94a3b8; }
+  .m-badge  { display: inline-block; font-size: 0.68rem; font-weight: 600;
+               padding: 2px 9px; border-radius: 9999px; margin: 5px 0 6px; }
+  .m-desc   { font-size: 0.73rem; color: #64748b; line-height: 1.4; }
+  /* ─── TABLE ─── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.8rem; }
+  th { background: #f1f5f9; text-align: left; padding: 8px 12px;
+        font-size: 0.72rem; color: #475569; text-transform: uppercase;
+        letter-spacing: 0.04em; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 7px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .preview { color: #64748b; font-style: italic; max-width: 320px; }
+  /* ─── REFERENCE ─── */
+  .reference-section {
+    background: #fff;
+    border-radius: 14px;
+    padding: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    margin-bottom: 1.5rem;
+  }
+  .reference-section h2 { font-size: 1rem; font-weight: 600; color:#334155; margin-bottom:1rem; }
+  .ref-table td:first-child { font-weight: 500; width: 180px; }
+  .ref-table td:nth-child(3) { width: 90px; text-align:center; }
+  /* ─── MESSAGES ─── */
+  .error-msg { background:#fee2e2; color:#991b1b; padding:10px 14px;
+                border-radius:8px; font-size:0.82rem; margin-bottom:1rem; }
+  .warn-msg  { background:#fef3c7; color:#92400e; padding:10px 14px;
+                border-radius:8px; font-size:0.82rem; margin-bottom:1rem; }
+  /* ─── FOOTER ─── */
+  footer { text-align:center; font-size:0.78rem; color:#94a3b8; margin-top:3rem; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <h1>🏛 Museum AI Systems — Model Accuracy Report</h1>
+    <p>Evaluated: 2026-03-06 16:38:10 &nbsp;|&nbsp; Interactive Device Platforms for Museums (IDPM)</p>
+  </div>
+  <span class="header-badge">Research Evaluation</span>
+</div>
+
+<div class="container">
+
+  <!-- SUMMARY BAR -->
+  <div class="summary-bar">
+    <div class="summary-tile" style="border-color:#6366f1">
+      <div class="tile-val" style="color:#6366f1">3</div>
+      <div class="tile-label">AI Models Evaluated</div>
+    </div>
+    <div class="summary-tile" style="border-color:#22c55e">
+      <div class="tile-val" style="color:#22c55e">0.7815</div>
+      <div class="tile-label">T5 Avg ROUGE-L Score</div>
+    </div>
+    <div class="summary-tile" style="border-color:#22c55e">
+      <div class="tile-val" style="color:#22c55e">73.3%</div>
+      <div class="tile-label">Cross-Cultural Pairing Acc.</div>
+    </div>
+    <div class="summary-tile" style="border-color:#ef4444">
+      <div class="tile-val" style="color:#ef4444">0.1047</div>
+      <div class="tile-label">RAG Avg ROUGE-L Score</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-section">
+    <h2>Key Metrics Overview (all scores normalised 0 → 1)</h2>
+    <div class="chart-wrap">
+      <canvas id="metricsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ───────── T5 MODEL ───────── -->
+  <div class="model-section">
+    <div class="model-header">
+      <div class="model-icon" style="background:#fef3c7">🤖</div>
+      <div style="flex:1">
+        <div class="model-title">T5 Artifact AI Explainer &nbsp; <span style="background:#d1fae5;color:#065f46;padding:3px 12px;border-radius:9999px;font-size:0.75rem;font-weight:600;">Evaluated</span></div>
+        <div class="model-sub">
+          Model: T5-base fine-tuned on 6 museum artifacts &nbsp;|&nbsp;
+          Architecture: T5ForConditionalGeneration (8-bit quantized) &nbsp;|&nbsp;
+          Metric: ROUGE-L vs expected structured explanation
+        </div>
+      </div>
+    </div>
+    
+    <div class="metrics-grid">
+      
+        <div class="metric-card">
+          <div class="m-label">Avg ROUGE-L</div>
+          <div class="m-value" style="color:#22c55e">0.7815
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#22c55e22;color:#22c55e;">GOOD</div>
+          <div class="m-desc">Overlap between generated and reference text. &ge;0.40 is publication-quality.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Avg Inference Time</div>
+          <div class="m-value" style="color:#f59e0b">4.74
+            <span class="m-unit">&nbsp;sec</span>
+          </div>
+          <div class="m-badge" style="background:#ef444422;color:#ef4444;">NEEDS IMPROVEMENT</div>
+          <div class="m-desc">Cold-start generation time. Museum kiosk target &lt;3s.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Artifacts Tested</div>
+          <div class="m-value" style="color:#6366f1">6
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#6366f122;color:#6366f1;">INFO</div>
+          <div class="m-desc">Number of artifacts used for this evaluation run.</div>
+        </div>
+    </div>
+    
+        <table>
+          <thead><tr><th>Artifact</th><th>ROUGE-L</th><th>Time</th><th>Output Preview</th></tr></thead>
+          <tbody><tr><td>Kandyan Sword (Kasthāne)</td><td style="color:#22c55e;font-weight:600">0.8</td><td>6.44s</td><td class="preview">Kandyan Sword (Kasthne) Overview This royal ceremonial sword originates from Sri…</td></tr>
+<tr><td>Japanese Katana</td><td style="color:#22c55e;font-weight:600">0.7707</td><td>4.84s</td><td class="preview">Japanese Katana Overview This warrior sword originates from Japan and dates to K…</td></tr>
+<tr><td>Geta Bera (Kandyan Drum)</td><td style="color:#22c55e;font-weight:600">0.7983</td><td>4.69s</td><td class="preview">Geta Bera (Kandyan Drum) Overview This dance / ritual drum originates from Sri L…</td></tr>
+<tr><td>Japanese Taiko Drum</td><td style="color:#22c55e;font-weight:600">0.7677</td><td>4.25s</td><td class="preview">Japanese Taiko Drum Overview This festival drum originates from Japan and dates …</td></tr>
+<tr><td>Kandyan Temple Mural</td><td style="color:#22c55e;font-weight:600">0.7838</td><td>4.81s</td><td class="preview">Kandyan Temple Mural Overview This buddhist mural art originates from Sri Lanka …</td></tr>
+<tr><td>Thai Temple Mural</td><td style="color:#22c55e;font-weight:600">0.7684</td><td>3.42s</td><td class="preview">Thai Temple Mural Overview This buddhist temple mural originates from Thailand a…</td></tr>
+</tbody>
+        </table>
+  </div>
+
+  <!-- ───────── SENTENCE TRANSFORMER ───────── -->
+  <div class="model-section">
+    <div class="model-header">
+      <div class="model-icon" style="background:#ede9fe">🔍</div>
+      <div style="flex:1">
+        <div class="model-title">Sentence Transformer — Similarity Engine &nbsp; <span style="background:#d1fae5;color:#065f46;padding:3px 12px;border-radius:9999px;font-size:0.75rem;font-weight:600;">Evaluated</span></div>
+        <div class="model-sub">
+          Model: all-MiniLM-L6-v2 &nbsp;|&nbsp;
+          Artifacts: 30 &nbsp;|&nbsp;
+          Embedding dims: 384 &nbsp;|&nbsp;
+          Metric: Cosine similarity, retrieval accuracy, silhouette score
+        </div>
+      </div>
+    </div>
+    
+    <div class="metrics-grid">
+      
+        <div class="metric-card">
+          <div class="m-label">Cross-Cultural Pairing Accuracy (Top-1)</div>
+          <div class="m-value" style="color:#22c55e">73.3%
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#22c55e22;color:#22c55e;">GOOD</div>
+          <div class="m-desc">Given an artifact (e.g. Kandyan Sword), is the top-1 result its cross-cultural counterpart (e.g. Japanese Katana)? &ge;65% is good. Tested on 30 pairs.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Cross-Cultural Pairing Accuracy (Top-3)</div>
+          <div class="m-value" style="color:#22c55e">83.3%
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#22c55e22;color:#22c55e;">GOOD</div>
+          <div class="m-desc">Is the correct cross-cultural pair in the top-3 results? &ge;80% is good.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Within-Category Similarity</div>
+          <div class="m-value" style="color:#22c55e">0.6772
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#22c55e22;color:#22c55e;">GOOD</div>
+          <div class="m-desc">Average cosine similarity between same-type artifacts (e.g. sword vs sword). Higher = model understands artifact types.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Between-Category Similarity</div>
+          <div class="m-value" style="color:#f59e0b">0.4229
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#f59e0b22;color:#f59e0b;">FAIR</div>
+          <div class="m-desc">Average similarity across different artifact types. Lower = better separation between drums, swords, murals, etc.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Silhouette Score</div>
+          <div class="m-value" style="color:#ef4444">0.0509
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#ef444422;color:#ef4444;">NEEDS IMPROVEMENT</div>
+          <div class="m-desc">Cluster cohesion score (−1 to +1). &ge;0.30 = well-separated clusters. Note: small dataset (30 artifacts) naturally limits this score.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Category Separation Ratio</div>
+          <div class="m-value" style="color:#6366f1">0.6014
+            <span class="m-unit">&nbsp;×</span>
+          </div>
+          <div class="m-badge" style="background:#6366f122;color:#6366f1;">INFO</div>
+          <div class="m-desc">(Within − Between) ÷ Between. Shows how much more similar same-type artifacts are compared to cross-type.</div>
+        </div>
+    </div>
+  </div>
+
+  <!-- ───────── RAG SYSTEM ───────── -->
+  <div class="model-section">
+    <div class="model-header">
+      <div class="model-icon" style="background:#d1fae5">💬</div>
+      <div style="flex:1">
+        <div class="model-title">RAG Scenario Generator &nbsp; <span style="background:#d1fae5;color:#065f46;padding:3px 12px;border-radius:9999px;font-size:0.75rem;font-weight:600;">Evaluated</span></div>
+        <div class="model-sub">
+          Model: ft:gpt-4o-mini-2024-07-18:basii::CqWY8xno &nbsp;|&nbsp;
+          Fine-tuned: Yes &nbsp;|&nbsp;
+          Vector DB: ChromaDB &nbsp;|&nbsp;
+          Metric: ROUGE-L vs pre-written reference answers, response latency, token efficiency
+        </div>
+      </div>
+    </div>
+    
+    <div class="metrics-grid">
+      
+        <div class="metric-card">
+          <div class="m-label">Avg ROUGE-L</div>
+          <div class="m-value" style="color:#ef4444">0.1047
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#ef444422;color:#ef4444;">NEEDS IMPROVEMENT</div>
+          <div class="m-desc">Overlap between RAG response and pre-written reference answers. &ge;0.35 is good for open-ended generation.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Avg Response Time</div>
+          <div class="m-value" style="color:#f59e0b">9.67
+            <span class="m-unit">&nbsp;sec</span>
+          </div>
+          <div class="m-badge" style="background:#f59e0b22;color:#f59e0b;">FAIR</div>
+          <div class="m-desc">End-to-end response latency. Museum kiosk target &lt;10s.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Avg Token Usage</div>
+          <div class="m-value" style="color:#f59e0b">800
+            <span class="m-unit">&nbsp;tokens</span>
+          </div>
+          <div class="m-badge" style="background:#f59e0b22;color:#f59e0b;">FAIR</div>
+          <div class="m-desc">Tokens consumed per API call. &lt;800 is efficient; &gt;1500 is expensive.</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-label">Queries Tested</div>
+          <div class="m-value" style="color:#6366f1">4
+            <span class="m-unit">&nbsp;</span>
+          </div>
+          <div class="m-badge" style="background:#6366f122;color:#6366f1;">INFO</div>
+          <div class="m-desc">Model: ft:gpt-4o-mini-2024-07-18:basii::CqWY8xno  |  Fine-tuned: Yes</div>
+        </div>
+    </div>
+    
+        <table>
+          <thead><tr><th>Artifact / Scenario</th><th>ROUGE-L</th><th>Time</th><th>Tokens</th></tr></thead>
+          <tbody><tr><td>art001</td><td style="color:#ef4444;font-weight:600">0.1375</td><td>12.65s</td><td>809</td></tr>
+<tr><td>art002</td><td style="color:#ef4444;font-weight:600">0.0942</td><td>8.33s</td><td>806</td></tr>
+<tr><td>art003</td><td style="color:#ef4444;font-weight:600">0.1105</td><td>10.04s</td><td>792</td></tr>
+<tr><td>art004</td><td style="color:#ef4444;font-weight:600">0.0767</td><td>7.67s</td><td>793</td></tr>
+</tbody>
+        </table>
+  </div>
+
+  <!-- ───────── REFERENCE TABLE ───────── -->
+  <div class="reference-section">
+    <h2>📊 Metric Interpretation Guide</h2>
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Metric</th><th>What it measures</th><th>Good</th><th>Fair</th><th>Needs Work</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ROUGE-L</td><td>Longest common subsequence overlap between generated and reference text</td>
+          <td style="color:#22c55e;font-weight:600">&ge; 0.40</td>
+          <td style="color:#f59e0b;font-weight:600">0.20–0.40</td>
+          <td style="color:#ef4444;font-weight:600">&lt; 0.20</td></tr>
+        <tr><td>Cross-Cultural Pairing Acc. (Top-1)</td><td>Top-1 nearest neighbour is the correct cross-cultural counterpart (e.g. Kandyan Sword → Japanese Katana)</td>
+          <td style="color:#22c55e;font-weight:600">&ge; 65%</td>
+          <td style="color:#f59e0b;font-weight:600">40–65%</td>
+          <td style="color:#ef4444;font-weight:600">&lt; 40%</td></tr>
+        <tr><td>Cross-Cultural Pairing Acc. (Top-3)</td><td>Correct cross-cultural pair appears in any of the top-3 results</td>
+          <td style="color:#22c55e;font-weight:600">&ge; 80%</td>
+          <td style="color:#f59e0b;font-weight:600">60–80%</td>
+          <td style="color:#ef4444;font-weight:600">&lt; 60%</td></tr>
+        <tr><td>Within-Category Similarity</td><td>Cosine similarity between same-type artifacts</td>
+          <td style="color:#22c55e;font-weight:600">&ge; 0.65</td>
+          <td style="color:#f59e0b;font-weight:600">0.45–0.65</td>
+          <td style="color:#ef4444;font-weight:600">&lt; 0.45</td></tr>
+        <tr><td>Silhouette Score</td><td>Cluster quality: how well clusters are separated (−1 to +1)</td>
+          <td style="color:#22c55e;font-weight:600">&ge; 0.30</td>
+          <td style="color:#f59e0b;font-weight:600">0.10–0.30</td>
+          <td style="color:#ef4444;font-weight:600">&lt; 0.10</td></tr>
+        <tr><td>Token Usage</td><td>API tokens consumed per RAG query</td>
+          <td style="color:#22c55e;font-weight:600">&lt; 800</td>
+          <td style="color:#f59e0b;font-weight:600">800–1500</td>
+          <td style="color:#ef4444;font-weight:600">&gt; 1500</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  Generated by evaluate_all_models.py &nbsp;|&nbsp; 2026-03-06 16:38:10 &nbsp;|&nbsp;
+  Interactive Device Platforms for Museums — Research Project
+</footer>
+
+<script>
+const ctx = document.getElementById('metricsChart').getContext('2d');
+const labels = ["T5 ROUGE-L", "Pairing Acc Top-1", "Pairing Acc Top-3", "Within-Cat Sim", "RAG ROUGE-L"];
+const values = [0.7815, 0.7333, 0.8333, 0.6772, 0.1047];
+const thresholds = [0.4, 0.65, 0.8, 0.65, 0.35];
+const barColors = ["#22c55e", "#22c55e", "#f59e0b", "#22c55e", "#ef4444"];
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Achieved',
+        data: values,
+        backgroundColor: barColors.map(c => c + '99'),
+        borderColor: barColors,
+        borderWidth: 2,
+        borderRadius: 6,
+      },
+      {
+        label: 'Target Threshold',
+        data: thresholds,
+        type: 'line',
+        borderColor: '#94a3b8',
+        borderWidth: 1.5,
+        borderDash: [5, 4],
+        backgroundColor: 'transparent',
+        pointRadius: 4,
+        pointBackgroundColor: '#94a3b8',
+        tension: 0,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { font: { size: 12 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const v = ctx.parsed.y;
+            return ctx.dataset.label + ': ' + (ctx.datasetIndex === 0
+              ? (v >= 1 ? v : (v * 100).toFixed(1) + (v <= 1 ? '' : ''))
+              : v);
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: 1,
+        ticks: { callback: v => (v * 100).toFixed(0) + '%', font: { size: 11 } },
+        grid: { color: '#f1f5f9' }
+      },
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

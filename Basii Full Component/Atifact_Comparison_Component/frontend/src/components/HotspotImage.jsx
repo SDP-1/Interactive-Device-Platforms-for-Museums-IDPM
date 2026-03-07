@@ -58,24 +58,67 @@ const generateHotspots = (artifact) => {
 
   // Category-specific hotspots
   if (category.includes('mask') || name.includes('mask')) {
-    hotspots.push({
-      id: 'colors',
-      x: 35,
-      y: 55,
-      icon: Palette,
-      title: 'Colors & Pigments',
-      description: 'Traditional masks feature vibrant colors derived from natural pigments. Red symbolizes power, yellow represents divinity, and black denotes supernatural forces.',
-      color: 'rose'
-    });
-    hotspots.push({
-      id: 'regional',
-      x: 70,
-      y: 60,
-      icon: Star,
-      title: 'Regional Significance',
-      description: 'This mask style reflects the distinctive artistic traditions of its region, incorporating local mythology and ceremonial practices unique to the area.',
-      color: 'emerald'
-    });
+    if (artifact.is_sri_lankan) {
+      // Sri Lankan Mask (Kolam/Sanni) specific hotspots
+      hotspots.push({
+        id: 'kolam_drama',
+        x: 35,
+        y: 55,
+        icon: Palette,
+        title: 'Kolam Folk Drama',
+        description: 'Part of the Sri Lankan Kolam tradition, used in satirical village plays that blend ritual with social commentary and dance.',
+        color: 'rose'
+      });
+      hotspots.push({
+        id: 'kaduru_wood',
+        x: 70,
+        y: 60,
+        icon: Hammer,
+        title: 'Kaduru Wood Carving',
+        description: 'Hand-carved from "Kaduru" (native balsa-like wood). It is lightweight for dancers and traditionally painted with natural mineral pigments.',
+        color: 'amber'
+      });
+    } else if (artifact.origin?.toLowerCase().includes('africa') || name.includes('african')) {
+      // African Ritual Mask specific hotspots
+      hotspots.push({
+        id: 'initiation_rites',
+        x: 35,
+        y: 55,
+        icon: Star,
+        title: 'Initiation Rites',
+        description: 'Crucial for community initiation ceremonies, these masks facilitate the sacred transition between social or spiritual stages of life.',
+        color: 'purple'
+      });
+      hotspots.push({
+        id: 'spirit_vessel',
+        x: 70,
+        y: 60,
+        icon: Sparkles,
+        title: 'Spirit Communication',
+        description: 'The wearer is believed to become a vessel for ancestral spirits, mediating between the human community and the supernatural realm.',
+        color: 'blue'
+      });
+    } else {
+      // Generic mask fallback
+      hotspots.push({
+        id: 'colors',
+        x: 35,
+        y: 55,
+        icon: Palette,
+        title: 'Colors & Pigments',
+        description: 'Traditional masks feature vibrant colors derived from natural pigments. Red symbolizes power, yellow represents divinity, and black denotes supernatural forces.',
+        color: 'rose'
+      });
+      hotspots.push({
+        id: 'regional',
+        x: 70,
+        y: 60,
+        icon: Star,
+        title: 'Regional Significance',
+        description: 'This mask style reflects the distinctive artistic traditions of its region, incorporating local mythology and ceremonial practices unique to the area.',
+        color: 'emerald'
+      });
+    }
   }
 
   if (category.includes('weapon') || name.includes('sword') || name.includes('kasthane')) {
@@ -314,7 +357,7 @@ const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotsp
           <img
             src={image}
             alt={alt}
-            className={`w-full h-full object-cover transition-all duration-500
+            className={`w-full h-full object-contain transition-all duration-500
                        ${imageLoaded ? 'opacity-100' : 'opacity-0'}
                        ${hotspotsVisible ? 'brightness-95' : ''}`}
             onLoad={() => setImageLoaded(true)}

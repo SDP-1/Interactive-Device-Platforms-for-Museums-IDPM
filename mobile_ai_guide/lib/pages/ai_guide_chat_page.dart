@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/models/artifact.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/services/ai_guide_service.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
 import 'package:mobile_ai_guide/ui/content_language.dart';
 import 'package:mobile_ai_guide/ui/strings.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -63,16 +66,75 @@ class _AiGuideChatPageState extends State<AiGuideChatPage> {
     AppChatLanguage.instance.notifier.addListener(_chatLanguageListener);
     _initializeTts();
     _initializeSpeechToText();
-    _messages.addAll([
-      ChatMessage(
+    _loadInitialMessages();
+  }
+
+  Future<void> _loadInitialMessages() async {
+    try {
+      await SessionAccessService.requireActiveSession();
+
+      final records = await LocalStorageService.instance.getChatHistory(
+        artifactId: widget.artifact.artifactId,
+      );
+
+      if (!mounted) return;
+
+      if (records.isNotEmpty) {
+        setState(() {
+          _messages.addAll(
+            records.map(
+              (record) => ChatMessage(
+                text: record.text,
+                sender: _senderFromStored(record.sender),
+                time: record.time,
+                isWarning: record.isWarning,
+              ),
+            ),
+          );
+        });
+        return;
+      }
+
+      final intro = ChatMessage(
         text: _buildIntroMessage(
           _chatLanguage,
           AppContentLanguage.instance.value,
         ),
         sender: MessageSender.bot,
-        time: DateTime.now().subtract(const Duration(minutes: 4)),
-      ),
-    ]);
+        time: DateTime.now(),
+      );
+
+      setState(() {
+        _messages.add(intro);
+      });
+
+      await _persistMessage(intro);
+    } on SessionAccessException catch (e) {
+      if (!mounted) return;
+      await SessionGuard.redirectToSessionIntro(context, message: e.message);
+    }
+  }
+
+  MessageSender _senderFromStored(String sender) {
+    switch (sender) {
+      case 'user':
+        return MessageSender.user;
+      case 'system':
+        return MessageSender.system;
+      case 'bot':
+      default:
+        return MessageSender.bot;
+    }
+  }
+
+  Future<void> _persistMessage(ChatMessage message) async {
+    await LocalStorageService.instance.saveChatMessage(
+      artifactId: widget.artifact.artifactId,
+      sender: message.sender.name,
+      text: message.text,
+      isWarning: message.isWarning,
+      time: message.time,
+    );
   }
 
   String _buildIntroMessage(String chatLang, String contentLang) {
@@ -254,11 +316,17 @@ class _AiGuideChatPageState extends State<AiGuideChatPage> {
 
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
+    final userMessage = ChatMessage(
+      text: text.trim(),
+      sender: MessageSender.user,
+    );
+
     setState(() {
-      _messages.add(ChatMessage(text: text.trim(), sender: MessageSender.user));
+      _messages.add(userMessage);
       _isLoading = true;
     });
     _controller.clear();
+    await _persistMessage(userMessage);
 
     try {
       final response = await AiGuideService.askQuestion(
@@ -268,35 +336,49 @@ class _AiGuideChatPageState extends State<AiGuideChatPage> {
       );
 
       if (mounted) {
+        late final ChatMessage incomingMessage;
+        if (response.contains('not related')) {
+          incomingMessage = ChatMessage(
+            text: response,
+            sender: MessageSender.system,
+            isWarning: true,
+          );
+        } else {
+          incomingMessage = ChatMessage(
+            text: response,
+            sender: MessageSender.bot,
+          );
+        }
+
         setState(() {
-          if (response.contains('not related')) {
-            _messages.add(
-              ChatMessage(
-                text: response,
-                sender: MessageSender.system,
-                isWarning: true,
-              ),
-            );
-          } else {
-            _messages.add(
-              ChatMessage(text: response, sender: MessageSender.bot),
-            );
-          }
+          _messages.add(incomingMessage);
           _isLoading = false;
         });
+        await _persistMessage(incomingMessage);
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _messages.add(
-            ChatMessage(
-              text: 'Error: ${e.toString()}',
-              sender: MessageSender.system,
-              isWarning: true,
-            ),
+        if (e is SessionAccessException) {
+          setState(() {
+            _isLoading = false;
+          });
+          await SessionGuard.redirectToSessionIntro(
+            context,
+            message: e.message,
           );
+          return;
+        }
+
+        final errorMessage = ChatMessage(
+          text: 'Error: ${e.toString()}',
+          sender: MessageSender.system,
+          isWarning: true,
+        );
+        setState(() {
+          _messages.add(errorMessage);
           _isLoading = false;
         });
+        await _persistMessage(errorMessage);
       }
     }
   }

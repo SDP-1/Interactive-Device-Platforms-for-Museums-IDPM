@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Artifact } from "@/types/Artifact";
+import { Artifact } from "../types/Artifact";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -24,6 +24,8 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
     category_si: artifact?.category_si || "",
     description_en: artifact?.description_en || "",
     description_si: artifact?.description_si || "",
+    aiKnowlageBase_en: artifact?.aiKnowlageBase_en || "",
+    aiKnowlageBase_si: artifact?.aiKnowlageBase_si || "",
     material_en: artifact?.material_en || "",
     material_si: artifact?.material_si || "",
     dimensions_en: artifact?.dimensions_en || "",
@@ -38,25 +40,29 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
   // Quill modules configuration for rich text editor
   const modules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'align': [] }],
-      ['link'],
-      ['clean']
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      ["link"],
+      ["clean"],
     ],
   };
 
   const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'align',
-    'link'
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "align",
+    "link",
   ];
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
@@ -66,8 +72,43 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
     setFormData((prev: any) => ({ ...prev, [fieldName]: value }));
   };
 
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html || "";
+    return tmp.textContent || tmp.innerText || "";
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Validate required rich text fields
+    if (
+      !formData.description_en ||
+      stripHtml(formData.description_en).trim() === ""
+    ) {
+      alert("Description (English) is required");
+      return;
+    }
+    if (
+      !formData.description_si ||
+      stripHtml(formData.description_si).trim() === ""
+    ) {
+      alert("Description (Sinhala) is required");
+      return;
+    }
+    if (
+      !formData.aiKnowlageBase_en ||
+      stripHtml(formData.aiKnowlageBase_en).trim() === ""
+    ) {
+      alert("AI Knowledge Base (English) is required");
+      return;
+    }
+    if (
+      !formData.aiKnowlageBase_si ||
+      stripHtml(formData.aiKnowlageBase_si).trim() === ""
+    ) {
+      alert("AI Knowledge Base (Sinhala) is required");
+      return;
+    }
     const submitData = {
       ...formData,
       imageUrls: formData.imageUrls
@@ -83,6 +124,19 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
       onSubmit={handleSubmit}
       className="space-y-6 bg-white p-6 rounded-lg shadow"
     >
+      {artifact && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Artifact ID
+          </label>
+          <input
+            type="text"
+            value={artifact.artifact_id || artifact._id || ""}
+            disabled
+            className="mt-1 block w-full border border-gray-300 rounded-md bg-gray-100 py-2 px-3"
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* English Fields */}
         <div>
@@ -273,7 +327,7 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
         <ReactQuill
           theme="snow"
           value={formData.description_en}
-          onChange={(value) => handleRichTextChange(value, 'description_en')}
+          onChange={(value) => handleRichTextChange(value, "description_en")}
           modules={modules}
           formats={formats}
           className="bg-white"
@@ -288,7 +342,7 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
         <ReactQuill
           theme="snow"
           value={formData.description_si}
-          onChange={(value) => handleRichTextChange(value, 'description_si')}
+          onChange={(value) => handleRichTextChange(value, "description_si")}
           modules={modules}
           formats={formats}
           className="bg-white"
@@ -303,7 +357,9 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
         <ReactQuill
           theme="snow"
           value={formData.culturalSignificance_en}
-          onChange={(value) => handleRichTextChange(value, 'culturalSignificance_en')}
+          onChange={(value) =>
+            handleRichTextChange(value, "culturalSignificance_en")
+          }
           modules={modules}
           formats={formats}
           className="bg-white"
@@ -318,11 +374,41 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
         <ReactQuill
           theme="snow"
           value={formData.culturalSignificance_si}
-          onChange={(value) => handleRichTextChange(value, 'culturalSignificance_si')}
+          onChange={(value) =>
+            handleRichTextChange(value, "culturalSignificance_si")
+          }
           modules={modules}
           formats={formats}
           className="bg-white"
           placeholder="සංස්කෘතික වැදගත්කම ආකෘතිකරණය සමඟ ඇතුළත් කරන්න..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          AI Knowledge Base (English) <span className="text-red-600">*</span>
+        </label>
+        <ReactQuill
+          theme="snow"
+          value={formData.aiKnowlageBase_en}
+          onChange={(value) => handleRichTextChange(value, "aiKnowlageBase_en")}
+          modules={modules}
+          formats={formats}
+          className="bg-white"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          AI Knowledge Base (Sinhala) <span className="text-red-600">*</span>
+        </label>
+        <ReactQuill
+          theme="snow"
+          value={formData.aiKnowlageBase_si}
+          onChange={(value) => handleRichTextChange(value, "aiKnowlageBase_si")}
+          modules={modules}
+          formats={formats}
+          className="bg-white"
         />
       </div>
 
@@ -344,13 +430,13 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-200"
+        className="w-full bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 disabled:opacity-60 transition duration-200"
       >
         {isLoading
           ? "Saving..."
           : artifact
-          ? "Update Artifact"
-          : "Create Artifact"}
+            ? "Update Artifact"
+            : "Create Artifact"}
       </button>
     </form>
   );

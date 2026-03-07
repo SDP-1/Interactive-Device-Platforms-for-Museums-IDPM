@@ -15,6 +15,8 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [aiExplanation, setAiExplanation] = useState('');
   const [aiError, setAiError] = useState(null);
+  const [curatorVerified, setCuratorVerified] = useState(false);
+  const [verifiedBy, setVerifiedBy] = useState(null);
   const [similarArtifacts, setSimilarArtifacts] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [similarError, setSimilarError] = useState(null);
@@ -32,7 +34,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
     setLoadingSimilar(true);
     setSimilarError(null);
     try {
-      const response = await fetch(`${API_BASE}/artifacts/${artifact.id}/similar?limit=5`);
+      const response = await fetch(`${API_BASE}/artifacts/${artifact.id}/similar?limit=6`);
       if (!response.ok) {
         throw new Error('Failed to fetch similar artifacts');
       }
@@ -41,7 +43,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
       const transformedData = data.map(a => ({
         ...a,
         image: a.image ? `/${a.image}` : null,
-        similarityScore: Math.round((a.similarity_score || 0.8) * 100),
+        similarityScore: Math.round((a.similarity_score ?? 0) * 100),
         description: a.function || a.notes || '',
         details: {
           material: a.materials || 'Unknown',
@@ -67,6 +69,8 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
     setIsLoadingAnalysis(false);
     setAiExplanation('');
     setAiError(null);
+    setCuratorVerified(false);
+    setVerifiedBy(null);
   }, [artifact?.id]);
 
   // Handle AI analysis generation - fetch from API
@@ -82,6 +86,8 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
       }
       const data = await response.json();
       setAiExplanation(data.explanation);
+      setCuratorVerified(data.curator_verified || false);
+      setVerifiedBy(data.verified_by || null);
       setShowAiAnalysis(true);
     } catch (err) {
       console.error('Error generating AI explanation:', err);
@@ -97,7 +103,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
         <p className="text-stone-500 font-sans">No artifact selected</p>
         <button
           onClick={onBack}
-          className="mt-4 px-4 sm:px-6 py-2 bg-amber-700 text-white rounded-lg text-sm sm:text-base"
+          className="mt-8 px-10 py-5 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white rounded-2xl text-2xl font-bold shadow-xl shadow-orange-500/10 active:scale-95 transition-all uppercase tracking-widest"
         >
           Return to Gallery
         </button>
@@ -110,12 +116,12 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
       {/* Back Button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 sm:gap-2.5 mb-5 sm:mb-8 px-4 sm:px-5 py-2.5 sm:py-3 text-stone-600 
-                   hover:text-amber-700 hover:bg-amber-50 rounded-xl 
-                   transition-colors font-sans text-sm sm:text-base"
+        className="flex items-center gap-4 mb-10 sm:mb-12 px-8 sm:px-10 py-5 sm:py-6 text-orange-500 
+                   hover:bg-orange-500 hover:text-white rounded-2xl shadow-xl shadow-orange-500/10
+                   transition-all font-sans text-2xl sm:text-3xl font-bold border-2 border-orange-500 active:scale-95"
       >
-        <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
-        <span>Back to Gallery</span>
+        <ArrowLeft size={32} className="sm:w-10 sm:h-10" />
+        <span className="uppercase tracking-widest">Back to Gallery</span>
       </button>
 
       {/* Main Content - Split Layout */}
@@ -216,10 +222,10 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
               {showAiAnalysis && (
                 <button
                   onClick={handleGenerateAnalysis}
-                  className="text-amber-700 hover:text-amber-800 text-sm sm:text-base font-sans 
-                             flex items-center gap-1.5"
+                  className="text-orange-500 hover:text-orange-600 text-base sm:text-lg font-bold font-sans 
+                             flex items-center gap-2"
                 >
-                  <RefreshCw size={16} className="sm:w-5 sm:h-5" />
+                  <RefreshCw size={20} className="sm:w-6 sm:h-6" />
                   <span className="hidden sm:inline">Regenerate</span>
                 </button>
               )}
@@ -237,11 +243,11 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                 </p>
                 <button
                   onClick={handleGenerateAnalysis}
-                  className="px-6 sm:px-8 py-3 sm:py-4 bg-amber-700 hover:bg-amber-800 text-white 
-                             rounded-xl font-sans text-base sm:text-lg font-medium transition-colors
-                             flex items-center gap-2 sm:gap-3 mx-auto"
+                  className="px-8 sm:px-10 py-4 sm:py-5 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white 
+                             rounded-2xl font-sans text-xl sm:text-2xl font-bold transition-all
+                             flex items-center gap-3 sm:gap-4 mx-auto shadow-xl shadow-orange-500/20 active:scale-95"
                 >
-                  <Sparkles size={22} className="sm:w-6 sm:h-6" />
+                  <Sparkles size={28} className="sm:w-8 sm:h-8" />
                   <span>Generate AI Explanation</span>
                 </button>
               </div>
@@ -260,10 +266,10 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                 <p className="text-base sm:text-lg text-red-600 font-sans mb-4 sm:mb-5">{aiError}</p>
                 <button
                   onClick={handleGenerateAnalysis}
-                  className="px-5 sm:px-6 py-2.5 sm:py-3 bg-amber-700 hover:bg-amber-800 text-white 
-                             rounded-xl font-sans text-sm sm:text-base transition-colors inline-flex items-center gap-2 sm:gap-2.5"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white 
+                             rounded-xl font-sans text-base sm:text-lg font-bold transition-all inline-flex items-center gap-3 shadow-lg"
                 >
-                  <RefreshCw size={18} className="sm:w-5 sm:h-5" />
+                  <RefreshCw size={20} className="sm:w-6 sm:h-6" />
                   Retry
                 </button>
               </div>
@@ -312,8 +318,25 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                     </div>
                   </div>
                 </div>
+                
+                {curatorVerified && verifiedBy && (
+                  <div className="bg-green-50 border border-green-300 rounded-lg p-4 sm:p-5 mt-4 sm:mt-5 flex items-start gap-3">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="text-sm sm:text-base font-semibold text-green-900">
+                        ✓ Verified by Curator
+                      </p>
+                      <p className="text-xs sm:text-sm text-green-700 mt-1">
+                        Approved by <span className="font-semibold">{verifiedBy}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
                 <p className="text-xs sm:text-sm text-stone-400 font-sans mt-3 sm:mt-4 text-right">
-                  Generated by AI • Academic analysis based on available data
+                  {curatorVerified ? 'Curator-verified AI analysis' : 'Generated by AI • Academic analysis based on available data'}
                 </p>
               </div>
             )}

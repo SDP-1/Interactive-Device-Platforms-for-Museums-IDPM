@@ -3,6 +3,49 @@ import Artifact from "../models/Artifact.js";
 
 const router = express.Router();
 
+// Helper to format artifact response according to language
+function formatArtifactResponse(artifact, language = "en") {
+  if (!artifact) return null;
+  if (language === "si") {
+    return {
+      artifact_id: artifact.artifact_id,
+      title: artifact.title_si || artifact.title_en || null,
+      origin: artifact.origin_si || artifact.origin_en || null,
+      year: artifact.year,
+      category: artifact.category_si || artifact.category_en || null,
+      description: artifact.description_si || artifact.description_en || null,
+      aiKnowlageBase:
+        artifact.aiKnowlageBase_si || artifact.aiKnowlageBase_en || null,
+      material: artifact.material_si || artifact.material_en || null,
+      dimensions: artifact.dimensions_si || artifact.dimensions_en || null,
+      culturalSignificance:
+        artifact.culturalSignificance_si ||
+        artifact.culturalSignificance_en ||
+        null,
+      gallery: artifact.gallery_si || artifact.gallery_en || null,
+      imageUrls: artifact.imageUrls || [],
+    };
+  }
+  return {
+    artifact_id: artifact.artifact_id,
+    title: artifact.title_en || artifact.title_si || null,
+    origin: artifact.origin_en || artifact.origin_si || null,
+    year: artifact.year,
+    category: artifact.category_en || artifact.category_si || null,
+    description: artifact.description_en || artifact.description_si || null,
+    aiKnowlageBase:
+      artifact.aiKnowlageBase_en || artifact.aiKnowlageBase_si || null,
+    material: artifact.material_en || artifact.material_si || null,
+    dimensions: artifact.dimensions_en || artifact.dimensions_si || null,
+    culturalSignificance:
+      artifact.culturalSignificance_en ||
+      artifact.culturalSignificance_si ||
+      null,
+    gallery: artifact.gallery_en || artifact.gallery_si || null,
+    imageUrls: artifact.imageUrls || [],
+  };
+}
+
 // Helper function to generate artifact ID
 async function generateArtifactId() {
   const lastArtifact = await Artifact.findOne({})
@@ -37,8 +80,10 @@ router.get("/artifacts", async (req, res) => {
 });
 
 // Get single artifact by ID
+// Get single artifact by ID (supports ?language=si|en)
 router.get("/artifacts/:id", async (req, res) => {
   try {
+    const language = (req.query.language || "en").toString();
     const artifact = await Artifact.findById(req.params.id);
     if (!artifact) {
       return res.status(404).json({
@@ -46,9 +91,10 @@ router.get("/artifacts/:id", async (req, res) => {
         message: "Artifact not found",
       });
     }
+    const payload = formatArtifactResponse(artifact, language);
     res.json({
       success: true,
-      data: artifact,
+      data: payload,
     });
   } catch (error) {
     res.status(500).json({
@@ -60,8 +106,10 @@ router.get("/artifacts/:id", async (req, res) => {
 });
 
 // Get single artifact by artifact_id
+// Get single artifact by artifact_id (supports ?language=si|en)
 router.get("/artifacts/by-artifact-id/:artifact_id", async (req, res) => {
   try {
+    const language = (req.query.language || "en").toString();
     const artifact = await Artifact.findOne({
       artifact_id: req.params.artifact_id,
     });
@@ -71,9 +119,10 @@ router.get("/artifacts/by-artifact-id/:artifact_id", async (req, res) => {
         message: "Artifact not found",
       });
     }
+    const payload = formatArtifactResponse(artifact, language);
     res.json({
       success: true,
-      data: artifact,
+      data: payload,
     });
   } catch (error) {
     res.status(500).json({
@@ -108,7 +157,7 @@ router.post("/artifacts", async (req, res) => {
       imageUrls,
     } = req.body;
 
-    // Validate required fields
+    // Validate required fields (include AI knowledge base fields)
     if (
       !title_en ||
       !title_si ||
@@ -119,6 +168,8 @@ router.post("/artifacts", async (req, res) => {
       !category_si ||
       !description_en ||
       !description_si ||
+      !req.body.aiKnowlageBase_en ||
+      !req.body.aiKnowlageBase_si ||
       !imageUrls ||
       imageUrls.length === 0
     ) {
@@ -141,6 +192,8 @@ router.post("/artifacts", async (req, res) => {
       category_si,
       description_en,
       description_si,
+      aiKnowlageBase_en: req.body.aiKnowlageBase_en || null,
+      aiKnowlageBase_si: req.body.aiKnowlageBase_si || null,
       material_en: material_en || null,
       material_si: material_si || null,
       dimensions_en: dimensions_en || null,
@@ -201,6 +254,14 @@ router.put("/artifacts/:id", async (req, res) => {
       category_si: category_si || undefined,
       description_en: description_en || undefined,
       description_si: description_si || undefined,
+      aiKnowlageBase_en:
+        typeof req.body.aiKnowlageBase_en !== "undefined"
+          ? req.body.aiKnowlageBase_en
+          : undefined,
+      aiKnowlageBase_si:
+        typeof req.body.aiKnowlageBase_si !== "undefined"
+          ? req.body.aiKnowlageBase_si
+          : undefined,
       material_en: material_en || null,
       material_si: material_si || null,
       dimensions_en: dimensions_en || null,
@@ -215,13 +276,13 @@ router.put("/artifacts/:id", async (req, res) => {
 
     // Remove undefined values
     Object.keys(updateData).forEach(
-      (key) => updateData[key] === undefined && delete updateData[key]
+      (key) => updateData[key] === undefined && delete updateData[key],
     );
 
     const artifact = await Artifact.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!artifact) {

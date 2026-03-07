@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/models/persona.dart';
 import 'package:mobile_ai_guide/services/persona_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/ui/chat_language.dart';
 import 'package:mobile_ai_guide/pages/ai_persona_chat_page.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
+import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
+import 'package:mobile_ai_guide/widgets/navigation/bottom_navigation_mixin.dart';
 
 class PersonaListPage extends StatefulWidget {
   const PersonaListPage({super.key});
@@ -12,15 +16,18 @@ class PersonaListPage extends StatefulWidget {
   State<PersonaListPage> createState() => _PersonaListPageState();
 }
 
-class _PersonaListPageState extends State<PersonaListPage> {
+class _PersonaListPageState extends State<PersonaListPage>
+    with BottomNavigationMixin {
   late Future<List<Persona>> _personasFuture;
   String _chatLanguage = 'en';
+  bool _sessionRedirectTriggered = false;
 
   @override
   void initState() {
     super.initState();
     _chatLanguage = AppChatLanguage.instance.value;
     _personasFuture = PersonaService.getPersonas(language: _chatLanguage);
+    currentNavIndex = 3;
   }
 
   void _refreshPersonas() {
@@ -68,6 +75,20 @@ class _PersonaListPageState extends State<PersonaListPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
+            if (snapshot.error is SessionAccessException &&
+                !_sessionRedirectTriggered) {
+              _sessionRedirectTriggered = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                final error = snapshot.error! as SessionAccessException;
+                SessionGuard.redirectToSessionIntro(
+                  context,
+                  message: error.message,
+                );
+              });
+              return const Center(child: CircularProgressIndicator());
+            }
+
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -90,7 +111,7 @@ class _PersonaListPageState extends State<PersonaListPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
-                      snapshot.error.toString(),
+                      'Please check your connection and try again.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -154,20 +175,30 @@ class _PersonaListPageState extends State<PersonaListPage> {
                     ),
                   );
                 },
+                chatLanguage: _chatLanguage,
               );
             },
           );
         },
+      ),
+      bottomNavigationBar: AppBottomNavigationBar(
+        selectedIndex: currentNavIndex,
+        onDestinationSelected: handleNavigation,
       ),
     );
   }
 }
 
 class _PersonaCard extends StatelessWidget {
-  const _PersonaCard({required this.persona, required this.onTap});
+  const _PersonaCard({
+    required this.persona,
+    required this.onTap,
+    required this.chatLanguage,
+  });
 
   final Persona persona;
   final VoidCallback onTap;
+  final String chatLanguage;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +216,7 @@ class _PersonaCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // King icon
+              // King icon (use first image if available)
               Container(
                 width: 64,
                 height: 64,
@@ -194,11 +225,27 @@ class _PersonaCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: kGold, width: 2),
                 ),
-                child: const Icon(
-                  Icons.coronavirus_outlined, // Using as crown icon
-                  color: kGold,
-                  size: 32,
-                ),
+                child:
+                    (persona.imageUrls != null && persona.imageUrls!.isNotEmpty)
+                    ? ClipOval(
+                        child: Image.network(
+                          persona.imageUrls!.first,
+                          fit: BoxFit.cover,
+                          width: 64,
+                          height: 64,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.coronavirus_outlined,
+                                color: kGold,
+                                size: 32,
+                              ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.coronavirus_outlined, // Using as crown icon
+                        color: kGold,
+                        size: 32,
+                      ),
               ),
               const SizedBox(width: 16),
               // Persona details
@@ -207,7 +254,7 @@ class _PersonaCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      persona.kingName,
+                      (chatLanguage == 'si') ? persona.nameSi : persona.nameEn,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -215,23 +262,24 @@ class _PersonaCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.black54,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          persona.reignPeriod,
-                          style: const TextStyle(
-                            fontSize: 14,
+                    if (persona.reignPeriod.isNotEmpty)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 14,
                             color: Colors.black54,
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 4),
+                          Text(
+                            persona.reignPeriod,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -243,7 +291,11 @@ class _PersonaCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            persona.capitalCity,
+                            (chatLanguage == 'si')
+                                ? (persona.capitalSi ?? persona.capitalEn ?? '')
+                                : (persona.capitalEn ??
+                                      persona.capitalSi ??
+                                      ''),
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black54,

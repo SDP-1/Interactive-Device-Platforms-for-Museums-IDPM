@@ -14,7 +14,7 @@ const SCREENS = {
 function App() {
   // Screen navigation state
   const [currentScreen, setCurrentScreen] = useState(SCREENS.GALLERY);
-  
+
   // Selected artifacts state
   const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [comparisonArtifact, setComparisonArtifact] = useState(null);
@@ -47,30 +47,30 @@ function App() {
     switch (currentScreen) {
       case SCREENS.GALLERY:
         return (
-          <GalleryScreen 
+          <GalleryScreen
             onSelectArtifact={navigateToDetail}
           />
         );
-      
+
       case SCREENS.DETAIL:
         return (
-          <DetailScreen 
+          <DetailScreen
             artifact={selectedArtifact}
             onBack={navigateToGallery}
             onCompare={navigateToComparison}
           />
         );
-      
+
       case SCREENS.COMPARISON:
         return (
-          <ComparisonScreen 
+          <ComparisonScreen
             artifactA={selectedArtifact}
             artifactB={comparisonArtifact}
             onBack={navigateBackToDetail}
             onBackToGallery={navigateToGallery}
           />
         );
-      
+
       default:
         return <GalleryScreen onSelectArtifact={navigateToDetail} />;
     }
@@ -78,14 +78,14 @@ function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#FDFBF7] flex flex-col">
-      <Header 
+      <Header
         currentScreen={currentScreen}
         selectedArtifact={selectedArtifact}
         onNavigateHome={navigateToGallery}
         onNavigateToDetail={navigateBackToDetail}
       />
-      <main className="flex-1 w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="w-full max-w-[1920px] mx-auto">
+      <main className="flex-1 w-full px-4 sm:px-6 md:px-8 py-4 sm:py-6">
+        <div className="w-full h-full">
           {renderScreen()}
         </div>
       </main>

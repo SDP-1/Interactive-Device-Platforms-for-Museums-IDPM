@@ -1,0 +1,8 @@
+# Ignore local design/source and temp files
+*.psd
+*.ai
+*.sketch
+*.xd
+*.fig
+.DS_Store
+Thumbs.db

@@ -43,6 +43,9 @@ mixin BottomNavigationMixin<T extends StatefulWidget> on State<T> {
           settings: const RouteSettings(name: '/personas'),
         ),
       );
+    } else if (index == 2) {
+      // Navigate to Saved Artifacts via named route to avoid import cycles
+      Navigator.of(context).pushNamed('/saved');
     } else {
       // Handle other navigation items
       ScaffoldMessenger.of(context).showSnackBar(
