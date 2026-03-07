@@ -19,9 +19,23 @@ class BrowseArtifactsPage extends StatefulWidget {
 
 class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
     with BottomNavigationMixin {
-  static const _filters = ['All', 'Ancient', 'Medieval', 'Renaissance'];
   late Future<List<Artifact>> _artifactsFuture;
   bool _sessionRedirectTriggered = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedFilter = 'All';
+
+  static const String _allFilter = 'All';
+  static const String _othersFilter = 'Others';
+  static const Set<String> _otherCategoryKeywords = {
+    'other',
+    'others',
+    'misc',
+    'miscellaneous',
+    'unknown',
+    'uncategorized',
+    'uncategorised',
+  };
 
   @override
   void initState() {
@@ -34,6 +48,76 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
     setState(() {
       _artifactsFuture = ArtifactService.getAllArtifacts();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  bool _matchesSearch(Artifact artifact) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return true;
+
+    final searchable = <String>[
+      artifact.titleEn,
+      artifact.titleSi,
+      artifact.categoryEn,
+      artifact.categorySi,
+      artifact.originEn,
+      artifact.originSi,
+      artifact.artifactId,
+    ].join(' ').toLowerCase();
+
+    return searchable.contains(query);
+  }
+
+  bool _isOtherCategory(Artifact artifact) {
+    final en = artifact.categoryEn.trim().toLowerCase();
+    final si = artifact.categorySi.trim().toLowerCase();
+
+    if (en.isEmpty && si.isEmpty) {
+      return true;
+    }
+
+    return _otherCategoryKeywords.contains(en) ||
+        _otherCategoryKeywords.contains(si);
+  }
+
+  List<String> _buildFilters(List<Artifact> artifacts) {
+    final categories =
+        artifacts
+            .map((a) => a.categoryEn.trim())
+            .where((c) => c.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    return <String>[_allFilter, ...categories, _othersFilter];
+  }
+
+  List<Artifact> _applyFilters(
+    List<Artifact> artifacts,
+    String selectedFilter,
+  ) {
+    final bySearch = artifacts.where(_matchesSearch);
+
+    if (selectedFilter == _allFilter) {
+      return bySearch.toList();
+    }
+
+    if (selectedFilter == _othersFilter) {
+      return bySearch.where(_isOtherCategory).toList();
+    }
+
+    return bySearch
+        .where(
+          (artifact) =>
+              artifact.categoryEn.trim().toLowerCase() ==
+              selectedFilter.toLowerCase(),
+        )
+        .toList();
   }
 
   @override
@@ -81,7 +165,13 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
+                    controller: _searchController,
                     textInputAction: TextInputAction.search,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                     decoration: InputDecoration(
                       hintText: 'Search by name or category...',
                       hintStyle: TextStyle(
@@ -197,6 +287,15 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     }
 
                     final artifacts = snapshot.data!;
+                    final filters = _buildFilters(artifacts);
+                    final effectiveSelected = filters.contains(_selectedFilter)
+                        ? _selectedFilter
+                        : _allFilter;
+                    final displayedArtifacts = _applyFilters(
+                      artifacts,
+                      effectiveSelected,
+                    );
+
                     return RefreshIndicator(
                       onRefresh: () async {
                         setState(() {
@@ -212,9 +311,14 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const FilterRow(
-                                    filters: _filters,
-                                    selected: 'All',
+                                  FilterRow(
+                                    filters: filters,
+                                    selected: effectiveSelected,
+                                    onSelected: (value) {
+                                      setState(() {
+                                        _selectedFilter = value;
+                                      });
+                                    },
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
@@ -234,7 +338,7 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                                           ),
                                         ),
                                         Text(
-                                          '${artifacts.length}',
+                                          '${displayedArtifacts.length}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             color: Colors.grey.shade900,
@@ -262,12 +366,12 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                                 context,
                                 index,
                               ) {
-                                final artifact = artifacts[index];
+                                final artifact = displayedArtifacts[index];
                                 return ArtifactGridCard(
                                   artifact: artifact,
                                   language: contentLanguage,
                                 );
-                              }, childCount: artifacts.length),
+                              }, childCount: displayedArtifacts.length),
                             ),
                           ),
                         ],
