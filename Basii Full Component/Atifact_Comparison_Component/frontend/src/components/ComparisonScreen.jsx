@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Scale, CheckCircle, XCircle, BookOpen,
   Sparkles, MapPin, Clock, Layers, Home, RefreshCw, AlertCircle, Eye
@@ -6,6 +6,10 @@ import {
 import HotspotImage from './HotspotImage';
 
 const API_BASE = '/api';
+
+// Session-level cache: survives re-renders but cleared on page refresh
+// Key: "A001-C001", Value: API response object
+const _comparisonCache = new Map();
 
 /**
  * Truncate text to the end of the last complete sentence within maxChars.
@@ -41,35 +45,68 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
   const [comparisonError, setComparisonError] = useState(null);
   const [activeHotspot, setActiveHotspot] = useState(null);
 
+  // Tracks simulated generation steps for the loading message
+  const [loadingStep, setLoadingStep] = useState(0);
+  const loadingStepRef = useRef(null);
+
   // Visual comparison states
   const [showVisualModal, setShowVisualModal] = useState(false);
   const [isLoadingVisual, setIsLoadingVisual] = useState(false);
   const [visualComparison, setVisualComparison] = useState(null);
   const [visualError, setVisualError] = useState(null);
 
-  // Fetch comparison from API
+  // Fetch comparison from API (with 7-second simulated delay, cached per pair)
   const handleGenerateInsights = async () => {
     if (!artifactA?.id || !artifactB?.id) return;
 
-    setIsLoadingInsights(true);
-    setComparisonError(null);
-    try {
-      const response = await fetch(`${API_BASE}/compare`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          artifact1_id: artifactA.id,
-          artifact2_id: artifactB.id
-        })
-      });
+    const cacheKey = `${artifactA.id}-${artifactB.id}`;
 
-      if (!response.ok) {
-        throw new Error('Failed to generate comparison');
+    setIsLoadingInsights(true);
+    setShowAiInsights(false);
+    setComparisonError(null);
+    setLoadingStep(0);
+
+    // Animated loading steps (purely visual — runs regardless of cache)
+    const steps = [
+      { delay: 0,    msg: 0 },
+      { delay: 1800, msg: 1 },
+      { delay: 3800, msg: 2 },
+      { delay: 5500, msg: 3 },
+    ];
+    steps.forEach(({ delay, msg }) => {
+      const t = setTimeout(() => setLoadingStep(msg), delay);
+      // store so we can clear if component unmounts
+      loadingStepRef.current = t;
+    });
+
+    const SIMULATED_DELAY = 7000; // ms
+
+    try {
+      let data;
+
+      if (_comparisonCache.has(cacheKey)) {
+        // Cached — just wait out the simulated delay
+        await new Promise(r => setTimeout(r, SIMULATED_DELAY));
+        data = _comparisonCache.get(cacheKey);
+      } else {
+        // Not cached — fire real API call in parallel with the delay
+        const [response] = await Promise.all([
+          fetch(`${API_BASE}/compare`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              artifact1_id: artifactA.id,
+              artifact2_id: artifactB.id
+            })
+          }),
+          new Promise(r => setTimeout(r, SIMULATED_DELAY))
+        ]);
+
+        if (!response.ok) throw new Error('Failed to generate comparison');
+        data = await response.json();
+        _comparisonCache.set(cacheKey, data);
       }
 
-      const data = await response.json();
       setApiComparison(data);
       setShowAiInsights(true);
     } catch (err) {
@@ -78,6 +115,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
       setShowAiInsights(true);
     } finally {
       setIsLoadingInsights(false);
+      setLoadingStep(0);
     }
   };
 
@@ -124,8 +162,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
   useEffect(() => {
     const timer = setTimeout(() => {
       handleGenerateInsights();
-    }, 500);
-    return () => clearTimeout(timer);
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      if (loadingStepRef.current) clearTimeout(loadingStepRef.current);
+    };
   }, [artifactA?.id, artifactB?.id]);
 
   // Generate comparison data
@@ -395,7 +436,14 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
         {isLoadingInsights && (
           <div className="py-10 sm:py-16 text-center">
             <div className="spinner mx-auto mb-3 sm:mb-4" />
-            <p className="text-sm sm:text-base text-stone-500 font-sans">Analyzing artifacts and generating insights...</p>
+            <p className="text-sm sm:text-base text-stone-500 font-sans">
+              {[
+                'Retrieving artifact context from knowledge base...',
+                'Analysing cultural relationships and materials...',
+                'Generating AI comparison insights...',
+                'Almost ready — finalising analysis...'
+              ][loadingStep]}
+            </p>
           </div>
         )}
 
@@ -408,58 +456,58 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                   {/* Artifact 1 Details */}
                   <div className="bg-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-amber-200">
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-amber-900 mb-3 sm:mb-4 line-clamp-2">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-amber-900 mb-3 sm:mb-4 line-clamp-2">
                       {apiComparison.artifact1?.name || artifactA.name}
                     </h3>
-                    <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                    <div className="space-y-2 sm:space-y-3 text-base sm:text-lg">
                       <div className="flex flex-wrap gap-1">
                         <span className="font-medium text-amber-800">Origin:</span>
-                        <span className="text-amber-700">{apiComparison.artifact1?.origin || artifactA.origin}</span>
+                        <span className="text-amber-700 text-base sm:text-lg">{apiComparison.artifact1?.origin || artifactA.origin}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         <span className="font-medium text-amber-800">Era:</span>
-                        <span className="text-amber-700">{apiComparison.artifact1?.era || artifactA.era}</span>
+                        <span className="text-amber-700 text-base sm:text-lg">{apiComparison.artifact1?.era || artifactA.era}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         <span className="font-medium text-amber-800">Materials:</span>
-                        <span className="text-amber-700">{apiComparison.artifact1?.materials || artifactA.details?.material}</span>
+                        <span className="text-amber-700 text-base sm:text-lg">{apiComparison.artifact1?.materials || artifactA.details?.material}</span>
                       </div>
                       <div>
                         <span className="font-medium text-amber-800">Function:</span>
-                        <p className="mt-0.5 sm:mt-1 text-amber-700">{truncateToSentence(apiComparison.artifact1?.function || artifactA.details?.function)}</p>
+                        <p className="mt-0.5 sm:mt-1 text-amber-700 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact1?.function || artifactA.details?.function)}</p>
                       </div>
                       <div>
                         <span className="font-medium text-amber-800">Symbolism:</span>
-                        <p className="mt-0.5 sm:mt-1 text-amber-700">{truncateToSentence(apiComparison.artifact1?.symbolism || artifactA.details?.symbolism)}</p>
+                        <p className="mt-0.5 sm:mt-1 text-amber-700 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact1?.symbolism)}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Artifact 2 Details */}
                   <div className="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200">
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-slate-800 mb-3 sm:mb-4 line-clamp-2">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-slate-800 mb-3 sm:mb-4 line-clamp-2">
                       {apiComparison.artifact2?.name || artifactB.name}
                     </h3>
-                    <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                    <div className="space-y-2 sm:space-y-3 text-base sm:text-lg">
                       <div className="flex flex-wrap gap-1">
                         <span className="font-medium text-slate-700">Origin:</span>
-                        <span className="text-slate-600">{apiComparison.artifact2?.origin || artifactB.origin}</span>
+                        <span className="text-slate-600 text-base sm:text-lg">{apiComparison.artifact2?.origin || artifactB.origin}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         <span className="font-medium text-slate-700">Era:</span>
-                        <span className="text-slate-600">{apiComparison.artifact2?.era || artifactB.era}</span>
+                        <span className="text-slate-600 text-base sm:text-lg">{apiComparison.artifact2?.era || artifactB.era}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         <span className="font-medium text-slate-700">Materials:</span>
-                        <span className="text-slate-600">{apiComparison.artifact2?.materials || artifactB.details?.material}</span>
+                        <span className="text-slate-600 text-base sm:text-lg">{apiComparison.artifact2?.materials || artifactB.details?.material}</span>
                       </div>
                       <div>
                         <span className="font-medium text-slate-700">Function:</span>
-                        <p className="mt-0.5 sm:mt-1 text-slate-600">{truncateToSentence(apiComparison.artifact2?.function || artifactB.details?.function)}</p>
+                        <p className="mt-0.5 sm:mt-1 text-slate-600 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact2?.function || artifactB.details?.function)}</p>
                       </div>
                       <div>
                         <span className="font-medium text-slate-700">Symbolism:</span>
-                        <p className="mt-0.5 sm:mt-1 text-slate-600">{truncateToSentence(apiComparison.artifact2?.symbolism || artifactB.details?.symbolism)}</p>
+                        <p className="mt-0.5 sm:mt-1 text-slate-600 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact2?.symbolism)}</p>
                       </div>
                     </div>
                   </div>
@@ -469,7 +517,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="bg-emerald-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-emerald-100">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     <CheckCircle size={16} className="text-emerald-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-emerald-800">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-emerald-800">
                       Similarities
                     </h3>
                   </div>
@@ -478,11 +526,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                       apiComparison.similarities.map((item, index) => (
                         <li key={index} className="flex items-start gap-2 sm:gap-3">
                           <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm text-emerald-800 font-sans">{item}</span>
+                          <span className="text-base sm:text-lg text-emerald-800 font-sans">{item}</span>
                         </li>
                       ))
                     ) : (
-                      <li className="text-xs sm:text-sm text-emerald-700 font-sans italic">
+                      <li className="text-base sm:text-lg text-emerald-700 font-sans italic">
                         These artifacts represent distinct cultural traditions.
                       </li>
                     )}
@@ -493,7 +541,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="bg-rose-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-rose-100">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     <XCircle size={16} className="text-rose-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-rose-800">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-rose-800">
                       Differences
                     </h3>
                   </div>
@@ -502,13 +550,13 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                       apiComparison.differences.map((item, index) => (
                         <li key={index} className="flex items-start gap-2 sm:gap-3">
                           <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-rose-500 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm text-rose-800 font-sans">{item}</span>
+                          <span className="text-base sm:text-lg text-rose-800 font-sans">{item}</span>
                         </li>
                       ))
                     ) : (
-                      <li className="text-xs sm:text-sm text-rose-700 font-sans italic">
+                      <p className="text-base sm:text-lg text-rose-700 font-sans italic">
                         These artifacts share remarkable similarities.
-                      </li>
+                      </p>
                     )}
                   </ul>
                 </div>
@@ -517,11 +565,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     <BookOpen size={16} className="text-slate-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-slate-800">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-slate-800">
                       AI-Generated Comparison
                     </h3>
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-700 font-sans leading-relaxed whitespace-pre-line">
+                  <div className="text-base sm:text-lg text-slate-700 font-sans leading-relaxed whitespace-pre-line">
                     {apiComparison.comparison}
                   </div>
                 </div>
@@ -542,7 +590,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="bg-emerald-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-emerald-100">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     <CheckCircle size={16} className="text-emerald-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-emerald-800">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-emerald-800">
                       Similarities
                     </h3>
                   </div>
@@ -550,11 +598,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     {comparison.similarities.map((item, index) => (
                       <li key={index} className="flex items-start gap-2 sm:gap-3">
                         <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-emerald-800 font-sans">{item}</span>
+                        <span className="text-sm sm:text-base text-emerald-800 font-sans">{item}</span>
                       </li>
                     ))}
                     {comparison.similarities.length === 0 && (
-                      <li className="text-xs sm:text-sm text-emerald-700 font-sans italic">
+                      <li className="text-base sm:text-lg text-emerald-700 font-sans italic">
                         These artifacts represent distinct cultural traditions with unique characteristics.
                       </li>
                     )}
@@ -565,7 +613,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="bg-rose-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-rose-100">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     <XCircle size={16} className="text-rose-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-rose-800">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-rose-800">
                       Differences
                     </h3>
                   </div>
@@ -574,23 +622,23 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     <div className="space-y-3 sm:space-y-4">
                       {comparison.differences.map((diff, index) => (
                         <div key={index} className="bg-white/60 rounded-lg p-3 sm:p-4">
-                          <div className="text-xs sm:text-sm font-medium text-rose-700 font-sans mb-1.5 sm:mb-2">
+                          <div className="text-base sm:text-lg font-medium text-rose-700 font-sans mb-1.5 sm:mb-2">
                             {diff.aspect}
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                             <div>
-                              <span className="text-[10px] sm:text-xs text-rose-500 font-sans block mb-0.5 sm:mb-1 line-clamp-1">
+                              <span className="text-xs sm:text-sm text-rose-500 font-sans block mb-0.5 sm:mb-1 line-clamp-1">
                                 {artifactA.name}
                               </span>
-                              <span className="text-xs sm:text-sm text-rose-800 font-sans">
+                              <span className="text-base sm:text-lg text-rose-800 font-sans">
                                 {diff.a}
                               </span>
                             </div>
                             <div>
-                              <span className="text-[10px] sm:text-xs text-rose-500 font-sans block mb-0.5 sm:mb-1 line-clamp-1">
+                              <span className="text-xs sm:text-sm text-rose-500 font-sans block mb-0.5 sm:mb-1 line-clamp-1">
                                 {artifactB.name}
                               </span>
-                              <span className="text-xs sm:text-sm text-rose-800 font-sans">
+                              <span className="text-base sm:text-lg text-rose-800 font-sans">
                                 {diff.b}
                               </span>
                             </div>
@@ -599,7 +647,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs sm:text-sm text-rose-700 font-sans italic">
+                    <p className="text-base sm:text-lg text-rose-700 font-sans italic">
                       These artifacts share remarkable similarities across all major categories.
                     </p>
                   )}
@@ -609,11 +657,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 <div className="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     <BookOpen size={16} className="text-slate-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-base sm:text-lg font-semibold text-slate-800">
+                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-slate-800">
                       Cultural Significance
                     </h3>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-700 font-sans leading-relaxed">
+                  <p className="text-base sm:text-lg text-slate-700 font-sans leading-relaxed">
                     {comparison.culturalSignificance}
                   </p>
                 </div>

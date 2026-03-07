@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   MapPin, Clock, Layers, Ruler, Sparkles, ArrowLeft,
-  BookOpen, Zap, Scale, RefreshCw, AlertCircle
+  BookOpen, Zap, Scale, RefreshCw, AlertCircle, Expand
 } from 'lucide-react';
 import SimilarArtifactCard from './SimilarArtifactCard';
 import HotspotImage from './HotspotImage';
+import EnlargedImageViewer from './EnlargedImageViewer';
 
 const API_BASE = '/api';
 
@@ -20,6 +21,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
   const [similarArtifacts, setSimilarArtifacts] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [similarError, setSimilarError] = useState(null);
+  const [showEnlargedImage, setShowEnlargedImage] = useState(false);
 
   // Load similar artifacts from API
   useEffect(() => {
@@ -135,6 +137,18 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
               alt={artifact.name}
             />
           </div>
+
+          {/* View Enlarged Image Button */}
+          <button
+            onClick={() => setShowEnlargedImage(true)}
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 sm:px-8 sm:py-5
+                      bg-white border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white
+                      rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300
+                      font-sans font-semibold text-base sm:text-lg active:scale-95"
+          >
+            <Expand size={20} className="sm:w-6 sm:h-6" />
+            <span>View Enlarged Image</span>
+          </button>
 
           {/* Quick Facts */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-stone-200 p-4 sm:p-6">
@@ -401,6 +415,16 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
           </div>
         )}
       </section>
+
+      {/* Enlarged Image Viewer Modal */}
+      {showEnlargedImage && (
+        <EnlargedImageViewer
+          image={artifact.image}
+          alt={artifact.name}
+          artifact={artifact}
+          onClose={() => setShowEnlargedImage(false)}
+        />
+      )}
     </div>
   );
 };

@@ -70,12 +70,10 @@ function ScenariosPage() {
    * Step 1 — DB check  (/api/scenario-status)
    *   Case A: approved, not rejected          → show instantly, done, no AI
    *   Case B: rejected + approved fallback    → show fallback + banner, poll, no AI
-   *   Case C: rejected + no fallback          → admin auto-regen already triggered,
-   *                                              show "preparing" banner, poll, no AI
-   *   Case D: pending review / nothing found  → proceed to Step 2
+   *   Case C/D: anything else (rejected no-fallback, pending, nothing found)
+   *             → call fine-tuned AI, show content, poll for curator approval
    *
    * Step 2 — Fine-tuned AI  (/api/generate)
-   *   Only reached when there is no approved/rejected content to show.
    *   save_scenario on the backend is idempotent so no duplicate drafts.
    */
   const generateAnalysis = async (artid, scenario) => {
@@ -124,22 +122,12 @@ function ScenariosPage() {
         return;
       }
 
-      // Case C: rejected, no fallback — admin auto-regen already fired;
-      // do NOT call AI again, just show the "preparing" banner and poll.
-      if (s.is_rejected && !s.curator_verified) {
-        setAnalysisResults([]);
-        setCuratorVerified(false);
-        setVerifiedBy(null);
-        setIsRejected(true);
-        setIsPendingReview(false);
-        setHasFallback(false);
-        setLoadingStage('idle');
-        setLoading(false);
-        _startPolling(artid, scenario.id);
-        return;
-      }
+      // Case C (removed): rejected + no approved fallback used to return early here.
+      // Now we fall through to Case D so the visitor always gets fresh AI content,
+      // even if a previous draft was rejected.  auto-regen from the admin panel and
+      // this visitor call are both idempotent via save_scenario.
 
-      // Case D / nothing found — call fine-tuned AI model
+      // Case D / nothing found (or rejected with no fallback) — call fine-tuned AI model
       // (is_pending=true falls here too; save_scenario is idempotent so no duplicate)
       setLoadingStage('generating_ai');
       const response = await apiService.generateScenarioAnalysis(artid, scenario.id);

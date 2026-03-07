@@ -199,7 +199,7 @@ function ArtifactDetailPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h3 className="text-3xl font-serif font-bold text-gray-800 mb-4">
-                Choose Analysis Scenario
+                Choose an Analysis Topic to Generate the Scenarios
               </h3>
               <p className="text-lg text-gray-600 mb-8">
                 Select an historical analysis scenario to explore this artifact from different academic perspectives.
