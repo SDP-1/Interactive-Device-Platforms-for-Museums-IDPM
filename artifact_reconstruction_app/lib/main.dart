@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
@@ -1276,7 +1279,7 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
       if (!context.mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!),
+          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!, artifactName: artifact.name),
         ),
       );
       return;
@@ -1321,7 +1324,7 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
     if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!),
+        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!, artifactName: artifact.name),
       ),
     );
   }
@@ -1820,7 +1823,7 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
       if (!context.mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!),
+          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!, artifactName: artifact.name),
         ),
       );
       return;
@@ -1866,7 +1869,7 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
     if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!),
+        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!, artifactName: _artifact.name),
       ),
     );
   }
@@ -2119,9 +2122,10 @@ class _DetailRow extends StatelessWidget {
 }
 
 class Model3DViewerScreen extends StatefulWidget {
-  const Model3DViewerScreen({super.key, required this.modelUrl});
+  const Model3DViewerScreen({super.key, required this.modelUrl, this.artifactName});
 
   final String modelUrl;
+  final String? artifactName;
 
   @override
   State<Model3DViewerScreen> createState() => _Model3DViewerScreenState();
@@ -2171,6 +2175,7 @@ class _Model3DViewerScreenState extends State<Model3DViewerScreen> {
                         MaterialPageRoute<void>(
                           builder: (_) => AdminArtifactQrScreen(
                             artifactData: widget.modelUrl,
+                            artifactName: widget.artifactName,
                           ),
                         ),
                       );
@@ -2218,12 +2223,131 @@ class _Model3DViewerScreenState extends State<Model3DViewerScreen> {
   }
 }
 
-class AdminArtifactQrScreen extends StatelessWidget {
-  const AdminArtifactQrScreen({super.key, required this.artifactData});
+class AdminArtifactQrScreen extends StatefulWidget {
+  const AdminArtifactQrScreen({super.key, required this.artifactData, this.artifactName});
 
   /// For now we encode the model URL directly.
   /// Later this can be an artifactId or deep link.
   final String artifactData;
+  final String? artifactName;
+
+  @override
+  State<AdminArtifactQrScreen> createState() => _AdminArtifactQrScreenState();
+}
+
+class _AdminArtifactQrScreenState extends State<AdminArtifactQrScreen> {
+  bool _saving = false;
+
+  Future<void> _downloadQrImage() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      const double width = 400, height = 500;
+      const Color bgColor = Color(0xFFF2EDE5);
+      const Color textColor = Color(0xFF1A1A1A);
+      const double qrSize = 240.0;
+      const double whiteBoxSize = 280.0;
+      const double gapBetweenTitleAndQr = 28.0;
+
+      final qrPainter = QrPainter(
+        data: widget.artifactData,
+        version: QrVersions.auto,
+        gapless: true,
+      );
+      final qrByteData = await qrPainter.toImageData(qrSize, format: ui.ImageByteFormat.png);
+      if (qrByteData == null || qrByteData.buffer.asUint8List().isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to generate QR image.')),
+        );
+        return;
+      }
+      final qrImage = await _decodeImageFromList(qrByteData.buffer.asUint8List());
+
+      final title = widget.artifactName?.isNotEmpty == true ? widget.artifactName! : 'Artifact';
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: title,
+          style: const TextStyle(
+            color: textColor,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 2,
+        ellipsis: '…',
+      );
+      textPainter.layout(maxWidth: width - 48);
+      final titleHeight = textPainter.height;
+      final totalContentHeight = titleHeight + gapBetweenTitleAndQr + whiteBoxSize;
+      final contentTop = (height - totalContentHeight) / 2;
+      final whiteBoxTop = contentTop + titleHeight + gapBetweenTitleAndQr;
+      final double whiteBoxLeft = (width - whiteBoxSize) / 2;
+      final double qrLeft = (width - qrSize) / 2;
+      final double qrTop = whiteBoxTop + (whiteBoxSize - qrSize) / 2;
+
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      final fullRect = Rect.fromLTWH(0, 0, width, height);
+      canvas.drawRect(fullRect, Paint()..color = bgColor);
+
+      textPainter.paint(
+        canvas,
+        Offset((width - textPainter.width) / 2, contentTop),
+      );
+
+      final whiteBoxRRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(whiteBoxLeft, whiteBoxTop, whiteBoxSize, whiteBoxSize),
+        const Radius.circular(20),
+      );
+      canvas.drawShadow(
+        Path()..addRRect(whiteBoxRRect),
+        const Color(0x1A000000),
+        8,
+        true,
+      );
+      canvas.drawRRect(whiteBoxRRect, Paint()..color = Colors.white);
+      canvas.drawImageRect(
+        qrImage,
+        Rect.fromLTWH(0, 0, qrImage.width.toDouble(), qrImage.height.toDouble()),
+        Rect.fromLTWH(qrLeft, qrTop, qrSize, qrSize),
+        Paint(),
+      );
+
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(width.toInt(), height.toInt());
+      final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      if (pngBytes == null || pngBytes.buffer.asUint8List().isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to generate image.')),
+        );
+        return;
+      }
+      final timestamp = DateTime.now().toIso8601String().replaceAll(RegExp(r'[:\-.]'), '').substring(0, 15);
+      await Gal.putImageBytes(pngBytes.buffer.asUint8List(), name: 'artifact_qr_$timestamp');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('QR code saved to gallery')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save QR code: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<ui.Image> _decodeImageFromList(Uint8List list) async {
+    final codec = await ui.instantiateImageCodec(list);
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    return frame.image;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2288,7 +2412,7 @@ class AdminArtifactQrScreen extends StatelessWidget {
                     ],
                   ),
                   child: QrImageView(
-                    data: artifactData,
+                    data: widget.artifactData,
                     version: QrVersions.auto,
                     size: 240,
                   ),
@@ -2296,8 +2420,28 @@ class AdminArtifactQrScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _saving ? null : _downloadQrImage,
+                icon: _saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.download, size: 20),
+                label: Text(_saving ? 'Saving…' : 'Download QR as image'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
-              artifactData,
+              widget.artifactData,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
