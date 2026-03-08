@@ -441,7 +441,7 @@ function ScenariosPage() {
                 <div className="flex items-center mb-3">
                   <span className="text-4xl mr-3">{selectedScenario.icon}</span>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800">Selected Scenario</h3>
+                    <h3 className="text-lg font-bold text-gray-800">Selected Topic</h3>
                     <p className="text-sm text-gray-600">{selectedScenario.name}</p>
                   </div>
                 </div>
@@ -459,7 +459,7 @@ function ScenariosPage() {
                 {selectedScenario ? selectedScenario.name : 'Scenario Analysis'}
               </h1>
               <p className="text-gray-600">
-                AI-generated structured analysis based on predefined academic frameworks
+                AI-generated structured analysis based on given academic frameworks
               </p>
             </div>
 
@@ -647,10 +647,12 @@ function ScenariosPage() {
                       </div>
 
                       <div className="p-6">
-                        <div className="prose prose-sm max-w-none">
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                            {result.content}
-                          </p>
+                        <div className="prose max-w-none space-y-4">
+                          {result.content.split('\n\n').filter(p => p.trim()).map((paragraph, i) => (
+                            <p key={i} className="text-base sm:text-lg text-gray-700 leading-relaxed">
+                              {paragraph.trim()}
+                            </p>
+                          ))}
                         </div>
                       </div>
                     </div>

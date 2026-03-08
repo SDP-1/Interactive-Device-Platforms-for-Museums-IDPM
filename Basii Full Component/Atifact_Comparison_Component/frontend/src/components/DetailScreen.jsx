@@ -294,7 +294,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                 <div className="bg-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200">
                   <div className="flex items-start gap-3 sm:gap-4">
                     <BookOpen size={22} className="text-slate-600 mt-1 flex-shrink-0 sm:w-7 sm:h-7" />
-                    <div className="text-base sm:text-lg text-stone-700 font-sans leading-relaxed">
+                    <div className="text-lg sm:text-xl text-stone-700 font-sans leading-relaxed">
                       {aiExplanation.split(/(?=(?:Overview|Materials and Craftsmanship|Function and Use|Cultural Significance|Special Features))/g).map((section, index) => {
                         const lines = section.trim().split('\n');
                         const title = lines[0];
@@ -320,8 +320,8 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
 
                           return (
                             <div key={index} className="mb-4 last:mb-0">
-                              <h4 className="font-bold text-stone-800 text-sm uppercase tracking-wide mb-1">{headerText}</h4>
-                              <p className="text-stone-700">{bodyText}</p>
+                              <h4 className="font-bold text-stone-800 text-base sm:text-lg uppercase tracking-wide mb-1">{headerText}</h4>
+                              <p className="text-lg sm:text-xl text-stone-700">{bodyText}</p>
                             </div>
                           );
                         } else {
