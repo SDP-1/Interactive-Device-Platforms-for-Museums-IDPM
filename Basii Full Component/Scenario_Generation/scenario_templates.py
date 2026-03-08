@@ -19,7 +19,7 @@ Generate a comprehensive historical impact analysis covering exactly 3 distinct 
 2. Social/Cultural Impact - Its influence on daily life, traditions, and social practices
 3. Economic/Trade Impact - Its role in commerce, trade routes, and economic systems
 
-For each perspective, provide detailed historical evidence and implications."""
+For each perspective, provide a detailed, multi-sentence academic analysis with specific historical evidence, named events, dates, and far-reaching implications. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "cultural_exchange": {
@@ -37,7 +37,7 @@ Generate a cultural exchange analysis with exactly 3 distinct pathways:
 2. Maritime Trade Connections - Links through Indian Ocean trade networks
 3. Colonial Period Interactions - Cultural amalgamation during European contact
 
-For each pathway, provide specific evidence of cultural exchange and mutual influence."""
+For each pathway, provide a detailed, multi-sentence academic analysis with specific historical evidence, named trade routes, cultural practices, and documented exchanges. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "ritual_significance": {
@@ -55,7 +55,7 @@ Generate a ritual significance analysis with exactly 3 dimensions:
 2. Hindu/Indigenous Traditions - Links to Hindu or pre-Buddhist indigenous rituals
 3. Royal Ceremonial Usage - Role in court ceremonies and royal protocols
 
-For each dimension, explain specific ritual practices and spiritual meanings."""
+For each dimension, explain specific ritual practices, spiritual meanings, ceremonial contexts, named festivals or events, and their broader religious significance. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "craft_technology": {
@@ -73,7 +73,7 @@ Generate a craft technology analysis with exactly 3 technical aspects:
 2. Manufacturing Techniques - Specific craft methods, tools, and technical processes employed
 3. Artistic Innovation - Decorative techniques, design principles, and aesthetic innovations
 
-For each aspect, provide technical details and evidence of skill development."""
+For each aspect, provide technical details, named techniques, evidence of artisan skill development, historical context of the craft tradition, and its legacy. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "colonial_transformation": {
@@ -91,7 +91,7 @@ Generate a colonial transformation analysis with exactly 3 phases:
 2. Dutch Period (1658-1796) - Commercial exploitation and cultural adaptations
 3. British Period (1796-1948) - Administrative changes and museum/heritage categorization
 
-For each phase, describe specific changes in usage, meaning, or preservation."""
+For each phase, describe specific changes in usage, meaning, or preservation with named colonial policies, key figures, documented events, and long-term cultural consequences. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "trade_networks": {
@@ -109,7 +109,7 @@ Generate a trade network analysis with exactly 3 commercial dimensions:
 2. Indian Ocean Trade - Connections to maritime commerce and merchant networks
 3. Export/Luxury Market - Value as export commodity or luxury item in global trade
 
-For each dimension, provide evidence of commercial activity and economic significance."""
+For each dimension, provide evidence of commercial activity, named trade routes, documented merchants or ports, economic significance, and historical records of trade. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "preservation_heritage": {
@@ -127,7 +127,7 @@ Generate a heritage preservation analysis with exactly 3 chronological stages:
 2. Discovery & Collection - How it was found, documented, and collected
 3. Modern Conservation - Current preservation efforts and museum presentation
 
-For each stage, describe the changing relationship between artifact and society."""
+For each stage, describe the changing relationship between artifact and society with specific named institutions, collectors, conservation methods, and the evolving cultural narrative. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "comparative_analysis": {
@@ -145,7 +145,7 @@ Generate a comparative analysis with exactly 3 cultural comparisons:
 2. Contemporary Global Equivalents - Comparable objects from other civilizations of the same period
 3. Unique Sri Lankan Features - Distinctive characteristics that make it uniquely Sri Lankan
 
-For each comparison, highlight similarities, differences, and cultural uniqueness."""
+For each comparison, highlight similarities, differences, cultural uniqueness, named parallel artifacts or sites, and scholarly interpretations of the connections. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "archaeological_conservation": {
@@ -163,7 +163,7 @@ Generate an archaeological conservation analysis with exactly 3 scientific dimen
 2. Scientific Analysis - Material composition, chemical analysis, age determination, and authenticity verification
 3. Conservation Challenges - Deterioration factors, preservation techniques, and restoration approaches
 
-For each dimension, provide specific scientific evidence and conservation methodologies."""
+For each dimension, provide specific scientific evidence, named methodologies, documented findings, conservation challenges, and the implications for our understanding of the artifact. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     },
     
     "patronage_social_status": {
@@ -181,7 +181,7 @@ Generate a patronage and social status analysis with exactly 3 hierarchical pers
 2. Social Status Symbolism - What this artifact signified about wealth, power, education, or religious devotion
 3. Access & Exclusivity - Who could own, use, or view this artifact; social restrictions and privileges
 
-For each perspective, explain the relationship between artifact and social stratification."""
+For each perspective, explain the relationship between artifact and social stratification with named patrons, court records, historical evidence of ownership, and the broader socio-political context. Each description must be comprehensive and scholarly, minimum 7-8 sentences."""
     }
 }
 
