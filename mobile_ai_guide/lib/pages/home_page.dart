@@ -91,14 +91,9 @@ class _HomePageState extends State<HomePage> {
                   },
                   onTours: () {
                     setState(() => _selectedTile = 'Tours');
-                    Navigator.of(context)
-                        .push(
-                          MaterialPageRoute(builder: (_) => const ToursPage()),
-                        )
-                        .then((_) {
-                          if (!mounted) return;
-                          setState(() => _selectedTile = null);
-                        });
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ToursPage()),
+                    );
                   },
                   onSaved: () {
                     setState(() => _selectedTile = 'Saved');

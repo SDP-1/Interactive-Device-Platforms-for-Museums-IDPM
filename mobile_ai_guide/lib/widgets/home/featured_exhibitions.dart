@@ -20,6 +20,13 @@ class _FeaturedExhibitionsSectionState
   late Future<List<FeaturedExhibit>> _future;
   bool _sessionRedirectTriggered = false;
 
+  String _durationLabel(FeaturedExhibit exhibit) {
+    final minutes = exhibit.estimatedVisitMinutes;
+    if (minutes == null) return '30 min tour';
+    if (minutes <= 0) return 'Self-paced tour';
+    return '$minutes min tour';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -148,7 +155,7 @@ class _FeaturedExhibitionsSectionState
                         imageUrl: ex.imageUrl ?? '',
                         title: ex.name,
                         artifacts: '${ex.artifacts.length} artifacts',
-                        duration: '${ex.estimatedVisitMinutes ?? 30} min tour',
+                        duration: _durationLabel(ex),
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(

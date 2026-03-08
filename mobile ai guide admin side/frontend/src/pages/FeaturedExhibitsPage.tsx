@@ -196,8 +196,10 @@ const FeaturedExhibitsPage: React.FC = () => {
                           <div className="w-full h-full bg-gray-100" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-base font-semibold">{ex.name}</h3>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold truncate">
+                          {ex.name}
+                        </h3>
                         <p className="text-sm text-gray-500 truncate">
                           {ex.description}
                         </p>
