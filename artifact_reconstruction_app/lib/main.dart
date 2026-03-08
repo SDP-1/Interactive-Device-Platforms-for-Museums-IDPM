@@ -1559,14 +1559,18 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   child: OutlinedButton(
                     onPressed: (_hasEnteredData && !_saved && !_saving) ? _save : null,
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppTheme.stone200),
+                      foregroundColor: AppTheme.primary,
+                      side: const BorderSide(color: AppTheme.primary),
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: _saving
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 22,
                             width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
                           )
                         : const Text('Save details'),
                   ),
@@ -1644,22 +1648,44 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.surfaceWarm,
         foregroundColor: AppTheme.stone800,
-        title: const Text('Artifacts'),
+        elevation: 0,
+        title: const Text(
+          'Artifacts',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.3,
+          ),
+        ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primary),
+            )
           : _error != null
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_error!, textAlign: TextAlign.center),
+                        Icon(Icons.error_outline_rounded, size: 48, color: AppTheme.stone500),
                         const SizedBox(height: 16),
-                        TextButton(
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.stone600),
+                        ),
+                        const SizedBox(height: 20),
+                        FilledButton.icon(
                           onPressed: _loadArtifacts,
-                          child: const Text('Retry'),
+                          icon: const Icon(Icons.refresh, size: 20),
+                          label: const Text('Retry'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -1667,127 +1693,186 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
                 )
               : _artifacts.isEmpty
                   ? Center(
-                      child: Text(
-                        'No artifacts yet.',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.stone600),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.collections_outlined, size: 56, color: AppTheme.stone400),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No artifacts yet',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: AppTheme.stone600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Capture and reconstruct artifacts to see them here.',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.stone500),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : RefreshIndicator(
                       onRefresh: _loadArtifacts,
+                      color: AppTheme.primary,
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                         itemCount: _artifacts.length,
                         itemBuilder: (context, index) {
                           final artifact = _artifacts[index];
-                            return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppTheme.stone200),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
                             clipBehavior: Clip.antiAlias,
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => ArtifactDetailViewScreen(artifact: artifact),
-                                  ),
-                                );
-                                if (!mounted) return;
-                                _loadArtifacts();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  children: [
-                                    if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(
-                                          artifact.imageUrl!,
-                                          width: 64,
-                                          height: 64,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => const SizedBox(
-                                            width: 64,
-                                            height: 64,
-                                            child: Icon(Icons.image_not_supported),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  await Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => ArtifactDetailViewScreen(artifact: artifact),
+                                    ),
+                                  );
+                                  if (!mounted) return;
+                                  _loadArtifacts();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(14),
+                                          child: Container(
+                                            width: 72,
+                                            height: 72,
+                                            color: AppTheme.stone200,
+                                            child: Image.network(
+                                              artifact.imageUrl!,
+                                              width: 72,
+                                              height: 72,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (_, __, ___) => Icon(
+                                                Icons.broken_image_outlined,
+                                                size: 28,
+                                                color: AppTheme.stone500,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      )
-                                    else
-                                      Container(
-                                        width: 64,
-                                        height: 64,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.stone200,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Icon(Icons.image_outlined),
-                                      ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            artifact.name,
-                                            style: Theme.of(context).textTheme.titleMedium,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                        )
+                                      else
+                                        Container(
+                                          width: 72,
+                                          height: 72,
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.stone200,
+                                            borderRadius: BorderRadius.circular(14),
                                           ),
-                                          if (artifact.era != null && artifact.era!.isNotEmpty)
+                                          child: Icon(Icons.image_outlined, color: AppTheme.stone500),
+                                        ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
                                             Text(
-                                              artifact.era!,
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.stone600),
+                                              artifact.name,
+                                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                color: AppTheme.stone800,
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
+                                            if (artifact.era != null && artifact.era!.isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                artifact.era!,
+                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                  color: AppTheme.stone500,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                            if (artifact.category != null && artifact.category!.isNotEmpty) ...[
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                artifact.category!,
+                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                  color: AppTheme.stone400,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(Icons.chevron_right_rounded, color: AppTheme.stone400),
+                                      PopupMenuButton<String>(
+                                        icon: Icon(Icons.more_vert_rounded, color: AppTheme.stone600),
+                                        padding: EdgeInsets.zero,
+                                        onSelected: (value) async {
+                                          if (value == 'edit') {
+                                            await Navigator.of(context).push<bool>(
+                                              MaterialPageRoute<bool>(
+                                                builder: (_) => ArtifactDetailsScreen(artifact: artifact, isEditMode: true),
+                                              ),
+                                            );
+                                            if (!mounted) return;
+                                            _loadArtifacts();
+                                          } else if (value == 'delete') {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (ctx) => AlertDialog(
+                                                title: const Text('Delete artifact?'),
+                                                content: const Text('This cannot be undone.'),
+                                                actions: [
+                                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                                  FilledButton(
+                                                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                                    onPressed: () => Navigator.pop(ctx, true),
+                                                    child: const Text('Delete'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            if (confirm != true || !mounted) return;
+                                            try {
+                                              await SupabaseService().deleteArtifact(artifact.id);
+                                              if (!mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Artifact deleted.')));
+                                              _loadArtifacts();
+                                            } catch (e) {
+                                              if (!mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+                                            }
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
                                         ],
                                       ),
-                                    ),
-                                    const Icon(Icons.chevron_right),
-                                    PopupMenuButton<String>(
-                                      icon: const Icon(Icons.more_vert),
-                                      onSelected: (value) async {
-                                        if (value == 'edit') {
-                                          await Navigator.of(context).push<bool>(
-                                            MaterialPageRoute<bool>(
-                                              builder: (_) => ArtifactDetailsScreen(artifact: artifact, isEditMode: true),
-                                            ),
-                                          );
-                                          if (!mounted) return;
-                                          _loadArtifacts();
-                                        } else if (value == 'delete') {
-                                          final confirm = await showDialog<bool>(
-                                            context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              title: const Text('Delete artifact?'),
-                                              content: const Text('This cannot be undone.'),
-                                              actions: [
-                                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                                                FilledButton(
-                                                  style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                                                  onPressed: () => Navigator.pop(ctx, true),
-                                                  child: const Text('Delete'),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                          if (confirm != true || !mounted) return;
-                                          try {
-                                            await SupabaseService().deleteArtifact(artifact.id);
-                                            if (!mounted) return;
-                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Artifact deleted.')));
-                                            _loadArtifacts();
-                                          } catch (e) {
-                                            if (!mounted) return;
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
-                                          }
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                                        const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                                      ],
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
