@@ -19,6 +19,7 @@ pip install -r requirements.txt
 ```
 
 This will install:
+
 - `fastapi` - Web framework
 - `uvicorn` - ASGI server
 - `pandas` - CSV processing
@@ -38,18 +39,21 @@ Create a `.env` file in the project root directory:
 OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 QDRANT_URL=https://your-cluster-id.qdrant.io
 QDRANT_API_KEY=your-qdrant-api-key-here
+SESSION_BACKEND_BASE_URL=http://localhost:5000/api
 DEBUG=false
 ```
 
 ### Getting API Keys
 
 #### OpenAI API Key
+
 1. Go to https://platform.openai.com/api-keys
 2. Sign in with your account
 3. Click "+ Create new secret key"
 4. Copy the key (starts with `sk-proj-...`)
 
 #### Qdrant Cloud
+
 1. Go to https://cloud.qdrant.io/
 2. Sign up for a free account
 3. Create a new cluster (free tier available)
@@ -60,6 +64,7 @@ DEBUG=false
 3. 📊 Prepare Data
 
 Ensure your `data/artifacts.csv` file is ready with the following columns:
+
 - `Artifact_id` - Unique identifier (e.g., "ART001")
 - `Name` - Artifact name
 - `Period` - Historical period
@@ -83,6 +88,7 @@ python ingestion/ingest_artifacts.py
 ```
 
 **What this does:**
+
 - Loads artifacts from `data/artifacts.csv`
 - Splits text into chunks (500 chars, 100 overlap)
 - Generates embeddings using OpenAI `text-embedding-3-small`
@@ -90,6 +96,7 @@ python ingestion/ingest_artifacts.py
 - Uploads everything to Qdrant vector database
 
 **Expected output:**
+
 ```
 Collection already exists.
 Creating indexes for filter fields...
@@ -106,7 +113,7 @@ Processing artifact: ART001
 Ingestion complete!
 ```
 
-**⏱️ Time:** 2-5 minutes (depends on API speed)  
+**⏱️ Time:** 2-5 minutes (depends on API speed)
 
 **Note:** You only need to run this once, or when you update `artifacts.csv`.
 
@@ -123,11 +130,13 @@ uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ### Option B: Using Batch File (Windows)
 
 Double-click `start_server.bat` or run:
+
 ```bash
 ./start_server.bat
 ```
 
 **Expected output:**
+
 ```
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 INFO:     Started reloader process
@@ -145,6 +154,7 @@ INFO:     Application startup complete.
 Once the server is running, access the interactive API documentation:
 
 ### Swagger UI (Recommended)
+
 **URL:** http://localhost:8000/docs
 
 - Interactive API explorer
@@ -153,12 +163,14 @@ Once the server is running, access the interactive API documentation:
 - Try out all endpoints
 
 ### ReDoc (Alternative)
+
 **URL:** http://localhost:8000/redoc
 
 - Clean, readable documentation
 - Better for reading API specs
 
 ### API Root
+
 **URL:** http://localhost:8000/
 
 Shows basic API information and available endpoints.
@@ -186,21 +198,25 @@ Shows basic API information and available endpoints.
 ### Using cURL
 
 #### Health Check
+
 ```bash
 curl http://localhost:8000/health
 ```
 
 #### Get Artifact Info (English)
+
 ```bash
 curl "http://localhost:8000/artifact/ART001?language=en"
 ```
 
 #### Get Artifact Info (Sinhala)
+
 ```bash
 curl "http://localhost:8000/artifact/ART001?language=si"
 ```
 
 #### Ask a Question (English)
+
 ```bash
 curl -X POST "http://localhost:8000/ask" \
   -H "Content-Type: application/json" \
@@ -208,6 +224,7 @@ curl -X POST "http://localhost:8000/ask" \
 ```
 
 #### Ask a Question (Sinhala)
+
 ```bash
 curl -X POST "http://localhost:8000/ask" \
   -H "Content-Type: application/json" \
@@ -219,9 +236,11 @@ curl -X POST "http://localhost:8000/ask" \
 ## 📡 API Endpoints
 
 ### `GET /health`
+
 Health check endpoint. Returns system status.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -231,15 +250,18 @@ Health check endpoint. Returns system status.
 ```
 
 ### `GET /artifact/{artifact_id}`
+
 Get artifact information when QR code is scanned.
 
 **Parameters:**
+
 - `artifact_id` (path): Artifact identifier (e.g., "ART001")
 - `language` (query): "en" or "si" (default: "en")
 
 **Example:** http://localhost:8000/artifact/ART001?language=en
 
 **Response:**
+
 ```json
 {
   "artifact_id": "ART001",
@@ -253,9 +275,11 @@ Get artifact information when QR code is scanned.
 ```
 
 ### `POST /ask`
+
 Ask a question about an artifact using AI Mode.
 
 **Request Body:**
+
 ```json
 {
   "artifact_id": "ART001",
@@ -265,6 +289,7 @@ Ask a question about an artifact using AI Mode.
 ```
 
 **Response (Success):**
+
 ```json
 {
   "answer": "The Sandakada Pahana, or Moonstone, is a unique...",
@@ -274,6 +299,7 @@ Ask a question about an artifact using AI Mode.
 ```
 
 **Response (Rejected - Out of Scope):**
+
 ```json
 {
   "answer": "I can only answer questions about the artifact you are viewing.",
@@ -283,6 +309,7 @@ Ask a question about an artifact using AI Mode.
 ```
 
 **Response (No Context Found):**
+
 ```json
 {
   "answer": "I don't know that information.",
@@ -298,6 +325,7 @@ Ask a question about an artifact using AI Mode.
 Once everything is set up:
 
 1. **Start the server** (if not running):
+
    ```bash
    uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
    ```
@@ -313,31 +341,37 @@ Once everything is set up:
 ## 🛠️ Troubleshooting
 
 ### "Module not found" error
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### "Invalid API Key" error
+
 - Check your `.env` file
 - Make sure keys are correct (no extra spaces)
 - Verify keys are active in OpenAI/Qdrant dashboards
 
 ### "Connection refused" for Qdrant
+
 - Verify Qdrant cluster is running
 - Check `QDRANT_URL` in `.env`
 - For local Qdrant: Make sure Docker container is running
 
 ### "Artifact not found"
+
 - Make sure ingestion completed successfully
 - Check that artifacts were uploaded to Qdrant
 - Verify `artifact_id` matches CSV (e.g., "ART001")
 
 ### "NO_CONTEXT_FOUND" responses
+
 - Ensure ingestion script completed without errors
 - Check that indexes were created for `artifact_id` and `language`
 - Verify Qdrant collection has points (check `/health` endpoint)
 
 ### Server won't start
+
 - Check if port 8000 is already in use
 - Try a different port: `--port 8001`
 - Check Python version: `python --version` (need 3.8+)
@@ -355,13 +389,13 @@ pip install -r requirements.txt
 
 ## ✅ Quick Checklist
 
--  Python 3.8+ installed
--  Dependencies installed (`pip install -r requirements.txt`)
--  `.env` file created with API keys
--  Artifacts ingested (`python ingestion/ingest_artifacts.py`)
--  Server started (`uvicorn api.main:app --reload`)
--  Swagger UI accessible (http://localhost:8000/docs)
--  Test endpoint works
+- Python 3.8+ installed
+- Dependencies installed (`pip install -r requirements.txt`)
+- `.env` file created with API keys
+- Artifacts ingested (`python ingestion/ingest_artifacts.py`)
+- Server started (`uvicorn api.main:app --reload`)
+- Swagger UI accessible (http://localhost:8000/docs)
+- Test endpoint works
 
 ---
 
@@ -370,8 +404,7 @@ pip install -r requirements.txt
 Once the server is running and Swagger UI is accessible, your Museum AI Guide API is ready to use!
 
 **Next Steps:**
+
 - Test endpoints using Swagger UI
 - Integrate with your Flutter app
 - Check `TEST_QUESTIONS.md` for test questions
-
-

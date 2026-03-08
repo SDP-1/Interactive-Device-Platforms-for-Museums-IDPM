@@ -1,6 +1,5 @@
 class Artifact {
   const Artifact({
-    required this.id,
     required this.artifactId,
     required this.titleEn,
     required this.titleSi,
@@ -24,7 +23,6 @@ class Artifact {
     this.updatedAt,
   });
 
-  final String id; // MongoDB _id
   final String artifactId; // ART001, ART002, etc.
   final String titleEn;
   final String titleSi;
@@ -68,39 +66,73 @@ class Artifact {
       language == 'si' ? gallerySi : galleryEn;
 
   factory Artifact.fromJson(Map<String, dynamic> json) {
+    String readString(List<String> keys, {String fallback = ''}) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value == null) continue;
+        return value.toString();
+      }
+      return fallback;
+    }
+
+    String? readNullableString(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value == null) continue;
+        return value.toString();
+      }
+      return null;
+    }
+
+    DateTime? readDate(String key) {
+      final value = json[key];
+      if (value == null) return null;
+      return DateTime.tryParse(value.toString());
+    }
+
+    List<String> readImageUrls() {
+      final value = json['imageUrls'] ?? json['image_urls'] ?? json['images'];
+      if (value is List) {
+        return value.where((item) => item != null).map((item) => item.toString()).toList();
+      }
+      return <String>[];
+    }
+
     return Artifact(
-      id: json['_id'] as String,
-      artifactId: json['artifact_id'] as String,
-      titleEn: json['title_en'] as String,
-      titleSi: json['title_si'] as String,
-      originEn: json['origin_en'] as String,
-      originSi: json['origin_si'] as String,
-      year: json['year'] as String,
-      categoryEn: json['category_en'] as String,
-      categorySi: json['category_si'] as String,
-      descriptionEn: json['description_en'] as String,
-      descriptionSi: json['description_si'] as String,
-      imageUrls: List<String>.from(json['imageUrls'] as List),
-      materialEn: json['material_en'] as String?,
-      materialSi: json['material_si'] as String?,
-      dimensionsEn: json['dimensions_en'] as String?,
-      dimensionsSi: json['dimensions_si'] as String?,
-      culturalSignificanceEn: json['culturalSignificance_en'] as String?,
-      culturalSignificanceSi: json['culturalSignificance_si'] as String?,
-      galleryEn: json['gallery_en'] as String?,
-      gallerySi: json['gallery_si'] as String?,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
-          : null,
+      artifactId: readString(['artifact_id', 'artifactId', '_id']),
+      titleEn: readString(['title_en', 'titleEn', 'title']),
+      titleSi: readString(['title_si', 'titleSi', 'title']),
+      originEn: readString(['origin_en', 'originEn', 'origin']),
+      originSi: readString(['origin_si', 'originSi', 'origin']),
+      year: readString(['year']),
+      categoryEn: readString(['category_en', 'categoryEn', 'category']),
+      categorySi: readString(['category_si', 'categorySi', 'category']),
+      descriptionEn: readString(['description_en', 'descriptionEn', 'description']),
+      descriptionSi: readString(['description_si', 'descriptionSi', 'description']),
+      imageUrls: readImageUrls(),
+      materialEn: readNullableString(['material_en', 'materialEn', 'material']),
+      materialSi: readNullableString(['material_si', 'materialSi', 'material']),
+      dimensionsEn: readNullableString(['dimensions_en', 'dimensionsEn', 'dimensions']),
+      dimensionsSi: readNullableString(['dimensions_si', 'dimensionsSi', 'dimensions']),
+      culturalSignificanceEn: readNullableString([
+        'culturalSignificance_en',
+        'culturalSignificanceEn',
+        'culturalSignificance',
+      ]),
+      culturalSignificanceSi: readNullableString([
+        'culturalSignificance_si',
+        'culturalSignificanceSi',
+        'culturalSignificance',
+      ]),
+      galleryEn: readNullableString(['gallery_en', 'galleryEn', 'gallery']),
+      gallerySi: readNullableString(['gallery_si', 'gallerySi', 'gallery']),
+      createdAt: readDate('created_at'),
+      updatedAt: readDate('updated_at'),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
       'artifact_id': artifactId,
       'title_en': titleEn,
       'title_si': titleSi,

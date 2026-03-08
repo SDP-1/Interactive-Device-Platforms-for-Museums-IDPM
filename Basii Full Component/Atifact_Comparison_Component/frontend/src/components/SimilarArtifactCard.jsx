@@ -7,8 +7,8 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
 
   // Format similarity score color
   const getScoreColor = (score) => {
-    if (score >= 90) return 'bg-emerald-100 text-emerald-700';
-    if (score >= 80) return 'bg-amber-100 text-amber-700';
+    if (score >= 65) return 'bg-emerald-100 text-emerald-700';
+    if (score >= 40) return 'bg-amber-100 text-amber-700';
     return 'bg-stone-100 text-stone-700';
   };
 
@@ -23,7 +23,7 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 image-loading" />
         )}
-        
+
         {imageError || !artifact.image ? (
           <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
             <span className="text-4xl sm:text-5xl">🏺</span>
@@ -32,7 +32,7 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
           <img
             src={artifact.image}
             alt={artifact.name}
-            className={`w-full h-full object-cover transition-all duration-500 
+            className={`w-full h-full object-contain transition-all duration-500 
                        group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
@@ -53,7 +53,7 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
         <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-stone-800 mb-1.5 sm:mb-2 line-clamp-2">
           {artifact.name}
         </h3>
-        
+
         <div className="text-xs sm:text-sm text-stone-500 font-sans mb-3 sm:mb-4 line-clamp-1">
           <span>{artifact.era}</span>
           <span className="mx-1.5">•</span>
@@ -70,14 +70,14 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
             e.stopPropagation();
             onCompare();
           }}
-          className="w-full py-2.5 sm:py-3 bg-stone-100 hover:bg-amber-700 text-stone-700 
-                     hover:text-white rounded-xl font-sans text-sm sm:text-base font-medium 
-                     transition-all duration-300 flex items-center justify-center gap-2 sm:gap-2.5
-                     border border-stone-200 hover:border-amber-700 mt-auto"
+          className="w-full py-4 bg-white border-2 border-orange-500 text-orange-500 
+                     hover:bg-orange-500 hover:text-white rounded-2xl font-sans text-lg font-bold 
+                     transition-all duration-300 flex items-center justify-center gap-3
+                     shadow-md hover:shadow-xl active:scale-95 mt-auto"
         >
-          <Scale size={18} className="sm:w-5 sm:h-5" />
+          <Scale size={24} className="sm:w-6 sm:h-6" />
           <span>Compare</span>
-          <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity sm:w-5 sm:h-5" />
+          <ArrowRight size={24} className="opacity-0 group-hover:opacity-100 transition-opacity sm:w-6 sm:h-6" />
         </button>
       </div>
     </div>

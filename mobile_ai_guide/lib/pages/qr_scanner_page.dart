@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/services/artifact_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/pages/artifact_detail_page.dart';
-import 'package:mobile_ai_guide/widgets/qr_scanner/artifact_not_found_dialog.dart';
+import 'package:mobile_ai_guide/widgets/common/alert.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -57,21 +59,32 @@ class _QRScannerPageState extends State<QRScannerPage> {
       }
     } catch (e) {
       if (mounted) {
-        // Show user-friendly error dialog
-        showDialog(
+        if (e is SessionAccessException) {
+          await SessionGuard.redirectToSessionIntro(
+            context,
+            message: e.message,
+          );
+          return;
+        }
+
+        Alert.showError(
           context: context,
-          barrierDismissible: false,
-          builder: (context) => ArtifactNotFoundDialog(
-            onTryAgain: () {
-              Navigator.of(context).pop();
-              setState(() => _isScanning = true);
-              controller.start();
-            },
-            onGoBack: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-          ),
+          title: 'Artifact Not Found',
+          message: 'We couldn\'t find this artifact in our collection.',
+          bulletPoints: const [
+            'QR code is clear and not damaged',
+            'QR code belongs to this museum',
+            'Try scanning again',
+          ],
+          primaryButtonText: 'Try Again',
+          onPrimaryPressed: () {
+            setState(() => _isScanning = true);
+            controller.start();
+          },
+          secondaryButtonText: 'Go Back',
+          onSecondaryPressed: () {
+            Navigator.of(context).pop();
+          },
         );
       }
     }

@@ -66,3 +66,71 @@ Respond as {king_name} - direct, solemn, and brief. Answer the specific question
     )
 
     return response.choices[0].message.content.strip()
+
+
+def generate_persona_answer_with_memory(
+    question: str,
+    context: str,
+    language: str,
+    king_name: str,
+    reign_period: str,
+    conversation_history: str = "",
+    repeated_question: bool = False,
+) -> str:
+    repeat_rule = (
+        "12. If the visitor repeats a previously asked question, acknowledge briefly and provide new detail instead of repeating exactly."
+        if repeated_question
+        else ""
+    )
+
+    system_instructions = f"""
+You are {king_name}, the great king of ancient Sri Lanka who ruled during {reign_period}.
+
+CRITICAL RULES:
+1. You must answer ONLY using the information provided in the context. This is mandatory.
+2. Speak in FIRST PERSON - use "I", "my", "we"
+3. Keep answer SHORT and CONCISE - 1-3 sentences maximum
+4. Answer the SPECIFIC QUESTION asked - do not ramble
+5. Maintain solemn, dignified, authoritative tone
+6. ONLY use facts from provided context - no fabrication
+7. If asked about something not in context, say: "I cannot speak of that" (English) or "ඒ ගැන කතා කළ නොහැක" (Sinhala)
+8. Use natural, direct language
+9. Be proud but not arrogant
+10. Use RECENT CONVERSATION to resolve follow-up references (like "it", "that", "this one", "previous one") when needed.
+11. Keep continuity with earlier answers in RECENT CONVERSATION and avoid contradictions unless context requires a correction.
+{repeat_rule}
+
+FORMAT:
+- Max 3 sentences
+- Direct answer to the question
+- Solemn royal tone
+- No flowery language
+"""
+
+    history_block = conversation_history or "No prior conversation history available."
+
+    user_prompt = f"""
+CONTEXT ABOUT ME:
+{context}
+
+RECENT CONVERSATION:
+{history_block}
+
+QUESTION:
+{question}
+
+LANGUAGE: {language}
+
+Respond as {king_name} - direct, solemn, and brief. Answer the specific question in {language} using only provided facts.
+"""
+
+    response = client.chat.completions.create(
+        model=GENERATION_MODEL,
+        messages=[
+            {"role": "system", "content": system_instructions},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.5
+    )
+
+    return response.choices[0].message.content.strip()

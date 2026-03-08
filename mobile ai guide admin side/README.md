@@ -120,6 +120,31 @@ Content-Type: application/json
 DELETE /api/artifacts/:id
 ```
 
+### Save Session Chat Interaction
+
+```
+POST /api/sessions/:session_id/chat
+Content-Type: application/json
+
+{
+   "question": "Who was King Dutugemunu?",
+   "reply": "King Dutugemunu was...",
+   "reference_type": "king", // general | king | artifact
+   "reference_id": "KIN001", // required for king/artifact
+   "language": "en",
+   "question_time": "2026-02-26T10:00:00.000Z", // optional
+   "reply_time": "2026-02-26T10:00:02.000Z" // optional
+}
+```
+
+### Get Session Chat History
+
+```
+GET /api/sessions/:session_id/chat
+GET /api/sessions/:session_id/chat?reference_type=king
+GET /api/sessions/:session_id/chat?reference_type=artifact&reference_id=ART001
+```
+
 ## ⚙️ Installation & Setup
 
 ### Prerequisites

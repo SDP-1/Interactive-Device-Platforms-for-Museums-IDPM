@@ -2,10 +2,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mobile_ai_guide/ui/api_constants.dart';
 import 'package:mobile_ai_guide/models/artifact.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 
 class ArtifactService {
   // Get all artifacts
   static Future<List<Artifact>> getAllArtifacts() async {
+    await LocalStorageService.instance.initialize();
+    await SessionAccessService.requireActiveSession();
+    final cachedList = await LocalStorageService.instance
+        .getCachedArtifactList();
+    if (cachedList != null && cachedList.isNotEmpty) {
+      return cachedList;
+    }
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -18,9 +28,11 @@ class ArtifactService {
         final data = json.decode(response.body);
         if (data['success'] == true && data['data'] != null) {
           final List<dynamic> artifactsJson = data['data'];
-          return artifactsJson
+          final artifacts = artifactsJson
               .map((json) => Artifact.fromJson(json as Map<String, dynamic>))
               .toList();
+          await LocalStorageService.instance.cacheArtifactList(artifacts);
+          return artifacts;
         }
         throw Exception('Invalid response format');
       } else {
@@ -29,12 +41,23 @@ class ArtifactService {
         );
       }
     } catch (e) {
+      if (cachedList != null && cachedList.isNotEmpty) {
+        return cachedList;
+      }
       throw Exception('Error fetching artifacts: $e');
     }
   }
 
   // Get single artifact by ID
   static Future<Artifact> getArtifactById(String id) async {
+    await LocalStorageService.instance.initialize();
+    await SessionAccessService.requireActiveSession();
+    final cached = await LocalStorageService.instance.getCachedArtifact(id);
+    if (cached != null) {
+      await LocalStorageService.instance.markArtifactVisited(cached.artifactId);
+      return cached;
+    }
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -46,7 +69,14 @@ class ArtifactService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['data'] != null) {
-          return Artifact.fromJson(data['data'] as Map<String, dynamic>);
+          final artifact = Artifact.fromJson(
+            data['data'] as Map<String, dynamic>,
+          );
+          await LocalStorageService.instance.cacheArtifact(artifact);
+          await LocalStorageService.instance.markArtifactVisited(
+            artifact.artifactId,
+          );
+          return artifact;
         }
         throw Exception('Invalid response format');
       } else if (response.statusCode == 404) {
@@ -57,12 +87,25 @@ class ArtifactService {
         );
       }
     } catch (e) {
+      if (cached != null) {
+        return cached;
+      }
       throw Exception('Error fetching artifact: $e');
     }
   }
 
   // Get single artifact by artifact_id (e.g., ART001)
   static Future<Artifact> getArtifactByArtifactId(String artifactId) async {
+    await LocalStorageService.instance.initialize();
+    await SessionAccessService.requireActiveSession();
+    final cached = await LocalStorageService.instance.getCachedArtifact(
+      artifactId,
+    );
+    if (cached != null) {
+      await LocalStorageService.instance.markArtifactVisited(cached.artifactId);
+      return cached;
+    }
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -74,7 +117,14 @@ class ArtifactService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['data'] != null) {
-          return Artifact.fromJson(data['data'] as Map<String, dynamic>);
+          final artifact = Artifact.fromJson(
+            data['data'] as Map<String, dynamic>,
+          );
+          await LocalStorageService.instance.cacheArtifact(artifact);
+          await LocalStorageService.instance.markArtifactVisited(
+            artifact.artifactId,
+          );
+          return artifact;
         }
         throw Exception('Invalid response format');
       } else if (response.statusCode == 404) {
@@ -85,6 +135,9 @@ class ArtifactService {
         );
       }
     } catch (e) {
+      if (cached != null) {
+        return cached;
+      }
       throw Exception('Error fetching artifact: $e');
     }
   }

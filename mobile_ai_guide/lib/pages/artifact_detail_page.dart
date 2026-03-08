@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/models/artifact.dart';
+import 'package:mobile_ai_guide/pages/ai_guide_chat_page.dart';
 import 'package:mobile_ai_guide/widgets/artifact_detail/artifact_detail_header.dart';
 import 'package:mobile_ai_guide/pages/ai_guide_intro_page.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
 import 'package:mobile_ai_guide/widgets/artifact_detail/artifact_detail_info.dart';
 import 'package:mobile_ai_guide/widgets/artifact_detail/artifact_detail_content.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
@@ -20,10 +22,19 @@ class ArtifactDetailPage extends StatefulWidget {
 
 class _ArtifactDetailPageState extends State<ArtifactDetailPage>
     with BottomNavigationMixin {
+  bool _isSaved = false;
   @override
   void initState() {
     super.initState();
     currentNavIndex = 1; // Explore selected by default
+    // check saved state
+    () async {
+      final saved = await LocalStorageService.instance.isArtifactSaved(
+        widget.artifact.artifactId,
+      );
+      if (!mounted) return;
+      setState(() => _isSaved = saved);
+    }();
   }
 
   @override
@@ -42,7 +53,27 @@ class _ArtifactDetailPageState extends State<ArtifactDetailPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ArtifactDetailHeader(imageUrls: artifact.imageUrls),
+                      ArtifactDetailHeader(
+                        imageUrls: artifact.imageUrls,
+                        isBookmarked: _isSaved,
+                        onBookmarkPressed: () async {
+                          await LocalStorageService.instance
+                              .toggleArtifactBookmark(artifact);
+                          if (!mounted) return;
+                          final saved = await LocalStorageService.instance
+                              .isArtifactSaved(artifact.artifactId);
+                          setState(() => _isSaved = saved);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                saved
+                                    ? 'Saved to artifacts'
+                                    : 'Removed from saved',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       ArtifactDetailInfo(
                         title: artifact.getTitle(contentLanguage),
                         gallery: artifact.getGallery(contentLanguage) ?? '',
@@ -68,7 +99,25 @@ class _ArtifactDetailPageState extends State<ArtifactDetailPage>
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () {
+                            onTap: () async {
+                              final usageSummary = await LocalStorageService
+                                  .instance
+                                  .getSessionUsageSummary();
+                              final hasUserConversations =
+                                  usageSummary.conversations > 0;
+
+                              if (!mounted) return;
+
+                              if (hasUserConversations) {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        AiGuideChatPage(artifact: artifact),
+                                  ),
+                                );
+                                return;
+                              }
+
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) =>

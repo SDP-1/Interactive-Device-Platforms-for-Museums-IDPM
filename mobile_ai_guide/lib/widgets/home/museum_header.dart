@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_ai_guide/pages/session_information_page.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
+
+enum _HeaderMenuAction { session }
 
 class MuseumHeader extends StatelessWidget {
   const MuseumHeader({super.key});
@@ -113,9 +116,37 @@ class _MenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {},
-      borderRadius: BorderRadius.circular(12),
+    return PopupMenuButton<_HeaderMenuAction>(
+      onSelected: (value) {
+        if (value == _HeaderMenuAction.session) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SessionInformationPage()),
+          );
+        }
+      },
+      itemBuilder: (context) {
+        return const [
+          PopupMenuItem<_HeaderMenuAction>(
+            value: _HeaderMenuAction.session,
+            child: Row(
+              children: [
+                Icon(Icons.person, size: 18, color: app.kMuseumDeep),
+                SizedBox(width: 10),
+                Text(
+                  'Session',
+                  style: TextStyle(
+                    color: app.kMuseumText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ];
+      },
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 38,
         height: 38,

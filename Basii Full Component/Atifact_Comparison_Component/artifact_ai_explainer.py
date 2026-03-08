@@ -63,6 +63,74 @@ class ArtifactAIExplainer:
         # Call the cached worker method
         explanation = self._generate_explanation(input_text, max_length)
         return explanation.strip() if explanation.strip() else self._fallback_explanation(artifact)
+
+    def compare_artifacts(self, artifact1: dict, artifact2: dict) -> str:
+        """Build a comparison narrative using T5-generated content for each artifact.
+
+        T5 is called once per artifact using its trained prompt format.
+        Only the Materials and Craftsmanship section is extracted for the
+        Design and Craftsmanship block; everything else uses structured fields.
+        """
+        input1 = (
+            f"Explain this artifact: {artifact1['name']} | "
+            f"Category: {artifact1['category']} | Origin: {artifact1['origin']} | "
+            f"Era: {artifact1['era']} | Materials: {artifact1['materials']} | "
+            f"Function: {artifact1['function']} | Symbolism: {artifact1['symbolism']} | "
+            f"Notes: {artifact1.get('notes', '')}"
+        )
+        input2 = (
+            f"Explain this artifact: {artifact2['name']} | "
+            f"Category: {artifact2['category']} | Origin: {artifact2['origin']} | "
+            f"Era: {artifact2['era']} | Materials: {artifact2['materials']} | "
+            f"Function: {artifact2['function']} | Symbolism: {artifact2['symbolism']} | "
+            f"Notes: {artifact2.get('notes', '')}"
+        )
+
+        raw1 = self._generate_explanation(input1, max_length=300).strip()
+        raw2 = self._generate_explanation(input2, max_length=300).strip()
+
+        craft1 = self._extract_section(raw1, 'Materials and Craftsmanship') or artifact1['materials']
+        craft2 = self._extract_section(raw2, 'Materials and Craftsmanship') or artifact2['materials']
+
+        sections = [
+            "Design and Craftsmanship",
+            f"{artifact1['name']}: {craft1}",
+            "",
+            f"{artifact2['name']}: {craft2}",
+            "",
+            "Cultural Context",
+            (
+                f"Both artifacts emerge from {artifact1['origin']}, sharing cultural values and artistic traditions."
+                if artifact1['origin'] == artifact2['origin']
+                else f"While the {artifact1['name']} originates from {artifact1['origin']}, "
+                     f"the {artifact2['name']} comes from {artifact2['origin']}. "
+                     f"This comparison illuminates how different cultures addressed similar human needs."
+            ),
+            "",
+            "Symbolic Significance",
+            f"{artifact1['name']}: {artifact1['symbolism'][:220]}{'...' if len(artifact1['symbolism']) > 220 else ''}",
+            f"{artifact2['name']}: {artifact2['symbolism'][:220]}{'...' if len(artifact2['symbolism']) > 220 else ''}",
+        ]
+        return "\n".join(sections)
+
+    def _extract_section(self, text: str, section_title: str) -> str:
+        """Extract the content of a named section from T5 output.
+        
+        Sections are separated by the next title-like line (no leading spaces, 
+        title-cased or all-caps). Returns the section body, or empty string if
+        the section is not found.
+        """
+        import re
+        # Split on lines that look like section headers (short, no punctuation at end)
+        header_pattern = re.compile(r'^([A-Z][A-Za-z &/\-]+)$', re.MULTILINE)
+        parts = header_pattern.split(text)
+        # parts alternates: [pre-header-text, header, body, header, body, ...]
+        for i, part in enumerate(parts):
+            if part.strip() == section_title and i + 1 < len(parts):
+                content = parts[i + 1].strip()
+                # Remove any leading/trailing blank lines
+                return content if content else ''
+        return ''
     
     def _fallback_explanation(self, artifact: dict) -> str:
         """Fallback to template-based explanation if model fails"""

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/services/artifact_service.dart';
 import 'package:mobile_ai_guide/models/artifact.dart';
+import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/browse_artifacts/artifact_grid_card.dart';
 import 'package:mobile_ai_guide/widgets/browse_artifacts/filter_row.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/ui/content_language.dart';
+import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 import 'package:mobile_ai_guide/widgets/navigation/bottom_navigation_mixin.dart';
 
@@ -17,8 +19,23 @@ class BrowseArtifactsPage extends StatefulWidget {
 
 class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
     with BottomNavigationMixin {
-  static const _filters = ['All', 'Ancient', 'Medieval', 'Renaissance'];
   late Future<List<Artifact>> _artifactsFuture;
+  bool _sessionRedirectTriggered = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedFilter = 'All';
+
+  static const String _allFilter = 'All';
+  static const String _othersFilter = 'Others';
+  static const Set<String> _otherCategoryKeywords = {
+    'other',
+    'others',
+    'misc',
+    'miscellaneous',
+    'unknown',
+    'uncategorized',
+    'uncategorised',
+  };
 
   @override
   void initState() {
@@ -31,6 +48,76 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
     setState(() {
       _artifactsFuture = ArtifactService.getAllArtifacts();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  bool _matchesSearch(Artifact artifact) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return true;
+
+    final searchable = <String>[
+      artifact.titleEn,
+      artifact.titleSi,
+      artifact.categoryEn,
+      artifact.categorySi,
+      artifact.originEn,
+      artifact.originSi,
+      artifact.artifactId,
+    ].join(' ').toLowerCase();
+
+    return searchable.contains(query);
+  }
+
+  bool _isOtherCategory(Artifact artifact) {
+    final en = artifact.categoryEn.trim().toLowerCase();
+    final si = artifact.categorySi.trim().toLowerCase();
+
+    if (en.isEmpty && si.isEmpty) {
+      return true;
+    }
+
+    return _otherCategoryKeywords.contains(en) ||
+        _otherCategoryKeywords.contains(si);
+  }
+
+  List<String> _buildFilters(List<Artifact> artifacts) {
+    final categories =
+        artifacts
+            .map((a) => a.categoryEn.trim())
+            .where((c) => c.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    return <String>[_allFilter, ...categories, _othersFilter];
+  }
+
+  List<Artifact> _applyFilters(
+    List<Artifact> artifacts,
+    String selectedFilter,
+  ) {
+    final bySearch = artifacts.where(_matchesSearch);
+
+    if (selectedFilter == _allFilter) {
+      return bySearch.toList();
+    }
+
+    if (selectedFilter == _othersFilter) {
+      return bySearch.where(_isOtherCategory).toList();
+    }
+
+    return bySearch
+        .where(
+          (artifact) =>
+              artifact.categoryEn.trim().toLowerCase() ==
+              selectedFilter.toLowerCase(),
+        )
+        .toList();
   }
 
   @override
@@ -78,7 +165,13 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
+                    controller: _searchController,
                     textInputAction: TextInputAction.search,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                     decoration: InputDecoration(
                       hintText: 'Search by name or category...',
                       hintStyle: TextStyle(
@@ -105,6 +198,21 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
+                      if (snapshot.error is SessionAccessException &&
+                          !_sessionRedirectTriggered) {
+                        _sessionRedirectTriggered = true;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) return;
+                          final error =
+                              snapshot.error! as SessionAccessException;
+                          SessionGuard.redirectToSessionIntro(
+                            context,
+                            message: error.message,
+                          );
+                        });
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -179,73 +287,95 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     }
 
                     final artifacts = snapshot.data!;
-                    return CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Container(
-                            color: kFilterBackground,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const FilterRow(
-                                  filters: _filters,
-                                  selected: 'All',
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    12,
+                    final filters = _buildFilters(artifacts);
+                    final effectiveSelected = filters.contains(_selectedFilter)
+                        ? _selectedFilter
+                        : _allFilter;
+                    final displayedArtifacts = _applyFilters(
+                      artifacts,
+                      effectiveSelected,
+                    );
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        setState(() {
+                          _artifactsFuture = ArtifactService.getAllArtifacts();
+                        });
+                        await _artifactsFuture;
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Container(
+                              color: kFilterBackground,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  FilterRow(
+                                    filters: filters,
+                                    selected: effectiveSelected,
+                                    onSelected: (value) {
+                                      setState(() {
+                                        _selectedFilter = value;
+                                      });
+                                    },
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Artifacts: ',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade700,
-                                          fontWeight: FontWeight.w500,
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      12,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Artifacts: ',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade700,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        '${artifacts.length}',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade900,
-                                          fontWeight: FontWeight.w700,
+                                        Text(
+                                          '${displayedArtifacts.length}',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade900,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.all(12),
-                          sliver: SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  childAspectRatio: 0.72,
-                                ),
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final artifact = artifacts[index];
-                              return ArtifactGridCard(
-                                artifact: artifact,
-                                language: contentLanguage,
-                              );
-                            }, childCount: artifacts.length),
+                          SliverPadding(
+                            padding: const EdgeInsets.all(12),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: 0.72,
+                                  ),
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final artifact = displayedArtifacts[index];
+                                return ArtifactGridCard(
+                                  artifact: artifact,
+                                  language: contentLanguage,
+                                );
+                              }, childCount: displayedArtifacts.length),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   },
                 ),

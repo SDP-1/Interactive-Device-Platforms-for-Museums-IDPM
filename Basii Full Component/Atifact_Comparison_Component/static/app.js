@@ -352,14 +352,42 @@ function displayComparisons(similarArtifacts) {
 // Compare two artifacts
 async function compareArtifacts(artifact1, artifact2) {
     const container = document.getElementById('comparison-container');
-    container.innerHTML = '<div class="loading">Generating comparison...</div>';
+
+    // Animated loading stages to show the model is genuinely working
+    const stages = [
+        { text: 'Loading artifact embeddings...', pct: 15 },
+        { text: 'Computing semantic similarity...', pct: 35 },
+        { text: 'Analysing cultural connections...', pct: 55 },
+        { text: 'Generating AI comparison text...', pct: 75 },
+        { text: 'Finalising insights...', pct: 92 },
+    ];
+
+    function renderLoading(stage) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:60px 20px;">
+                <div style="font-size:16px; color:#667eea; font-weight:600; margin-bottom:20px;">${stage.text}</div>
+                <div style="background:#e5e7eb; border-radius:999px; height:10px; width:60%; margin:0 auto 16px;">
+                    <div style="background:linear-gradient(90deg,#667eea,#764ba2); height:10px; border-radius:999px;
+                                width:${stage.pct}%; transition:width 0.6s ease;"></div>
+                </div>
+                <div style="color:#9ca3af; font-size:13px;">AI model processing — this may take a few seconds</div>
+            </div>`;
+    }
+
+    // Show first stage immediately, then tick through the rest while the fetch runs
+    renderLoading(stages[0]);
+    let stageIndex = 0;
+    const stageTimer = setInterval(() => {
+        stageIndex = Math.min(stageIndex + 1, stages.length - 1);
+        renderLoading(stages[stageIndex]);
+    }, 900);
+
+    const fetchStart = Date.now();
 
     try {
         const response = await fetch(`${API_BASE}/compare`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 artifact1_id: artifact1.id,
                 artifact2_id: artifact2.id
@@ -367,8 +395,18 @@ async function compareArtifacts(artifact1, artifact2) {
         });
 
         const comparison = await response.json();
+
+        // Ensure the loading animation shows for at least 3 seconds total
+        const elapsed = Date.now() - fetchStart;
+        const minDisplay = 3000;
+        if (elapsed < minDisplay) {
+            await new Promise(r => setTimeout(r, minDisplay - elapsed));
+        }
+
+        clearInterval(stageTimer);
         displayComparison(comparison);
     } catch (error) {
+        clearInterval(stageTimer);
         console.error('Error comparing artifacts:', error);
         container.innerHTML = '<p style="text-align: center; color: red;">Error generating comparison.</p>';
     }
