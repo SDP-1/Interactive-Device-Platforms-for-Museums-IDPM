@@ -1279,7 +1279,11 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
       if (!context.mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!, artifactName: artifact.name),
+          builder: (_) => Model3DViewerScreen(
+            modelUrl: artifact.modelUrl!,
+            artifactName: artifact.name,
+            artifactId: artifact.id,
+          ),
         ),
       );
       return;
@@ -1324,7 +1328,11 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
     if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!, artifactName: artifact.name),
+        builder: (_) => Model3DViewerScreen(
+          modelUrl: modelUrl!,
+          artifactName: artifact.name,
+          artifactId: artifact.id,
+        ),
       ),
     );
   }
@@ -1823,7 +1831,11 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
       if (!context.mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => Model3DViewerScreen(modelUrl: artifact.modelUrl!, artifactName: artifact.name),
+          builder: (_) => Model3DViewerScreen(
+            modelUrl: artifact.modelUrl!,
+            artifactName: artifact.name,
+            artifactId: artifact.id,
+          ),
         ),
       );
       return;
@@ -1869,7 +1881,11 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
     if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => Model3DViewerScreen(modelUrl: modelUrl!, artifactName: _artifact.name),
+        builder: (_) => Model3DViewerScreen(
+          modelUrl: modelUrl!,
+          artifactName: _artifact.name,
+          artifactId: _artifact.id,
+        ),
       ),
     );
   }
@@ -2122,10 +2138,18 @@ class _DetailRow extends StatelessWidget {
 }
 
 class Model3DViewerScreen extends StatefulWidget {
-  const Model3DViewerScreen({super.key, required this.modelUrl, this.artifactName});
+  const Model3DViewerScreen({
+    super.key,
+    required this.modelUrl,
+    this.artifactName,
+    this.artifactId,
+    this.visitorMode = false,
+  });
 
   final String modelUrl;
   final String? artifactName;
+  final String? artifactId;
+  final bool visitorMode;
 
   @override
   State<Model3DViewerScreen> createState() => _Model3DViewerScreenState();
@@ -2165,34 +2189,36 @@ class _Model3DViewerScreenState extends State<Model3DViewerScreen> {
                   backgroundColor: AppTheme.surfaceDark,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => AdminArtifactQrScreen(
-                            artifactData: widget.modelUrl,
-                            artifactName: widget.artifactName,
+              if (!widget.visitorMode)
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => AdminArtifactQrScreen(
+                              artifactData: widget.modelUrl,
+                              artifactName: widget.artifactName,
+                              artifactId: widget.artifactId,
+                            ),
                           ),
+                        );
+                      },
+                      icon: const Icon(Icons.qr_code_2_outlined),
+                      label: const Text('Generate QR for this model'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.qr_code_2_outlined),
-                    label: const Text('Generate QR for this model'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
           if (_modelLoading)
@@ -2224,12 +2250,17 @@ class _Model3DViewerScreenState extends State<Model3DViewerScreen> {
 }
 
 class AdminArtifactQrScreen extends StatefulWidget {
-  const AdminArtifactQrScreen({super.key, required this.artifactData, this.artifactName});
+  const AdminArtifactQrScreen({
+    super.key,
+    required this.artifactData,
+    this.artifactName,
+    this.artifactId,
+  });
 
-  /// For now we encode the model URL directly.
-  /// Later this can be an artifactId or deep link.
+  /// Encoded in QR: artifactId if set (so visitor gets details + model), else artifactData (model URL).
   final String artifactData;
   final String? artifactName;
+  final String? artifactId;
 
   @override
   State<AdminArtifactQrScreen> createState() => _AdminArtifactQrScreenState();
@@ -2249,8 +2280,9 @@ class _AdminArtifactQrScreenState extends State<AdminArtifactQrScreen> {
       const double whiteBoxSize = 280.0;
       const double gapBetweenTitleAndQr = 28.0;
 
+      final qrData = widget.artifactId ?? widget.artifactData;
       final qrPainter = QrPainter(
-        data: widget.artifactData,
+        data: qrData,
         version: QrVersions.auto,
         gapless: true,
       );
@@ -2412,7 +2444,7 @@ class _AdminArtifactQrScreenState extends State<AdminArtifactQrScreen> {
                     ],
                   ),
                   child: QrImageView(
-                    data: widget.artifactData,
+                    data: widget.artifactId ?? widget.artifactData,
                     version: QrVersions.auto,
                     size: 240,
                   ),
@@ -2441,7 +2473,7 @@ class _AdminArtifactQrScreenState extends State<AdminArtifactQrScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              widget.artifactData,
+              widget.artifactId ?? widget.artifactData,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -2451,6 +2483,220 @@ class _AdminArtifactQrScreenState extends State<AdminArtifactQrScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Visitor-facing screen: 3D model on top, artifact details below (no admin actions).
+class VisitorArtifactScreen extends StatelessWidget {
+  const VisitorArtifactScreen({super.key, required this.artifact});
+
+  final Artifact artifact;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasModel = artifact.modelUrl != null && artifact.modelUrl!.isNotEmpty;
+    final hasAnyDetail = (artifact.category?.isNotEmpty ?? false) ||
+        (artifact.era?.isNotEmpty ?? false) ||
+        (artifact.origin?.isNotEmpty ?? false) ||
+        (artifact.description?.isNotEmpty ?? false);
+
+    return Scaffold(
+      backgroundColor: AppTheme.surfaceDark,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceDarkMid,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          artifact.name,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              child: hasModel
+                  ? SizedBox(
+                      height: 320,
+                      child: ModelViewer(
+                        src: artifact.modelUrl!,
+                        alt: '${artifact.name} 3D model',
+                        ar: false,
+                        autoRotate: true,
+                        cameraControls: true,
+                        backgroundColor: AppTheme.surfaceDark,
+                      ),
+                    )
+                  : Container(
+                      height: 200,
+                      alignment: Alignment.center,
+                      color: AppTheme.surfaceDarkMid,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.view_in_ar_outlined,
+                            size: 48,
+                            color: Colors.white.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '3D model not available',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (hasAnyDetail) ...[
+                    Row(
+                      children: [
+                        Container(
+                          width: 4,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Details',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceDarkMid,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (artifact.category != null && artifact.category!.isNotEmpty) ...[
+                            _VisitorDetailRow(
+                              label: 'Category',
+                              value: artifact.category!,
+                              icon: Icons.category_outlined,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          if (artifact.era != null && artifact.era!.isNotEmpty) ...[
+                            _VisitorDetailRow(
+                              label: 'Era',
+                              value: artifact.era!,
+                              icon: Icons.schedule_outlined,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          if (artifact.origin != null && artifact.origin!.isNotEmpty) ...[
+                            _VisitorDetailRow(
+                              label: 'Origin',
+                              value: artifact.origin!,
+                              icon: Icons.place_outlined,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          if (artifact.description != null && artifact.description!.isNotEmpty)
+                            _VisitorDetailRow(
+                              label: 'Description',
+                              value: artifact.description!,
+                              icon: Icons.description_outlined,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ] else
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          'No additional details for this artifact.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VisitorDetailRow extends StatelessWidget {
+  const _VisitorDetailRow({
+    required this.label,
+    required this.value,
+    this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData? icon;
+
+  static const IconData _defaultIcon = Icons.info_outline;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon ?? _defaultIcon, size: 18, color: AppTheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppTheme.stone400,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.white,
+            height: 1.4,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -2465,21 +2711,37 @@ class VisitorQrScannerScreen extends StatefulWidget {
 class _VisitorQrScannerScreenState extends State<VisitorQrScannerScreen> {
   bool _handlingCode = false;
 
-  void _onDetect(BarcodeCapture capture) {
+  Future<void> _onDetect(BarcodeCapture capture) async {
     if (_handlingCode) return;
     final barcode = capture.barcodes.firstOrNull;
-    final raw = barcode?.rawValue;
-    if (raw == null || raw.isEmpty) {
+    final raw = barcode?.rawValue?.trim();
+    if (raw == null || raw.isEmpty) return;
+    setState(() => _handlingCode = true);
+
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => Model3DViewerScreen(modelUrl: raw, visitorMode: true),
+        ),
+      );
       return;
     }
-    setState(() {
-      _handlingCode = true;
-    });
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => Model3DViewerScreen(modelUrl: raw),
-      ),
-    );
+
+    try {
+      final artifact = await SupabaseService().getArtifactById(raw);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => VisitorArtifactScreen(artifact: artifact),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _handlingCode = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Artifact not found. Please scan a valid QR code.')),
+      );
+    }
   }
 
   @override
