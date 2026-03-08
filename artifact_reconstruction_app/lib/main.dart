@@ -1956,15 +1956,18 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
             const SizedBox(height: 8),
             if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
               ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: AspectRatio(
-                  aspectRatio: 4 / 3,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxHeight: 420),
+                  color: AppTheme.stone200,
                   child: Image.network(
                     artifact.imageUrl!,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => Container(
                       color: AppTheme.stone200,
-                      child: const Center(child: Icon(Icons.broken_image, size: 48)),
+                      padding: const EdgeInsets.all(32),
+                      child: const Center(child: Icon(Icons.broken_image, size: 48, color: AppTheme.stone500)),
                     ),
                   ),
                 ),
@@ -1974,9 +1977,9 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                 height: 200,
                 decoration: BoxDecoration(
                   color: AppTheme.stone200,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Center(child: Icon(Icons.image_outlined, size: 48)),
+                child: const Center(child: Icon(Icons.image_outlined, size: 48, color: AppTheme.stone500)),
               ),
             const SizedBox(height: 24),
             Text(
@@ -1984,18 +1987,41 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: AppTheme.stone800,
                 fontWeight: FontWeight.bold,
+                letterSpacing: -0.3,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Details',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppTheme.stone800,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.stone200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 10,
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 12,
                     offset: const Offset(0, 2),
                   ),
                 ],
@@ -2009,32 +2035,51 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                       children: [
                         if (artifact.category != null && artifact.category!.isNotEmpty) ...[
                           _DetailRow(label: 'Category', value: artifact.category!),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 16),
                         ],
                         if (artifact.era != null && artifact.era!.isNotEmpty) ...[
                           _DetailRow(label: 'Era', value: artifact.era!),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 16),
                         ],
                         if (artifact.origin != null && artifact.origin!.isNotEmpty) ...[
                           _DetailRow(label: 'Origin', value: artifact.origin!),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 16),
                         ],
                         if (artifact.description != null && artifact.description!.isNotEmpty)
                           _DetailRow(label: 'Description', value: artifact.description!),
                       ],
                     )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.info_outline, size: 20, color: AppTheme.stone500),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'No details added yet. Tap Edit to add category, era, or description.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.stone500),
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline_rounded, size: 22, color: AppTheme.primary),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'No details added yet',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppTheme.stone800,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tap Edit above to add category, era, origin, or description.',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.stone500,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
             ),
             const SizedBox(height: 28),
@@ -2106,8 +2151,12 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
