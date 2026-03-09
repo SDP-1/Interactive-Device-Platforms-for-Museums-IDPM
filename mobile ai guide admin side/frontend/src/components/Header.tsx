@@ -55,6 +55,7 @@ const Header: React.FC<HeaderProps> = ({ onToggle }) => {
               <p className="text-xs text-cyan-200">Admin interface</p>
             </div>
           </div>
+          <div className="ml-auto" />
         </div>
       </div>
     </header>

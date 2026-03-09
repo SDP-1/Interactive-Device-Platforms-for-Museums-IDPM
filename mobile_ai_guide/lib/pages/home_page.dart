@@ -8,6 +8,7 @@ import 'package:mobile_ai_guide/pages/qr_scanner_page.dart';
 import 'package:mobile_ai_guide/pages/settings_page.dart';
 import 'package:mobile_ai_guide/pages/help_page.dart';
 import 'package:mobile_ai_guide/pages/persona_list_page.dart';
+import 'package:mobile_ai_guide/pages/tours_page.dart';
 import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/home/featured_exhibitions.dart';
 import 'package:mobile_ai_guide/services/featured_exhibits_service.dart';
@@ -67,103 +68,106 @@ class _HomePageState extends State<HomePage> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const WelcomeSection(),
-              const SizedBox(height: 8),
-              ActionGrid(
-                selectedTile: _selectedTile,
-                onBrowse: () {
-                  setState(() => _selectedTile = 'Browse');
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const BrowseArtifactsPage(),
-                      settings: const RouteSettings(name: '/browse'),
-                    ),
-                  );
-                },
-                onScanQR: () {
-                  setState(() => _selectedTile = 'Scan QR');
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const QRScannerPage()),
-                  );
-                },
-                onTours: () {
-                  setState(() => _selectedTile = 'Tours');
-                },
-                onSaved: () {
-                  setState(() => _selectedTile = 'Saved');
-                  Navigator.of(context).pushNamed('/saved').then((_) {
-                    if (!mounted) return;
-                    setState(() => _selectedTile = null);
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              FeaturedExhibitionsSection(key: _featuredKey),
-              const SizedBox(height: 16),
-              QuickActionsRow(
-                onSettingsTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SettingsPage()),
-                  );
-                },
-                onHelpTap: () {
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const HelpPage()));
-                },
-              ),
-              const SizedBox(height: 24),
-            ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const WelcomeSection(),
+                const SizedBox(height: 8),
+                ActionGrid(
+                  selectedTile: _selectedTile,
+                  onBrowse: () {
+                    setState(() => _selectedTile = 'Browse');
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const BrowseArtifactsPage(),
+                        settings: const RouteSettings(name: '/browse'),
+                      ),
+                    );
+                  },
+                  onScanQR: () {
+                    setState(() => _selectedTile = 'Scan QR');
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const QRScannerPage()),
+                    );
+                  },
+                  onTours: () {
+                    setState(() => _selectedTile = 'Tours');
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ToursPage()),
+                    );
+                  },
+                  onSaved: () {
+                    setState(() => _selectedTile = 'Saved');
+                    Navigator.of(context).pushNamed('/saved').then((_) {
+                      if (!mounted) return;
+                      setState(() => _selectedTile = null);
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                FeaturedExhibitionsSection(key: _featuredKey),
+                const SizedBox(height: 16),
+                QuickActionsRow(
+                  onSettingsTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    );
+                  },
+                  onHelpTap: () {
+                    Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (_) => const HelpPage()));
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: AppBottomNavigationBar(
-        selectedIndex: _current,
-        onDestinationSelected: (i) {
-          if (i == 0) {
-            // Already on home page, do nothing
-            setState(() => _current = 0);
-          } else if (i == 1) {
-            // Navigate to Browse Artifacts (Explore)
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const BrowseArtifactsPage(),
-                settings: const RouteSettings(name: '/browse'),
-              ),
-            );
-          } else if (i == 2) {
-            // Navigate to Saved artifacts
-            setState(() => _current = 2);
-            Navigator.of(context).pushNamed('/saved').then((_) {
-              if (!mounted) return;
-              // restore selection to Home after returning
+        bottomNavigationBar: AppBottomNavigationBar(
+          selectedIndex: _current,
+          onDestinationSelected: (i) {
+            if (i == 0) {
+              // Already on home page, do nothing
               setState(() => _current = 0);
-            });
-          } else if (i == 3) {
-            // Navigate to Kings Persona List
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const PersonaListPage(),
-                settings: const RouteSettings(name: '/personas'),
-              ),
-            );
-          } else {
-            // Handle other navigation items
-            setState(() => _current = i);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${['Home', 'Explore', 'Saved', 'Kings'][i]} - Coming Soon',
+            } else if (i == 1) {
+              // Navigate to Browse Artifacts (Explore)
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const BrowseArtifactsPage(),
+                  settings: const RouteSettings(name: '/browse'),
                 ),
-                duration: const Duration(seconds: 1),
-              ),
-            );
-          }
-        },
+              );
+            } else if (i == 2) {
+              // Navigate to Saved artifacts
+              setState(() => _current = 2);
+              Navigator.of(context).pushNamed('/saved').then((_) {
+                if (!mounted) return;
+                // restore selection to Home after returning
+                setState(() => _current = 0);
+              });
+            } else if (i == 3) {
+              // Navigate to Kings Persona List
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PersonaListPage(),
+                  settings: const RouteSettings(name: '/personas'),
+                ),
+              );
+            } else {
+              // Handle other navigation items
+              setState(() => _current = i);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${['Home', 'Explore', 'Saved', 'Kings'][i]} - Coming Soon',
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            }
+          },
+        ),
       ),
-    ),
     );
   }
 }
