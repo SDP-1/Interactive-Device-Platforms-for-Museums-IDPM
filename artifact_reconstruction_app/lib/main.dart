@@ -2622,13 +2622,34 @@ class _AdminArtifactQrScreenState extends State<AdminArtifactQrScreen> {
 }
 
 /// Visitor-facing screen: 3D model on top, artifact details below (no admin actions).
-class VisitorArtifactScreen extends StatelessWidget {
+class VisitorArtifactScreen extends StatefulWidget {
   const VisitorArtifactScreen({super.key, required this.artifact});
 
   final Artifact artifact;
 
   @override
+  State<VisitorArtifactScreen> createState() => _VisitorArtifactScreenState();
+}
+
+class _VisitorArtifactScreenState extends State<VisitorArtifactScreen> {
+  bool _modelLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final hasModel = widget.artifact.modelUrl != null && widget.artifact.modelUrl!.isNotEmpty;
+    if (hasModel) {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _modelLoading = false);
+      });
+    } else {
+      _modelLoading = false;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final artifact = widget.artifact;
     final hasModel = artifact.modelUrl != null && artifact.modelUrl!.isNotEmpty;
     final hasAnyDetail = (artifact.category?.isNotEmpty ?? false) ||
         (artifact.era?.isNotEmpty ?? false) ||
@@ -2660,16 +2681,42 @@ class VisitorArtifactScreen extends StatelessWidget {
                 bottomRight: Radius.circular(24),
               ),
               child: hasModel
-                  ? SizedBox(
-                      height: 320,
-                      child: ModelViewer(
-                        src: artifact.modelUrl!,
-                        alt: '${artifact.name} 3D model',
-                        ar: false,
-                        autoRotate: true,
-                        cameraControls: true,
-                        backgroundColor: AppTheme.surfaceDark,
-                      ),
+                  ? Stack(
+                      children: [
+                        SizedBox(
+                          height: 320,
+                          child: ModelViewer(
+                            src: artifact.modelUrl!,
+                            alt: '${artifact.name} 3D model',
+                            ar: false,
+                            autoRotate: true,
+                            cameraControls: true,
+                            backgroundColor: AppTheme.surfaceDark,
+                          ),
+                        ),
+                        if (_modelLoading)
+                          Container(
+                            height: 320,
+                            color: AppTheme.surfaceDark,
+                            alignment: Alignment.center,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const CircularProgressIndicator(
+                                  color: AppTheme.primary,
+                                  strokeWidth: 2,
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'Loading 3D model…',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     )
                   : Container(
                       height: 200,
