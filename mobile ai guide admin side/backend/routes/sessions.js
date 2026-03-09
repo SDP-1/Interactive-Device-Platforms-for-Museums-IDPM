@@ -241,4 +241,82 @@ router.post("/sessions/:session_id/feedback", async (req, res) => {
   }
 });
 
+// Update session (partial). Accepts fields to replace, including `feedbacks` array to overwrite.
+router.put("/sessions/:session_id", async (req, res) => {
+  try {
+    const updates = req.body || {};
+
+    const session = await UserSession.findOne({
+      session_id: req.params.session_id,
+    });
+    if (!session)
+      return res
+        .status(404)
+        .json({ success: false, message: "Session not found" });
+
+    // Only apply known fields to avoid accidental overwrites
+    const allowed = new Set([
+      "language",
+      "price",
+      "start_time",
+      "end_time",
+      "is_active",
+      "star_rating",
+      "feedbacks",
+      "duration_hours",
+      "extended_time_hours",
+      "extended_until",
+    ]);
+
+    Object.keys(updates).forEach((k) => {
+      if (!allowed.has(k)) return;
+      // coerce types for a couple of fields
+      if (k === "feedbacks") {
+        // replace feedbacks array; ensure it's an array of strings
+        session.feedbacks = Array.isArray(updates.feedbacks)
+          ? updates.feedbacks.map((x) => String(x))
+          : [];
+        return;
+      }
+      if (k === "star_rating") {
+        session.star_rating = Number(updates.star_rating || 0);
+        return;
+      }
+      session[k] = updates[k];
+    });
+
+    await session.save();
+    return res.json({ success: true, data: session });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating session",
+      error: error.message,
+    });
+  }
+});
+
+// Clear all feedbacks for a session
+router.delete("/sessions/:session_id/feedbacks", async (req, res) => {
+  try {
+    const session = await UserSession.findOne({
+      session_id: req.params.session_id,
+    });
+    if (!session)
+      return res
+        .status(404)
+        .json({ success: false, message: "Session not found" });
+
+    session.feedbacks = [];
+    await session.save();
+    return res.json({ success: true, data: session });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error clearing feedbacks",
+      error: error.message,
+    });
+  }
+});
+
 export default router;

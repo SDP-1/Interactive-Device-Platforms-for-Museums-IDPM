@@ -104,3 +104,26 @@ export async function addFeedback(
   const json = await res.json();
   return json.data;
 }
+
+export async function updateSession(
+  session_id: string,
+  updates: Partial<UserSession>,
+): Promise<UserSession> {
+  const res = await fetch(`${API_URL}/sessions/${encodeURIComponent(session_id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error("Failed to update session");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function clearSessionFeedbacks(session_id: string): Promise<UserSession> {
+  const res = await fetch(`${API_URL}/sessions/${encodeURIComponent(session_id)}/feedbacks`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to clear feedbacks");
+  const json = await res.json();
+  return json.data;
+}
