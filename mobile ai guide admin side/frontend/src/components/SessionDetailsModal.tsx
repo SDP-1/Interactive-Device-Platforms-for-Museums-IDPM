@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import Modal from "./Modal";
 import QrCode from "./QrCode";
 import { UserSession } from "../types/UserSession";
+import { clearSessionFeedbacks } from "../services/sessionService";
 
 interface Props {
   isOpen: boolean;
@@ -133,6 +134,22 @@ const SessionDetailsModal: React.FC<Props> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-1 sticky bottom-0 bg-white/90 backdrop-blur-sm pb-1">
+          <button
+            onClick={async () => {
+              if (!confirm("Clear all feedbacks for this session?")) return;
+              try {
+                await clearSessionFeedbacks(s.session_id || s._id || "");
+                // simple refresh to update parent list
+                window.location.reload();
+              } catch (err) {
+                // eslint-disable-next-line no-alert
+                alert(err instanceof Error ? err.message : "Failed to clear feedbacks");
+              }
+            }}
+            className="px-4 py-2 rounded-lg border border-red-300 text-red-700 hover:bg-red-50"
+          >
+            Clear Feedbacks
+          </button>
           <button
             onClick={() => onRequestExtend?.(s.session_id || s._id || "")}
             disabled={alreadyExtended || !(s.session_id || s._id)}

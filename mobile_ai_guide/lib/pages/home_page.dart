@@ -13,6 +13,7 @@ import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/home/featured_exhibitions.dart';
 import 'package:mobile_ai_guide/services/featured_exhibits_service.dart';
 import 'package:mobile_ai_guide/widgets/home/quick_actions.dart';
+import 'package:mobile_ai_guide/widgets/home/feedback_section.dart';
 import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 
@@ -118,6 +119,8 @@ class _HomePageState extends State<HomePage> {
                     ).push(MaterialPageRoute(builder: (_) => const HelpPage()));
                   },
                 ),
+                const SizedBox(height: 18),
+                FeedbackSection(),
                 const SizedBox(height: 24),
               ],
             ),
@@ -171,3 +174,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
