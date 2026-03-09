@@ -143,7 +143,11 @@ const SessionDetailsModal: React.FC<Props> = ({
                 window.location.reload();
               } catch (err) {
                 // eslint-disable-next-line no-alert
-                alert(err instanceof Error ? err.message : "Failed to clear feedbacks");
+                alert(
+                  err instanceof Error
+                    ? err.message
+                    : "Failed to clear feedbacks",
+                );
               }
             }}
             className="px-4 py-2 rounded-lg border border-red-300 text-red-700 hover:bg-red-50"
