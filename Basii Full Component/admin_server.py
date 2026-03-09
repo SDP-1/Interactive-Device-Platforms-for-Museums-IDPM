@@ -326,9 +326,16 @@ def publish_scenario(sid):
 @require_auth(roles=[admin_db.ROLE_ADMIN, admin_db.ROLE_CURATOR])
 def flag_regenerate(sid):
     d = request.get_json(force=True) or {}
+    # Capture doc before updating status
+    scenario_doc = admin_db.get_scenario(sid)
     admin_db.update_scenario(sid, admin_db.STATUS_DRAFT,
                               request.current_user["sub"],
                               curator_notes=d.get("notes", "Flagged for regeneration"))
+    if scenario_doc:
+        artifact_id = scenario_doc.get("artifact_id", "")
+        scenario_id = scenario_doc.get("scenario_id", "")
+        _trigger_regeneration(artifact_id=artifact_id, scenario_id=scenario_id)
+        return jsonify({"message": f"Scenario {sid} flagged for regeneration – AI generation started"})
     return jsonify({"message": f"Scenario {sid} flagged for regeneration"})
 
 

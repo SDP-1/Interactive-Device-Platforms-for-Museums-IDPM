@@ -26,14 +26,12 @@ def main():
     print("      SRI LANKAN HERITAGE SYSTEM - UNIFIED LAUNCHER      ")
     print("="*80)
     print("\n📋 System Components:")
-    print("   1. Basi-Component2 Backend (Port 5000) - Comparison & Explanation")
-    print("   2. Basi-Component2 Frontend (Port 5173)")
-    print("   3. Basiii Backend (Port 5001) - RAG Chat with Fine-tuned Model")
-    print("   4. Basiii Frontend (Port 5174) - What-If Explorer")
-    print("   5. Component3 Frontend (Port 3000) - Craft Simulation")
-    print("   6. Admin / Moderation Server (Port 5002)")
-    print("   7. Admin Panel Frontend (Port 5175)")
-    print("   8. Dashboard Server (Port 8000)")
+    print("   1. Artifact Comparison Backend  (Port 5000)")
+    print("   2. Scenario Generation Backend  (Port 5001)")
+    print("   3. Unified Frontend             (Port 5173)  ← All 3 components")
+    print("   4. Admin / Moderation Server    (Port 5002)")
+    print("   5. Admin Panel Frontend         (Port 5175)")
+    print("   6. Dashboard Server             (Port 8000)")
     print("="*80)
     print()
 
@@ -45,13 +43,8 @@ def main():
         "Component 2 Backend (Comparison)"
     )
 
-    # 2. Start Artifact Comparison Frontend
-    # Port: 5173
-    run_command(
-        "npm run dev", 
-        os.path.join(base_dir, "Atifact_Comparison_Component", "frontend"),
-        "Component 2 Frontend"
-    )
+    # 2. Start Artifact Comparison Frontend — REMOVED
+    # Now served by the Unified Frontend (Port 5173)
 
     # 3. Start Scenario Generation (RAG Chat) Backend
     # Port: 5001
@@ -61,23 +54,19 @@ def main():
         "Basiii Backend (RAG Chat)"
     )
 
-    # 4. Start Scenario Generation Frontend (What-If Explorer)
-    # Port: 5174
+    # 4. Start Scenario Generation Frontend — REMOVED
+    # 5. Start Craft Simulation Frontend — REMOVED
+    # Both are now served by the Unified Frontend below.
+
+    # 3b. Start Unified Frontend (Comparison + Scenario + Craft on one server)
+    # Port: 5173
     run_command(
-        "npm run dev", 
-        os.path.join(base_dir, "Scenario_Generation", "frontend"),
-        "Basiii Frontend (What-If Explorer)"
+        "npm run dev",
+        os.path.join(base_dir, "frontend"),
+        "Unified Frontend (All 3 Components)"
     )
 
-    # 5. Start Craft Simulation Frontend
-    # Port: 3000
-    run_command(
-        "npm start", 
-        os.path.join(base_dir, "Craft_Simulation_Component"),
-        "Component 3 Frontend (Simulation)"
-    )
-
-    # 6. Start Admin / Moderation Server
+    # 4. Start Admin / Moderation Server
     # Port: 5002
     run_command(
         "python admin_server.py",
@@ -85,7 +74,7 @@ def main():
         "Admin Moderation Server (Port 5002)"
     )
 
-    # 7. Start Admin Panel React Frontend
+    # 5. Start Admin Panel React Frontend
     # Port: 5175
     run_command(
         "npm run dev",
@@ -93,7 +82,7 @@ def main():
         "Admin Panel Frontend (Port 5175)"
     )
 
-    # 8. Start Dashboard HTTP Server (to allow cross-origin navigation)
+    # 6. Start Dashboard HTTP Server (to allow cross-origin navigation)
     # Port: 8000
     run_command(
         "python -m http.server 8000",

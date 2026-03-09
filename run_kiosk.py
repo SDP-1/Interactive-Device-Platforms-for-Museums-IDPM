@@ -27,13 +27,11 @@ def main():
     print("="*80)
     print("\n📋 System Components:")
     print("   1. [Basii] Comparison Backend (Port 5000)")
-    print("   2. [Basii] Comparison Frontend (Port 5173)")
-    print("   3. [Basii] Scenario Backend (Port 5001)")
-    print("   4. [Basii] Scenario Frontend (Port 5174)")
-    print("   5. [Basii] Craft Simulation (Port 3000)")
-    print("   6. [Basii] Admin Server (Port 5002)")
-    print("   7. [Basii] Admin Frontend (Port 5175)")
-    print("   8. Unified Kiosk Server (Port 8000)")
+    print("   2. [Basii] Scenario Backend (Port 5001)")
+    print("   3. [Basii] Unified Frontend  (Port 5173)  ← Comparison + Scenario + Craft")
+    print("   4. [Basii] Admin Server (Port 5002)")
+    print("   5. [Basii] Admin Frontend (Port 5175)")
+    print("   6. Unified Kiosk Server (Port 8000)")
     print("="*80)
     print()
 
@@ -47,49 +45,35 @@ def main():
         "Basii - Comparison Backend"
     )
 
-    # 2. Start Artifact Comparison Frontend
-    run_command(
-        "npm run dev", 
-        os.path.join(basii_dir, "Atifact_Comparison_Component", "frontend"),
-        "Basii - Comparison Frontend"
-    )
-
-    # 3. Start Scenario Generation Backend
+    # 2. Start Scenario Generation Backend
     run_command(
         "python rag_api_server_fine_tuned.py", 
         os.path.join(basii_dir, "Scenario_Generation"),
         "Basii - Scenario Backend"
     )
 
-    # 4. Start Scenario Generation Frontend
+    # 3. Start Unified Frontend (Comparison + Scenario + Craft)
     run_command(
-        "npm run dev", 
-        os.path.join(basii_dir, "Scenario_Generation", "frontend"),
-        "Basii - Scenario Frontend"
+        "npm run dev",
+        os.path.join(basii_dir, "frontend"),
+        "Basii - Unified Frontend (All 3 Components)"
     )
 
-    # 5. Start Craft Simulation Frontend
-    run_command(
-        "npm start", 
-        os.path.join(basii_dir, "Craft_Simulation_Component"),
-        "Basii - Craft Simulation"
-    )
-
-    # 6. Start Admin / Moderation Server
+    # 4. Start Admin / Moderation Server
     run_command(
         "python admin_server.py",
         basii_dir,
         "Basii - Admin Server"
     )
 
-    # 7. Start Admin Panel React Frontend
+    # 5. Start Admin Panel React Frontend
     run_command(
         "npm run dev",
         os.path.join(basii_dir, "admin_panel", "frontend"),
         "Basii - Admin Frontend"
     )
 
-    # 8. Start Kiosk HTTP Server (Root Directory)
+    # 6. Start Kiosk HTTP Server (Root Directory)
     run_command(
         "python -m http.server 8000",
         base_dir,

@@ -2,41 +2,10 @@ import express from "express";
 import Artifact from "../models/Artifact.js";
 import King from "../models/King.js";
 import UserSession from "../models/UserSession.js";
+import FeaturedExhibit from "../models/FeaturedExhibit.js";
+import Tour from "../models/Tour.js";
 
 const router = express.Router();
-
-const STOP_WORDS = new Set([
-  "the",
-  "and",
-  "for",
-  "that",
-  "with",
-  "this",
-  "was",
-  "are",
-  "very",
-  "have",
-  "from",
-  "your",
-  "you",
-  "but",
-  "not",
-  "had",
-  "has",
-  "were",
-  "they",
-  "them",
-  "their",
-  "our",
-  "too",
-  "can",
-  "all",
-  "its",
-  "about",
-  "into",
-  "museum",
-  "session",
-]);
 
 function toMonthKey(dateValue) {
   const d = new Date(dateValue);
@@ -45,39 +14,30 @@ function toMonthKey(dateValue) {
 
 function monthLabel(monthKey) {
   const [year, month] = monthKey.split("-").map(Number);
+  // Return short month name only (no year) to avoid showing dates
   return new Date(year, month - 1, 1).toLocaleString("en-US", {
     month: "short",
-    year: "2-digit",
   });
-}
-
-function summarizeKeywords(feedbackItems, take = 8) {
-  const counts = new Map();
-
-  for (const text of feedbackItems) {
-    const words = String(text || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, " ")
-      .split(/\s+/)
-      .filter((w) => w.length >= 3 && !STOP_WORDS.has(w));
-
-    for (const word of words) {
-      counts.set(word, (counts.get(word) || 0) + 1);
-    }
-  }
-
-  return Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, take)
-    .map(([keyword, count]) => ({ keyword, count }));
 }
 
 router.get("/dashboard/overview", async (req, res) => {
   try {
-    const [artifactCount, kingCount, sessions] = await Promise.all([
+    const [
+      artifactCount,
+      kingCount,
+      sessions,
+      featuredCount,
+      tourCount,
+      featuredList,
+      toursList,
+    ] = await Promise.all([
       Artifact.countDocuments(),
       King.countDocuments(),
       UserSession.find().sort({ createdAt: -1 }).lean(),
+      FeaturedExhibit.countDocuments(),
+      Tour.countDocuments(),
+      FeaturedExhibit.find().sort({ created_at: -1 }).lean(),
+      Tour.find().sort({ created_at: -1 }).lean(),
     ]);
 
     const now = new Date();
@@ -127,19 +87,40 @@ router.get("/dashboard/overview", async (req, res) => {
       cursor.setMonth(cursor.getMonth() - 1);
     }
 
-    const monthMap = new Map(
-      recentMonths.map((key) => [
-        key,
-        { month: monthLabel(key), sessions: 0, sales: 0 },
-      ]),
-    );
+    const monthMap = new Map();
+
+    for (const key of recentMonths) {
+      const [yearStr, monthStr] = key.split("-");
+      const year = Number(yearStr);
+      const month = Number(monthStr); // 1-based
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const days = Array.from({ length: daysInMonth }, (_, i) => ({
+        day: i + 1,
+        sessions: 0,
+        sales: 0,
+      }));
+
+      monthMap.set(key, {
+        month: monthLabel(key),
+        sessions: 0,
+        sales: 0,
+        days,
+      });
+    }
 
     for (const s of sessions) {
-      const key = toMonthKey(s.createdAt || s.start_time || now);
+      const date = new Date(s.createdAt || s.start_time || now);
+      const key = toMonthKey(date);
       if (monthMap.has(key)) {
         const item = monthMap.get(key);
         item.sessions += 1;
-        item.sales += Number(s.price || 0);
+        const sale = Number(s.price || 0);
+        item.sales += sale;
+        const dayIndex = date.getDate() - 1;
+        if (item.days && item.days[dayIndex]) {
+          item.days[dayIndex].sessions += 1;
+          item.days[dayIndex].sales += sale;
+        }
       }
     }
 
@@ -187,8 +168,6 @@ router.get("/dashboard/overview", async (req, res) => {
       });
     });
 
-    const topKeywords = summarizeKeywords(allFeedbackEntries, 8);
-
     const recentFeedbacks = feedbackDetails
       .flatMap((item) =>
         item.feedbacks.map((feedback) => ({
@@ -203,6 +182,30 @@ router.get("/dashboard/overview", async (req, res) => {
 
     const avgRating = ratedCount ? ratingSum / ratedCount : 0;
 
+    const featuredItems = Array.isArray(featuredList)
+      ? featuredList.map((f) => ({
+          id: f._id,
+          name: f.name,
+          artifact_count: Array.isArray(f.artifacts) ? f.artifacts.length : 0,
+          estimated_visit_minutes: Number(f.estimated_visit_minutes || 0),
+        }))
+      : [];
+
+    const tourItems = Array.isArray(toursList)
+      ? toursList.map((t) => ({
+          id: t._id,
+          name: t.name,
+          duration_minutes: Number(t.duration_minutes || 0),
+          points: Array.isArray(t.points) ? t.points.length : 0,
+          is_active: !!t.is_active,
+        }))
+      : [];
+
+    const activeTours = tourItems.filter((t) => t.is_active).length;
+    const avgTourDuration = tourItems.length
+      ? tourItems.reduce((s, t) => s + t.duration_minutes, 0) / tourItems.length
+      : 0;
+
     return res.json({
       success: true,
       data: {
@@ -213,6 +216,8 @@ router.get("/dashboard/overview", async (req, res) => {
           active_sessions: activeSessions,
           ended_sessions: endedSessions,
           today_sessions: todaySessionCount,
+          featured_exhibits: featuredCount,
+          tours: tourCount,
         },
         sales: {
           total_revenue: totalRevenue,
@@ -226,8 +231,17 @@ router.get("/dashboard/overview", async (req, res) => {
           sessions_with_feedback: feedbackDetails.length,
           average_rating: avgRating,
           rating_breakdown: ratingBreakdownBase,
-          top_keywords: topKeywords,
           recent_feedbacks: recentFeedbacks,
+        },
+        featured_exhibits: {
+          total: featuredCount,
+          items: featuredItems,
+        },
+        tours: {
+          total: tourCount,
+          active: activeTours,
+          average_duration: avgTourDuration,
+          items: tourItems,
         },
       },
     });
