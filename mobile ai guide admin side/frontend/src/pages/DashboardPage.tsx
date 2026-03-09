@@ -54,9 +54,20 @@ const DashboardPage: React.FC = () => {
       tone: "bg-purple-50 text-purple-700",
     },
     {
+      label: "Featured Exhibits",
+      value:
+        data.counts.featured_exhibits || data.featured_exhibits?.total || 0,
+      tone: "bg-indigo-50 text-indigo-700",
+    },
+    {
       label: "Active Sessions",
       value: data.counts.active_sessions,
       tone: "bg-green-100 text-green-700",
+    },
+    {
+      label: "Tours",
+      value: data.counts.tours || data.tours?.total || 0,
+      tone: "bg-rose-50 text-rose-700",
     },
     {
       label: "Today Sessions",
@@ -122,26 +133,57 @@ const DashboardPage: React.FC = () => {
           <h3 className="text-lg font-semibold mb-3 text-gray-900">
             Monthly Sales Chart
           </h3>
-          <div className="space-y-2">
-            {data.sales.monthly.map((m) => {
-              const width = (m.sales / maxMonthlySales) * 100;
-              return (
-                <div key={m.month}>
-                  <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                    <span>{m.month}</span>
-                    <span>
-                      {currency(m.sales)} · {m.sessions} sessions
-                    </span>
+          <div className="w-full flex">
+            <div className="flex flex-col items-end pr-3" style={{ width: 80 }}>
+              <div className="text-sm font-medium text-gray-700 mb-1">
+                Sales
+              </div>
+              {(() => {
+                const top = maxMonthlySales;
+                const mid = Math.round(top / 2);
+                const bottom = 0;
+                return [top, mid, bottom].map((v) => (
+                  <div
+                    key={String(v)}
+                    className="text-xs text-gray-500 h-12 flex items-center"
+                  >
+                    {currency(v)}
                   </div>
-                  <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#071428] to-amber-500"
-                      style={{ width: `${width}%` }}
-                    />
-                  </div>
+                ));
+              })()}
+            </div>
+
+            <div className="flex-1">
+              <div className="h-48 relative">
+                <div className="absolute inset-0 flex items-end pl-2 gap-3 overflow-x-auto">
+                  {data.sales.monthly.map((m) => {
+                    const h = (m.sales / maxMonthlySales) * 100;
+                    return (
+                      <div
+                        key={m.month}
+                        className="flex flex-col items-center w-12 mx-1 h-full justify-end"
+                      >
+                        <div className="text-xs text-gray-700 mb-2 text-center truncate w-full">
+                          {currency(m.sales)}
+                        </div>
+                        <div
+                          title={`${m.month}: ${currency(m.sales)} · ${m.sessions} sessions`}
+                          className="w-full bg-amber-500 rounded-t border border-amber-700"
+                          style={{ height: `${Math.max(12, h)}%` }}
+                        />
+                        <div className="text-xs text-gray-600 mt-2 text-center truncate w-full">
+                          {m.month}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500 mt-2 px-2">
+                <div>Months</div>
+                <div>{currency(data.sales.total_revenue)}</div>
+              </div>
+            </div>
           </div>
         </div>
 

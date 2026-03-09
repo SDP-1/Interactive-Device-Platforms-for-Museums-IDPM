@@ -7,12 +7,14 @@ import 'package:mobile_ai_guide/services/session_access_service.dart';
 
 class ArtifactService {
   // Get all artifacts
-  static Future<List<Artifact>> getAllArtifacts() async {
+  static Future<List<Artifact>> getAllArtifacts({
+    bool forceRefresh = false,
+  }) async {
     await LocalStorageService.instance.initialize();
     await SessionAccessService.requireActiveSession();
     final cachedList = await LocalStorageService.instance
         .getCachedArtifactList();
-    if (cachedList != null && cachedList.isNotEmpty) {
+    if (!forceRefresh && cachedList != null && cachedList.isNotEmpty) {
       return cachedList;
     }
 

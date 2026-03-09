@@ -4,7 +4,7 @@ const featuredExhibitSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, default: null },
   imageUrl: { type: String, default: null },
-  estimated_visit_minutes: { type: Number, default: 30 },
+  estimated_visit_minutes: { type: Number, default: 0 },
   // referenced artifacts in this exhibit
   // referenced artifacts in this exhibit (store artifact.artifact_id strings)
   artifacts: [

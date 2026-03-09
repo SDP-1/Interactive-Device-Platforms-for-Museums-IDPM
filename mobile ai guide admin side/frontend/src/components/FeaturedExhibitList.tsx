@@ -9,7 +9,7 @@ interface Props {
 
 export const FeaturedExhibitList: React.FC<Props> = ({
   exhibit,
-  language = "en",
+  language: _language = "en",
   onReorder,
 }) => {
   const [items, setItems] = useState<any[]>(exhibit.artifacts || []);
@@ -74,7 +74,10 @@ export const FeaturedExhibitList: React.FC<Props> = ({
               ) : (
                 <div className="w-12 h-8 bg-gray-100 rounded" />
               )}
-              <a className="text-blue-600 truncate" href={`/artifacts/${id}`}>
+              <a
+                className="text-blue-600 hover:underline"
+                href={`/artifacts/${id}`}
+              >
                 {title}
               </a>
             </li>

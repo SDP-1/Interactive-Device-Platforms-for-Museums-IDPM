@@ -124,6 +124,26 @@ const Sidebar: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
       ),
     },
     {
+      to: "/tours",
+      label: "Tours",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h6v6H4zM14 6h6M14 12h6M4 18h16"
+          />
+        </svg>
+      ),
+    },
+    {
       to: "/feedback",
       label: "Feedback",
       icon: (

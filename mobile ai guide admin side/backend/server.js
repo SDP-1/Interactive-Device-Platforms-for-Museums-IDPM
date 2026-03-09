@@ -10,6 +10,7 @@ import chatsRoutes from "./routes/chats.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import { startSessionMonitor } from "./utils/sessionMonitor.js";
 import featuredExhibitsRoutes from "./routes/featuredExhibits.js";
+import toursRoutes from "./routes/tours.js";
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use("/api", sessionsRoutes);
 app.use("/api", chatsRoutes);
 app.use("/api", dashboardRoutes);
 app.use("/api", featuredExhibitsRoutes);
+app.use("/api", toursRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

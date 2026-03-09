@@ -2,6 +2,7 @@ export interface DashboardMonthlyPoint {
   month: string;
   sessions: number;
   sales: number;
+  days?: { day: number; sessions: number; sales: number }[];
 }
 
 export interface RatingBreakdownItem {
@@ -9,10 +10,7 @@ export interface RatingBreakdownItem {
   count: number;
 }
 
-export interface KeywordSummary {
-  keyword: string;
-  count: number;
-}
+
 
 export interface RecentFeedbackItem {
   session_id: string;
@@ -29,6 +27,8 @@ export interface DashboardOverview {
     active_sessions: number;
     ended_sessions: number;
     today_sessions: number;
+    featured_exhibits?: number;
+    tours?: number;
   };
   sales: {
     total_revenue: number;
@@ -45,9 +45,33 @@ export interface DashboardOverview {
     sessions_with_feedback: number;
     average_rating: number;
     rating_breakdown: RatingBreakdownItem[];
-    top_keywords: KeywordSummary[];
     recent_feedbacks: RecentFeedbackItem[];
   };
+  featured_exhibits?: {
+    total: number;
+    items: FeaturedExhibitSummary[];
+  };
+  tours?: {
+    total: number;
+    active: number;
+    average_duration: number;
+    items: TourSummary[];
+  };
+}
+
+export interface FeaturedExhibitSummary {
+  id?: string;
+  name: string;
+  artifact_count: number;
+  estimated_visit_minutes: number;
+}
+
+export interface TourSummary {
+  id?: string;
+  name: string;
+  duration_minutes: number;
+  points: number;
+  is_active?: boolean;
 }
 
 export interface FeedbackItem {
