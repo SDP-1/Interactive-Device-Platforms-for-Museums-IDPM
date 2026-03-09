@@ -88,39 +88,50 @@ def generate_analysis_from_scenario(artid, scenario_id, context):
     
     # Get the structured prompt for this scenario
     prompt = get_scenario_prompt(scenario_id, context)
-    
-    # Add the JSON structure requirement
-    prompt += """
+    scenario_name = scenario_info.get("name", "Historical Analysis")
+
+    # Add the JSON structure requirement — AI chooses its own topic names aligned to the scenario
+    prompt += f"""
 
 Return your response as a JSON object with this exact structure:
 {{
-    "answerTopic1": "topic name",
-    "answerDescription1": "detailed description",
-    "answerTopic2": "topic name", 
-    "answerDescription2": "detailed description",
-    "answerTopic3": "topic name",
-    "answerDescription3": "detailed description"
+    "answerTopic1": "Choose a relevant topic name that fits the '{scenario_name}' analysis",
+    "answerDescription1": "Write as exactly TWO paragraphs separated by a blank line. Paragraph 1 (3-4 sentences): introduce the topic with historical context, named events, dates, and key figures. Paragraph 2 (4-5 sentences): provide deeper analysis, material evidence, cultural significance, and scholarly interpretations. Do NOT include any References, Bibliography, footnotes, or citation sections.",
+    "answerTopic2": "Choose a second distinct relevant topic name that fits the '{scenario_name}' analysis",
+    "answerDescription2": "Write as exactly TWO paragraphs separated by a blank line. Paragraph 1 (3-4 sentences): introduce the topic with historical context, named events, dates, and key figures. Paragraph 2 (4-5 sentences): provide deeper analysis, material evidence, cultural significance, and scholarly interpretations. Do NOT include any References, Bibliography, footnotes, or citation sections.",
+    "answerTopic3": "Choose a third distinct relevant topic name that fits the '{scenario_name}' analysis",
+    "answerDescription3": "Write as exactly TWO paragraphs separated by a blank line. Paragraph 1 (3-4 sentences): introduce the topic with historical context, named events, dates, and key figures. Paragraph 2 (4-5 sentences): provide deeper analysis, material evidence, cultural significance, and scholarly interpretations. Do NOT include any References, Bibliography, footnotes, or citation sections."
 }}
+
+IMPORTANT: The 3 topic names must be distinct, academically meaningful, and directly relevant to the '{scenario_name}' theme. Each description MUST be written as TWO clearly separated paragraphs (total 7-8 sentences) with a blank line between them. Do NOT add any References, Bibliography, footnotes, or citation lists anywhere in any description.
 """
 
     try:
         response = openai_client.chat.completions.create(
             model=model_id,
             messages=[
-                {
-                    "role": "system", 
-                    "content": "You are a museum AI assistant specializing in Sri Lankan cultural artifacts. Always return valid JSON with exactly 3 topics and descriptions."
+                {"role": "system", 
+                 "content": "You are an expert museum AI assistant and academic historian specializing in Sri Lankan cultural artifacts and history. Your task is to produce detailed, scholarly descriptions for each topic — each description must be written as exactly TWO paragraphs separated by a blank line (\n\n). The first paragraph (3-4 sentences) introduces the topic with historical context, named rulers and figures, and documented events with dates. The second paragraph (4-5 sentences) provides deeper academic analysis, material evidence, cultural significance, and scholarly interpretations. Never include References, Bibliography, footnotes, or citation lists. Always return valid JSON with exactly 3 topics and descriptions."
                 },
                 {"role": "user", "content": prompt}
             ],
             response_format={"type": "json_object"},  # Force JSON output
             temperature=0.7,
-            max_tokens=3000
+            max_tokens=7000
         )
         
         # Parse JSON response
         try:
             result = json.loads(response.choices[0].message.content)
+            # Strip references sections and excess whitespace from descriptions
+            import re
+            for key in ["answerDescription1", "answerDescription2", "answerDescription3"]:
+                if key in result and isinstance(result[key], str):
+                    # Remove everything from References/Bibliography onward
+                    cleaned = re.split(r'\n\s*\n?\s*(References?|Bibliography|Citations?|Sources?|Further Reading)\s*[:\n]', result[key], flags=re.IGNORECASE)[0]
+                    # Collapse 3+ blank lines into a single paragraph break, preserve exactly one \n\n
+                    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
+                    result[key] = cleaned
             return {
                 "result": result,
                 "model_used": model_id,

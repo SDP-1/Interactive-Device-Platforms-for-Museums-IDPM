@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useApi } from '../hooks/useApi'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
@@ -15,12 +15,34 @@ function TopicCard({ topic, desc }) {
   )
 }
 
+// Placeholder card shown while waiting for the new AI scenario to be created
+function RegeneratingCard({ info }) {
+  return (
+    <div className="border border-blue-200 bg-blue-50/60 rounded-xl p-5">
+      <div className="flex items-center gap-2 flex-wrap mb-2">
+        <span className="font-semibold text-sm text-blue-900">{info.name}</span>
+        <StatusBadge status="regenerating" />
+        <code className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+          artifact: {info.artifactId}
+        </code>
+      </div>
+      <p className="text-xs text-blue-600">
+        AI is generating a new scenario — this card will update automatically when ready.
+      </p>
+    </div>
+  )
+}
+
 export default function Scenarios() {
-  const api    = useApi()
-  const toast  = useToast()
+  const api     = useApi()
+  const toast   = useToast()
   const { isAdmin } = useAuth()
   const [items, setItems]   = useState([])
   const [filter, setFilter] = useState('')
+  // Maps "artifactId:scenarioId" -> { artifactId, scenarioId, oldId, name }
+  const [regenKeys, setRegenKeys] = useState({})
+  const pollTimers = useRef({})   // key -> intervalId
+  const loadRef    = useRef(null) // always points to latest load fn
 
   const load = useCallback(async () => {
     let data = await api('GET', '/admin/scenarios' + (filter ? `?status=${filter}` : '')).catch(() => [])
@@ -28,13 +50,61 @@ export default function Scenarios() {
     setItems(data ?? [])
   }, [filter])
 
+  useEffect(() => { loadRef.current = load }, [load])
   useEffect(() => { load() }, [load])
+
+  // Clean up poll timers when navigating away
+  useEffect(() => () => { Object.values(pollTimers.current).forEach(clearInterval) }, [])
+
+  const startPolling = useCallback((key, artifactId, scenarioId, oldId) => {
+    if (pollTimers.current[key]) clearInterval(pollTimers.current[key])
+    let attempts = 0
+    const MAX = 40 // ~2 minutes at 3 s intervals
+
+    pollTimers.current[key] = setInterval(async () => {
+      attempts++
+      try {
+        const all = await api('GET', '/admin/scenarios') ?? []
+        const arrived = all.find(s =>
+          s.artifact_id === artifactId &&
+          s.scenario_id === scenarioId &&
+          s.status === 'ai_generated' &&
+          s.id !== oldId
+        )
+        if (arrived || attempts >= MAX) {
+          clearInterval(pollTimers.current[key])
+          delete pollTimers.current[key]
+          setRegenKeys(prev => { const next = { ...prev }; delete next[key]; return next })
+          await loadRef.current?.()
+          if (arrived) toast('New scenario is ready for review! ✅')
+        }
+      } catch { /* network blip – keep trying */ }
+    }, 3000)
+  }, [api, toast])
 
   const doAction = async (id, action) => {
     if (action === 'delete' && !window.confirm('Delete this scenario? This cannot be undone.')) return
     const notes = (action === 'reject' || action === 'regenerate')
       ? window.prompt(`Notes for ${action} (optional):`) ?? ''
       : ''
+
+    // Capture data now — the item may vanish from `items` after load()
+    const scenario = items.find(s => s.id === id)
+    const triggersRegen = (action === 'reject' || action === 'regenerate') && !!scenario
+
+    if (triggersRegen) {
+      const key = `${scenario.artifact_id}:${scenario.scenario_id}`
+      setRegenKeys(prev => ({
+        ...prev,
+        [key]: {
+          artifactId: scenario.artifact_id,
+          scenarioId: scenario.scenario_id,
+          oldId:      id,
+          name:       scenario.scenario_name ?? scenario.scenario_id,
+        }
+      }))
+    }
+
     const paths = {
       approve:    `/admin/scenarios/${id}/approve`,
       reject:     `/admin/scenarios/${id}/reject`,
@@ -42,14 +112,36 @@ export default function Scenarios() {
       regenerate: `/admin/scenarios/${id}/regenerate`,
       delete:     `/admin/scenarios/${id}/delete`,
     }
+
     try {
       await api('POST', paths[action], { notes })
       toast(`Scenario ${action}d`)
+      // Reload removes the old scenario; the regenKey placeholder fills the gap
       load()
+      if (triggersRegen) {
+        const key = `${scenario.artifact_id}:${scenario.scenario_id}`
+        startPolling(key, scenario.artifact_id, scenario.scenario_id, id)
+      }
     } catch (err) {
       toast(`Error: ${err.message}`, true)
+      if (triggersRegen) {
+        const key = `${scenario.artifact_id}:${scenario.scenario_id}`
+        clearInterval(pollTimers.current[key])
+        delete pollTimers.current[key]
+        setRegenKeys(prev => { const next = { ...prev }; delete next[key]; return next })
+      }
     }
   }
+
+  // Only show placeholder when the new ai_generated item isn't in the list yet
+  const placeholders = Object.entries(regenKeys).filter(([, info]) =>
+    !items.some(s =>
+      s.artifact_id === info.artifactId &&
+      s.scenario_id === info.scenarioId &&
+      s.status === 'ai_generated' &&
+      s.id !== info.oldId
+    )
+  )
 
   return (
     <div className="p-8 fade-in">
@@ -67,10 +159,15 @@ export default function Scenarios() {
           </select>
         </div>
 
-        {items.length === 0
+        {items.length === 0 && placeholders.length === 0
           ? <p className="text-sm text-gray-400">No scenarios in this queue.</p>
           : (
             <div className="space-y-4">
+              {/* Regenerating placeholders — shown until new ai_generated arrives */}
+              {placeholders.map(([key, info]) => (
+                <RegeneratingCard key={key} info={info} />
+              ))}
+
               {items.map(s => {
                 const c = s.content ?? {}
                 return (
