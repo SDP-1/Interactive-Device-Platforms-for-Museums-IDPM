@@ -17,7 +17,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# Only ignore Python lib at repo root (Flutter apps use lib/ for source code)
+/lib/
 lib64/
 parts/
 sdist/
