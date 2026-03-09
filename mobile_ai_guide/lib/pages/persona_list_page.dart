@@ -8,6 +8,7 @@ import 'package:mobile_ai_guide/pages/ai_persona_chat_page.dart';
 import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/widgets/navigation/app_bottom_navigation.dart';
 import 'package:mobile_ai_guide/widgets/navigation/bottom_navigation_mixin.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class PersonaListPage extends StatefulWidget {
   const PersonaListPage({super.key});
@@ -30,10 +31,11 @@ class _PersonaListPageState extends State<PersonaListPage>
     currentNavIndex = 3;
   }
 
-  void _refreshPersonas() {
+  Future<void> _refreshPersonas() async {
     setState(() {
       _personasFuture = PersonaService.getPersonas(language: _chatLanguage);
     });
+    await _personasFuture;
   }
 
   @override
@@ -43,31 +45,16 @@ class _PersonaListPageState extends State<PersonaListPage>
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: Colors.black,
-          onPressed: () => Navigator.of(context).pop(),
+        elevation: 0,
+        title: const Text(
+          'Ancient King Personas',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
         ),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ancient King Personas',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
-            ),
-            SizedBox(height: 2),
-            Text(
-              'Chat with historical rulers',
-              style: TextStyle(color: Colors.black54, fontSize: 12),
-            ),
-          ],
-        ),
-        centerTitle: false,
+        centerTitle: true,
       ),
       body: FutureBuilder<List<Persona>>(
         future: _personasFuture,
@@ -126,7 +113,7 @@ class _PersonaListPageState extends State<PersonaListPage>
                     label: const Text('Retry'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kGold,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
                         vertical: 12,
@@ -161,23 +148,40 @@ class _PersonaListPageState extends State<PersonaListPage>
           }
 
           final personas = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: personas.length,
-            itemBuilder: (context, index) {
-              final persona = personas[index];
-              return _PersonaCard(
-                persona: persona,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => AiPersonaChatPage(persona: persona),
-                    ),
-                  );
-                },
-                chatLanguage: _chatLanguage,
-              );
-            },
+          return RefreshIndicator(
+            onRefresh: _refreshPersonas,
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _PersonasOverviewCard(totalPersonas: personas.length),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+                  sliver: SliverList.builder(
+                    itemCount: personas.length,
+                    itemBuilder: (context, index) {
+                      final persona = personas[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: _PersonaCard(
+                          index: index + 1,
+                          persona: persona,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    AiPersonaChatPage(persona: persona),
+                              ),
+                            );
+                          },
+                          chatLanguage: _chatLanguage,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -189,116 +193,252 @@ class _PersonaListPageState extends State<PersonaListPage>
   }
 }
 
-class _PersonaCard extends StatelessWidget {
+class _PersonasOverviewCard extends StatelessWidget {
+  const _PersonasOverviewCard({required this.totalPersonas});
+
+  final int totalPersonas;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [kMuseumDeep, kDeepBrown.withValues(alpha: 0.95)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Ancient King Personas',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Talk with legendary rulers and explore their stories, decisions, and cultural legacy.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              height: 1.35,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Available Personas',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '$totalPersonas',
+                  style: const TextStyle(
+                    color: kGoldLight,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonaCard extends StatefulWidget {
   const _PersonaCard({
+    required this.index,
     required this.persona,
     required this.onTap,
     required this.chatLanguage,
+    super.key,
   });
 
+  final int index;
   final Persona persona;
   final VoidCallback onTap;
   final String chatLanguage;
 
   @override
+  State<_PersonaCard> createState() => _PersonaCardState();
+}
+
+class _PersonaCardState extends State<_PersonaCard>
+    with TickerProviderStateMixin {
+  bool _expanded = false;
+  late final String title;
+  late final String capital;
+  late final String summary;
+  late final String plainSummary;
+  late final bool _canToggle;
+
+  static const int _truncateLength = 140;
+
+  @override
+  void initState() {
+    super.initState();
+    title = (widget.chatLanguage == 'si')
+        ? widget.persona.nameSi
+        : widget.persona.nameEn;
+    capital = (widget.chatLanguage == 'si')
+        ? (widget.persona.capitalSi ?? widget.persona.capitalEn ?? '')
+        : (widget.persona.capitalEn ?? widget.persona.capitalSi ?? '');
+    summary = (widget.chatLanguage == 'si')
+        ? (widget.persona.biographySi ?? widget.persona.description ?? '')
+        : (widget.persona.biographyEn ?? widget.persona.description ?? '');
+    plainSummary = summary.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim();
+    _canToggle = plainSummary.length > _truncateLength;
+  }
+
+  void _toggleExpanded() {
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: kCardShadow,
-      ),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 1.5,
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // King icon (use first image if available)
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: kGold.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: kGold, width: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: SizedBox(
+                    height: 150,
+                    width: double.infinity,
+                    child:
+                        (widget.persona.imageUrls != null &&
+                            widget.persona.imageUrls!.isNotEmpty)
+                        ? Image.network(
+                            widget.persona.imageUrls!.first,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: kStoneSurface,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.account_circle_outlined,
+                                  size: 46,
+                                  color: kMuseumSubText,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: kStoneSurface,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.account_circle_outlined,
+                              size: 46,
+                              color: kMuseumSubText,
+                            ),
+                          ),
+                  ),
                 ),
-                child:
-                    (persona.imageUrls != null && persona.imageUrls!.isNotEmpty)
-                    ? ClipOval(
-                        child: Image.network(
-                          persona.imageUrls!.first,
-                          fit: BoxFit.cover,
-                          width: 64,
-                          height: 64,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.coronavirus_outlined,
-                                color: kGold,
-                                size: 32,
-                              ),
-                        ),
-                      )
-                    : const Icon(
-                        Icons.coronavirus_outlined, // Using as crown icon
-                        color: kGold,
-                        size: 32,
-                      ),
-              ),
-              const SizedBox(width: 16),
-              // Persona details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      (chatLanguage == 'si') ? persona.nameSi : persona.nameEn,
+                Positioned(
+                  left: 10,
+                  top: 10,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: kGold,
+                      shape: BoxShape.circle,
+                      boxShadow: kCardShadow,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${widget.index}',
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 10,
+                  top: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Text(
+                      'AI Persona',
+                      style: TextStyle(
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    if (persona.reignPeriod.isNotEmpty)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today,
-                            size: 14,
-                            color: Colors.black54,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            persona.reignPeriod,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 4),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                      color: Colors.black,
+                    ),
+                  ),
+                  if (capital.isNotEmpty) ...[
+                    const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_city,
                           size: 14,
-                          color: Colors.black54,
+                          color: Colors.grey.shade700,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            (chatLanguage == 'si')
-                                ? (persona.capitalSi ?? persona.capitalEn ?? '')
-                                : (persona.capitalEn ??
-                                      persona.capitalSi ??
-                                      ''),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
+                            capital,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -307,11 +447,178 @@ class _PersonaCard extends StatelessWidget {
                       ],
                     ),
                   ],
-                ),
+
+                  // Show reign period if available
+                  if (widget.persona.reignPeriod.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_month,
+                          size: 14,
+                          color: Colors.grey.shade700,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            widget.persona.reignPeriod,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 6),
+
+                  // Biography (may contain HTML) with show more/less
+                  Builder(
+                    builder: (context) {
+                      final displayEmpty = summary.isEmpty;
+                      if (displayEmpty) {
+                        return Text(
+                          'Start a guided conversation with this historical persona.',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            height: 1.3,
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            child: ConstrainedBox(
+                              constraints: _expanded
+                                  ? const BoxConstraints()
+                                  : const BoxConstraints(maxHeight: 48),
+                              child: ClipRect(
+                                child: Html(
+                                  data: summary,
+                                  style: {
+                                    'body': Style(
+                                      margin: Margins.zero,
+                                      padding: HtmlPaddings.zero,
+                                      color: Colors.grey.shade700,
+                                      fontSize: FontSize(14),
+                                      lineHeight: LineHeight(1.3),
+                                    ),
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (_canToggle) ...[
+                            if (!_expanded)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 24,
+                                    margin: const EdgeInsets.only(
+                                      top: 2,
+                                      bottom: 6,
+                                    ),
+                                    alignment: Alignment.bottomLeft,
+                                    child: Text(
+                                      '...',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TextButton(
+                                    onPressed: _toggleExpanded,
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(40, 24),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      'Show more',
+                                      style: TextStyle(
+                                        color: kStoneAccent,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: _toggleExpanded,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(40, 24),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    'Show less',
+                                    style: TextStyle(
+                                      color: kStoneAccent,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.chat_bubble_outline,
+                        size: 15,
+                        color: Colors.grey.shade700,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Interactive chat',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      const Text(
+                        'Start Chat',
+                        style: TextStyle(
+                          color: kStoneAccent,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                        color: kStoneAccent,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const Icon(Icons.chevron_right, color: kGold, size: 28),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

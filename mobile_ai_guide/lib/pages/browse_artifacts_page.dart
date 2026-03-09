@@ -46,7 +46,7 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
 
   void _refreshArtifacts() {
     setState(() {
-      _artifactsFuture = ArtifactService.getAllArtifacts();
+      _artifactsFuture = ArtifactService.getAllArtifacts(forceRefresh: true);
     });
   }
 
@@ -299,7 +299,9 @@ class _BrowseArtifactsPageState extends State<BrowseArtifactsPage>
                     return RefreshIndicator(
                       onRefresh: () async {
                         setState(() {
-                          _artifactsFuture = ArtifactService.getAllArtifacts();
+                          _artifactsFuture = ArtifactService.getAllArtifacts(
+                            forceRefresh: true,
+                          );
                         });
                         await _artifactsFuture;
                       },
