@@ -242,7 +242,11 @@ class LocalStorageService {
     );
     if (rows.isEmpty) return null;
     return rows
-        .map((r) => Tour.fromJson(jsonDecode(r['payload'] as String) as Map<String, dynamic>))
+        .map(
+          (r) => Tour.fromJson(
+            jsonDecode(r['payload'] as String) as Map<String, dynamic>,
+          ),
+        )
         .toList();
   }
 
@@ -269,7 +273,9 @@ class LocalStorageService {
       limit: 1,
     );
     if (rows.isEmpty) return null;
-    return Tour.fromJson(jsonDecode(rows.first['payload'] as String) as Map<String, dynamic>);
+    return Tour.fromJson(
+      jsonDecode(rows.first['payload'] as String) as Map<String, dynamic>,
+    );
   }
 
   Future<void> startTour(String tourId) async {
@@ -319,7 +325,11 @@ class LocalStorageService {
     }
   }
 
-  Future<void> setTourPointVisited(String tourId, String artifactId, bool visited) async {
+  Future<void> setTourPointVisited(
+    String tourId,
+    String artifactId,
+    bool visited,
+  ) async {
     final sessionId = await getActiveSessionId();
     if (sessionId == null || sessionId.isEmpty) return;
     final db = await _db;

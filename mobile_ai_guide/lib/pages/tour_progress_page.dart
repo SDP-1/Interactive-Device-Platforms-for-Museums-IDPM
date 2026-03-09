@@ -33,7 +33,9 @@ class _TourProgressPageState extends State<TourProgressPage> {
     // overlay persisted progress from local DB
     () async {
       try {
-        final saved = await LocalStorageService.instance.getVisitedIdsForTour(widget.tour.id);
+        final saved = await LocalStorageService.instance.getVisitedIdsForTour(
+          widget.tour.id,
+        );
         if (!mounted) return;
         setState(() {
           _visitedArtifactIds.addAll(saved);
@@ -56,7 +58,11 @@ class _TourProgressPageState extends State<TourProgressPage> {
       }
     });
     // persist change
-    LocalStorageService.instance.setTourPointVisited(widget.tour.id, point.artifactId, _isVisited(point));
+    LocalStorageService.instance.setTourPointVisited(
+      widget.tour.id,
+      point.artifactId,
+      _isVisited(point),
+    );
   }
 
   Future<void> _openArtifact(TourPoint point) async {
