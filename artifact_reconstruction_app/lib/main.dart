@@ -2049,6 +2049,30 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                   child: Image.network(
                     artifact.imageUrl!,
                     fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 280,
+                        color: AppTheme.stone200,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(
+                              color: AppTheme.primary,
+                              strokeWidth: 2,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading image…',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppTheme.stone600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                     errorBuilder: (_, __, ___) => Container(
                       color: AppTheme.stone200,
                       padding: const EdgeInsets.all(32),
