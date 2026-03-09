@@ -32,6 +32,8 @@ def main():
     print("   4. [Basii] Admin Server (Port 5002)")
     print("   5. [Basii] Admin Frontend (Port 5175)")
     print("   6. Unified Kiosk Server (Port 8000)")
+    print("   7. [Sound Narration] Backend (Port 5003)")
+    print("   8. [Sound Narration] Frontend (Port 3001)")
     print("="*80)
     print()
 
@@ -78,6 +80,23 @@ def main():
         "python -m http.server 8000",
         base_dir,
         "Kiosk Unified Server"
+    )
+
+    # SOUND NARRATION SYSTEM
+    sound_narration_dir = os.path.join(base_dir, "Sound Narration System")
+
+    # 7. Start Sound Narration Backend (port 5003 to avoid conflict with Basii on 5000)
+    run_command(
+        "set PORT=5003 && python app.py",
+        os.path.join(sound_narration_dir, "backend"),
+        "Sound Narration - Backend"
+    )
+
+    # 8. Start Sound Narration Frontend
+    run_command(
+        "npm run dev",
+        os.path.join(sound_narration_dir, "frontend"),
+        "Sound Narration - Frontend"
     )
 
     print("\n⏳ Waiting for servers to initialize...")

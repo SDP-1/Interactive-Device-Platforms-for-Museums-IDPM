@@ -18,8 +18,15 @@ import {
   ArrowLeft
 } from 'lucide-react'
 
+// Start on Ask screen when opened from kiosk (e.g. ?page=ask)
+function getInitialPage() {
+  if (typeof window === 'undefined') return 'home'
+  const params = new URLSearchParams(window.location.search)
+  return params.get('page') === 'ask' ? 'ask' : 'home'
+}
+
 function App() {
-  const [currentPage, setCurrentPage] = useState('home') // 'home', 'ask', 'answer'
+  const [currentPage, setCurrentPage] = useState(getInitialPage) // 'home', 'ask', 'answer'
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -160,13 +167,13 @@ function App() {
             <button className="text-[#D97706] hover:text-[#B45309] transition-colors">
               <Globe className="w-6 h-6" />
             </button>
-            <button 
-              onClick={handleGoHome}
-              className="bg-[#D97706] hover:bg-[#B45309] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            <a 
+              href="http://localhost:8000/kiosk_home.html"
+              className="bg-[#D97706] hover:bg-[#B45309] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors no-underline"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
-            </button>
+            </a>
           </div>
         </div>
       </header>
