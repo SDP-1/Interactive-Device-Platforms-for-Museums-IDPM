@@ -84,8 +84,22 @@ async def ask_persona(req: PersonaAskRequest):
     # ----------------------------
     # Classify question relevance
     # ----------------------------
-    # Reuse the same classifier flow used in artifact mode
-    persona_summary = f"{king_name_en or ''}. Reign: {reign_period_en or ''}. Capital: {capital_en or ''}."
+    # Compact, language-aware field picker
+    def _get_field(key: str) -> str:
+        return (
+            king.get(f"{key}_{language}")
+            or king.get(key)
+            or king.get(f"{key}_en")
+            or king.get(f"{key}_si")
+            or ""
+        )
+
+    p_name = _get_field("name") or ""
+    p_capital = _get_field("capital")
+    p_period = _get_field("period")
+    p_bio = _get_field("biography") or ""
+
+    persona_summary = f"{p_name}. Capital: {p_capital}. Reign: {p_period}. Biography: {p_bio}"
     classification = is_related(req.question, persona_summary)
 
     # ----------------------------

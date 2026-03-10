@@ -52,11 +52,13 @@ def retrieve_context(artifact_id: str, question: str, language: str, top_k: int 
     return " ".join([point.payload.get("text", "") for point in results.points])
 
 
-def artifact_exists(artifact_id: str, language: str = None) -> bool:
-    """Check whether any points exist for the given artifact_id (optionally filtered by language).
+# <Summary>
+#     Check whether any points exist for the given artifact_id (optionally filtered by language).
 
-    Uses Qdrant's count API when available; falls back to a safe False on errors.
-    """
+#     Uses Qdrant's count API when available; falls back to a safe False on errors.
+# </Summary>
+def artifact_exists(artifact_id: str, language: str = None) -> bool:
+    
     try:
         # Build filter conditions
         artifact_id = (artifact_id or "").strip()

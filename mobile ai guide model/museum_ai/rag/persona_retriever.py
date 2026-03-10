@@ -16,19 +16,20 @@ qdrant = QdrantClient(
 )
 
 
-def retrieve_persona_context(king_id: str, question: str, language: str, top_k: int = 2):
-    """
-    Retrieve persona context for a specific historical figure.
+# <Summary>
+#     Retrieve persona context for a specific historical figure.
     
-    Args:
-        king_id: The unique identifier for the king/persona
-        question: The user's question
-        language: "en" or "si"
-        top_k: Number of chunks to retrieve
+#     Args:
+#         king_id: The unique identifier for the king/persona
+#         question: The user's question
+#         language: "en" or "si"
+#         top_k: Number of chunks to retrieve
         
-    Returns:
-        Context string containing persona information
-    """
+#     Returns:
+#         Context string containing persona information
+# </Summary>
+def retrieve_persona_context(king_id: str, question: str, language: str, top_k: int = 2):
+    
     query_vector = embed_text(question)
 
     try:
@@ -55,19 +56,19 @@ def retrieve_persona_context(king_id: str, question: str, language: str, top_k: 
     # Combine all retrieved chunks
     return " ".join([point.payload.get("text", "") for point in results.points])
 
-
-def get_persona_info(king_id: str, language: str = "en"):
-    """
-    Get basic persona information without semantic search.
-    Used for displaying persona details when selected.
+# <Summary>
+#     Get basic persona information without semantic search.
+#     Used for displaying persona details when selected.
     
-    Args:
-        king_id: The unique identifier for the king/persona
-        language: "en" or "si"
+#     Args:
+#         king_id: The unique identifier for the king/persona
+#         language: "en" or "si"
         
-    Returns:
-        Dictionary with persona information
-    """
+#     Returns:
+#         Dictionary with persona information
+# </Summary>
+def get_persona_info(king_id: str, language: str = "en"):
+    
     try:
         # Search for any point matching the king_id and language
         results = qdrant.scroll(
@@ -99,16 +100,18 @@ def get_persona_info(king_id: str, language: str = "en"):
     return None
 
 
-def list_available_personas(language: str = "en"):
-    """
-    List all available historical personas.
+# <Summary>
+#     List all available historical personas.
     
-    Args:
-        language: "en" or "si"
+#     Args:
+#         language: "en" or "si"
         
-    Returns:
-        List of dictionaries with persona information
-    """
+#     Returns:
+#         List of dictionaries with persona information
+# </Summary>
+
+def list_available_personas(language: str = "en"):
+    
     try:
         # Scroll through all personas for the specified language
         results = qdrant.scroll(
