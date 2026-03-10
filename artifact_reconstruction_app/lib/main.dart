@@ -44,7 +44,7 @@ class ArtifactReconstructionApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Artifact Reconstruction',
+      title: '3D Museum',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const RoleSelectionScreen(),
