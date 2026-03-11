@@ -269,6 +269,11 @@ class AIExplainer:
                 
                 if explanation and len(explanation.strip()) > 50:  # Valid explanation
                     print(f"✅ SUCCESS: Generated {len(explanation)} characters using T5 model")
+                    # Enrich with OpenAI for this specific artifact only
+                    if self.use_openai and self.client:
+                        print("✨ Enriching explanation with OpenAI for this artifact...")
+                        explanation = self._enhance_t5_with_openai(artifact, explanation)
+                        print(f"✅ Hybrid explanation ready ({len(explanation)} chars)")
                     print(f"Preview: {explanation[:100]}...")
                     return explanation
                 else:
@@ -387,8 +392,59 @@ class AIExplainer:
             print(f"Trained model error: {e}, falling back to template")
             return self._compare_with_template(artifact1, artifact2)
     
+    def _enhance_t5_with_openai(self, artifact: Dict, t5_explanation: str) -> str:
+        """
+        Enrich a T5-generated explanation with targeted OpenAI details
+        scoped strictly to the selected artifact. Keeps the same section
+        structure and plain-text format.
+        """
+        prompt = f"""Below is an auto-generated museum explanation for the artifact \"{artifact['name']}\" \
+({artifact['origin']}, {artifact['era']}).
+
+Artifact details:
+- Category: {artifact['category']}
+- Materials: {artifact['materials']}
+- Function: {artifact['function']}
+- Symbolism: {artifact['symbolism']}
+- Special Features: {artifact['notes']}
+
+Current explanation:
+{t5_explanation}
+
+Enhance the explanation above following these rules strictly:
+1. Expand the "Overview" section with 2-3 additional sentences giving more historical background \
+and cultural context specific to \"{artifact['name']}\" — such as its place in the kingdom or society, \
+who commissioned or used it, and its broader historical significance.
+2. Expand the "Function and Use" section with 2-3 additional sentences describing in more detail \
+how this specific artifact was actually used, any rituals or ceremonies it was part of, \
+and its role beyond its basic function.
+3. For all other sections, you may weave in only one specific factual detail relevant to \"{artifact['name']}\".
+4. Do NOT introduce any new section headings. Keep every existing section heading exactly as written.
+5. Return the complete enhanced explanation in plain text with no markdown."""
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": (
+                        "You are a senior museum curator. Your task is to enrich "
+                        "artifact explanations with specific, accurate details about "
+                        "the named artifact only. Use plain text, no markdown. "
+                        "Preserve the existing section structure exactly."
+                    )},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=800,
+                temperature=0.4
+            )
+            text = response.choices[0].message.content
+            return self._remove_markdown(text)
+        except Exception as e:
+            print(f"⚠ OpenAI enrichment failed: {e} — returning T5 explanation")
+            return t5_explanation
+
     def _explain_with_openai(self, artifact: Dict) -> str:
-        """Use OpenAI API for explanation"""
+        """Use OpenAI API for explanation (pure-OpenAI fallback when T5 is unavailable)"""
         prompt = f"""Provide a detailed, engaging explanation of this artifact in English:
 
 Name: {artifact['name']}

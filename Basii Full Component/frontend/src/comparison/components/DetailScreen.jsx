@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   MapPin, Clock, Layers, Ruler, Sparkles, ArrowLeft,
   BookOpen, Zap, Scale, RefreshCw, AlertCircle, Expand
@@ -6,6 +6,7 @@ import {
 import SimilarArtifactCard from './SimilarArtifactCard';
 import HotspotImage from './HotspotImage';
 import EnlargedImageViewer from './EnlargedImageViewer';
+import { fetchExplanationStatus } from '../services/api';
 
 const API_BASE = '/api';
 
@@ -22,6 +23,39 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [similarError, setSimilarError] = useState(null);
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  const _pollRef = useRef(null);
+
+  // Poll explanation verification status — auto-show when curator approves
+  useEffect(() => {
+    if (!artifact?.id) return;
+
+    const pollStatus = async () => {
+      const status = await fetchExplanationStatus(artifact.id);
+      if (status?.curator_verified && status?.explanation) {
+        setAiExplanation(status.explanation);
+        setCuratorVerified(true);
+        setVerifiedBy(status.verified_by || 'curator');
+        setShowAiAnalysis(true);
+        setIsLoadingAnalysis(false);
+        // Stop polling — content is now live
+        if (_pollRef.current) {
+          clearInterval(_pollRef.current);
+          _pollRef.current = null;
+        }
+      }
+    };
+
+    // Check immediately on mount, then every 10 s
+    pollStatus();
+    _pollRef.current = setInterval(pollStatus, 10000);
+
+    return () => {
+      if (_pollRef.current) {
+        clearInterval(_pollRef.current);
+        _pollRef.current = null;
+      }
+    };
+  }, [artifact?.id]);
 
   // Load similar artifacts from API
   useEffect(() => {
