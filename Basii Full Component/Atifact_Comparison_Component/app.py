@@ -68,6 +68,18 @@ image_mapping = load_image_mapping()
 
 # Load artifact data
 def load_artifacts():
+    # Use JSON metadata as the source of truth for the complete 56-artifact dataset
+    metadata_path = 'trained_model/artifact_metadata.json'
+    if os.path.exists(metadata_path):
+        try:
+            with open(metadata_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data['artifacts']
+        except Exception as e:
+            print(f"⚠ JSON Error: {e}")
+    
+    # Fallback to Excel if JSON is missing or broken
+    print("⚠ Falling back to Excel (limited dataset)")
     df = pd.read_excel('Dataset 2 component 2 - Comparison.xlsx')
     artifacts = []
     for _, row in df.iterrows():
@@ -232,6 +244,16 @@ def compare_artifacts():
         return jsonify({'error': 'One or both artifacts not found'}), 404
     
     comparison = ai_explainer.compare_artifacts(artifact1, artifact2)
+    structured_data = comparison_engine.compare_artifacts(artifact1_id, artifact2_id)
+    
+    if isinstance(comparison, dict):
+        comparison.update(structured_data or {})
+    else:
+        comparison = {
+            'explanation': comparison,
+            **(structured_data or {})
+        }
+        
     return jsonify(comparison)
 
 @app.route('/api/compare/visual', methods=['POST'])

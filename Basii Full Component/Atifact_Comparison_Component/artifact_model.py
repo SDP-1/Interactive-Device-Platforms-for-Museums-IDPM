@@ -333,7 +333,7 @@ class ArtifactComparisonModel:
             a1.get('materials', ''), a2.get('materials', '')
         )
         if common_materials:
-            similarities.append(f"Share common materials: {', '.join(common_materials)}")
+            similarities.append(f"Share common materials: {', '.join([m.title() for m in common_materials])}")
         
         # Functional similarity
         if score >= 0.5:
@@ -348,7 +348,19 @@ class ArtifactComparisonModel:
             a1.get('symbolism', ''), a2.get('symbolism', '')
         )
         if symbolic_themes:
-            similarities.append(f"Share symbolic themes: {', '.join(symbolic_themes)}")
+            similarities.append(f"Share symbolic themes: {', '.join([t.title() for t in symbolic_themes])}")
+            
+        # [NEW] Craftsmanship similarity
+        common_techniques = self._find_common_techniques(
+            a1.get('notes', '') + a1.get('materials', ''), 
+            a2.get('notes', '') + a2.get('materials', '')
+        )
+        if common_techniques:
+            similarities.append(f"Shared craftsmanship: Both utilize {', '.join(common_techniques)} techniques")
+
+        # [NEW] Collection similarity
+        if a1.get('location') == a2.get('location') and a1.get('location') != 'nan':
+            similarities.append(f"Part of the same collection: {a1['location']}")
         
         return similarities if similarities else ["These artifacts represent distinct cultural traditions"]
     
@@ -356,27 +368,42 @@ class ArtifactComparisonModel:
         """Extract meaningful differences between two artifacts"""
         differences = []
         
-        # Origin difference
+        # Origin difference - Only if not already flagged as 'Related' Asian sphere etc.
         if a1.get('origin') != a2.get('origin'):
-            differences.append(f"Different cultural origins: {a1.get('origin', 'Unknown')} vs {a2.get('origin', 'Unknown')}")
+            if not self._origins_related(a1.get('origin', ''), a2.get('origin', '')):
+                differences.append(f"Different cultural origins: {a1.get('origin', 'Unknown')} vs {a2.get('origin', 'Unknown')}")
         
-        # Category difference
+        # Category difference - Only if not already flagged as 'Related' groups (e.g. both are drums)
         if a1.get('category') != a2.get('category'):
-            differences.append(f"Different artifact types: {a1.get('category', 'Unknown')} vs {a2.get('category', 'Unknown')}")
+            if not self._categories_related(a1.get('category', ''), a2.get('category', '')):
+                differences.append(f"Different artifact types: {a1.get('category', 'Unknown')} vs {a2.get('category', 'Unknown')}")
         
         # Era difference
         if a1.get('era') != a2.get('era'):
             if not self._eras_overlap(a1.get('era', ''), a2.get('era', '')):
                 differences.append(f"Different historical periods: {a1.get('era', 'Unknown')} vs {a2.get('era', 'Unknown')}")
         
-        # Material differences
-        unique_materials = self._find_unique_materials(
-            a1.get('materials', ''), a2.get('materials', '')
-        )
-        if unique_materials:
-            differences.append(f"Different primary materials used in construction")
+        # Material differences - intelligent diffing with artifact names
+        m1 = a1.get('materials', '').lower()
+        m2 = a2.get('materials', '').lower()
+        # Expanded keyword list for better matching
+        mat_keywords = ['gold', 'silver', 'ivory', 'gemstone', 'leather', 'silk', 'brass', 'wood', 'steel', 'bronze', 'copper', 'clay', 'ceramic', 'lacquer', 'jade', 'stone']
         
-        # Scale/dimension differences
+        unique_to_1 = [m for m in mat_keywords if m in m1 and m not in m2]
+        unique_to_2 = [m for m in mat_keywords if m in m2 and m not in m1]
+        
+        if unique_to_1 or unique_to_2:
+            mat1_list = ", ".join(unique_to_1).title() if unique_to_1 else "None"
+            mat2_list = ", ".join(unique_to_2).title() if unique_to_2 else "None"
+            differences.append(f"Different primary materials used in construction: **{a1['name']}** uses {mat1_list} vs **{a2['name']}** uses {mat2_list}")
+        
+        # [NEW] Unique Symbolism - Concise first sentence only
+        if a1.get('symbolism') != a2.get('symbolism'):
+            sym1 = a1['symbolism'].split('.')[0] + '.'
+            sym2 = a2['symbolism'].split('.')[0] + '.'
+            differences.append(f"Distinct symbolic meanings: **{a1['name']}** ({sym1}) vs **{a2['name']}** ({sym2})")
+
+        # [NEW] Scale difference
         if a1.get('dimensions') and a2.get('dimensions'):
             if a1['dimensions'] != a2['dimensions']:
                 differences.append(f"Different scales: {a1['dimensions']} vs {a2['dimensions']}")
@@ -565,6 +592,16 @@ class ArtifactComparisonModel:
                 common.append(theme)
         
         return common
+
+    def _find_common_techniques(self, text1: str, text2: str) -> List[str]:
+        """Find shared craftsmanship techniques"""
+        techniques = ['carved', 'cast', 'forged', 'woven', 'embroidered', 'painted', 
+                     'sculpted', 'lacquered', 'enameled', 'polished', 'engraved']
+        
+        t1_lower = text1.lower()
+        t2_lower = text2.lower()
+        
+        return [t for t in techniques if t in t1_lower and t in t2_lower]
 
 
 # Training script - run this to train the model
