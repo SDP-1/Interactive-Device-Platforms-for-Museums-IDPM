@@ -210,52 +210,46 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
 
         {/* Right Column - Metadata */}
         <div className="space-y-5 sm:space-y-6 lg:space-y-8">
-          {/* Title and Basic Info */}
+          {/* Title Header */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-stone-200 p-5 sm:p-6 md:p-8">
-            <div className="mb-4 sm:mb-5">
-              <span className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 bg-amber-50 text-amber-800 
-                             rounded-full text-sm sm:text-base font-sans mb-3 sm:mb-4 font-medium">
-                {artifact.category}
-              </span>
-              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-stone-800 mb-2 sm:mb-3">
-                {artifact.name}
-              </h1>
-              <p className="text-base sm:text-lg text-stone-600 font-sans leading-relaxed">
-                {artifact.description}
-              </p>
-            </div>
-
-            {/* Metadata Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 pt-4 sm:pt-5 border-t border-stone-100">
-              <MetadataItem
-                icon={MapPin}
-                label="Origin"
-                value={artifact.origin}
-              />
-              <MetadataItem
-                icon={Clock}
-                label="Era"
-                value={artifact.era}
-              />
-            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-stone-800 mb-2 sm:mb-3">
+              {artifact.name}
+            </h1>
           </div>
 
-          {/* Detailed Information */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-stone-200 p-5 sm:p-6 md:p-8">
-            <h2 className="font-serif text-xl sm:text-2xl font-semibold text-stone-800 mb-4 sm:mb-5">
-              Detailed Information
-            </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
+            {/* 🏺 Physical Attributes */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-stone-200 p-5 sm:p-6 flex flex-col col-span-full sm:col-span-1 xl:col-span-1">
+              <h2 className="font-serif text-xl font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <Layers className="text-amber-600 sm:w-6 sm:h-6" /> Physical Attributes
+              </h2>
+              <div className="space-y-4 flex-grow">
+                <MetadataItem icon={Layers} label="Category" value={artifact.category} />
+                <MetadataItem icon={Clock} label="Era" value={artifact.era} />
+                <DetailItem label="Primary Materials" value={artifact.details.material} />
+              </div>
+            </div>
 
-            <dl className="space-y-4 sm:space-y-5">
-              <DetailItem
-                label="Function & Use"
-                value={artifact.details.function}
-              />
-              <DetailItem
-                label="Symbolism & Meaning"
-                value={artifact.details.symbolism}
-              />
-            </dl>
+            {/* 🌍 Cultural Context */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-stone-200 p-5 sm:p-6 flex flex-col col-span-full sm:col-span-1 xl:col-span-1">
+              <h2 className="font-serif text-xl font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <MapPin className="text-amber-600 sm:w-6 sm:h-6" /> Cultural Context
+              </h2>
+              <div className="space-y-4 flex-grow">
+                <MetadataItem icon={MapPin} label="Origin" value={artifact.origin} />
+                <DetailItem label="Symbolism & Meaning" value={artifact.details.symbolism} />
+              </div>
+            </div>
+
+            {/* ⚒️ Usage Context */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-stone-200 p-5 sm:p-6 flex flex-col col-span-full">
+              <h2 className="font-serif text-xl font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <BookOpen className="text-amber-600 sm:w-6 sm:h-6" /> Usage Context
+              </h2>
+              <div className="space-y-4 flex-grow">
+                <DetailItem label="Function & Use" value={artifact.details.function} />
+              </div>
+            </div>
           </div>
 
           {/* AI Analysis Section */}
@@ -324,68 +318,87 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
             )}
 
             {showAiAnalysis && !isLoadingAnalysis && !aiError && (
-              <div className="animate-fadeIn">
-                <div className="bg-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <BookOpen size={22} className="text-slate-600 mt-1 flex-shrink-0 sm:w-7 sm:h-7" />
-                    <div className="text-lg sm:text-xl text-stone-700 font-sans leading-relaxed">
-                      {aiExplanation.split(/(?=(?:Overview|Materials and Craftsmanship|Function and Use|Cultural Significance|Special Features))/g).map((section, index) => {
-                        const lines = section.trim().split('\n');
-                        const title = lines[0];
-                        const content = lines.slice(1).join('\n').trim() || lines[0]; // Fallback if no newline
+              <div className="animate-fadeIn space-y-6 sm:space-y-8">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                  {(() => {
+                    const sections = aiExplanation.split(/(?=(?:Overview|Materials and Craftsmanship|Function and Use|Cultural Significance|Special Features))/g);
+                    
+                    return sections.map((section, index) => {
+                      const trimmed = section.trim();
+                      if (!trimmed) return null;
 
-                        // Check if line starts with a known header
-                        const isHeader = ['Overview', 'Materials and Craftsmanship', 'Function and Use', 'Cultural Significance', 'Special Features'].some(h => title.startsWith(h));
+                      let title = "Analysis";
+                      let content = trimmed;
+                      let Icon = BookOpen;
+                      let bgColor = "bg-slate-50";
+                      let textColor = "text-slate-800";
+                      let iconColor = "text-slate-600";
 
-                        if (isHeader) {
-                          // Extract title and content more robustly
-                          let headerText = title;
-                          let bodyText = content;
+                      const headerMap = {
+                        'Overview': { label: 'Overview', icon: BookOpen, bg: 'bg-indigo-50', text: 'text-indigo-900', iconC: 'text-indigo-600' },
+                        'Materials and Craftsmanship': { label: 'Craftsmanship', icon: Layers, bg: 'bg-amber-50', text: 'text-amber-900', iconC: 'text-amber-600' },
+                        'Function and Use': { label: 'Function & Use', icon: Zap, bg: 'bg-emerald-50', text: 'text-emerald-900', iconC: 'text-emerald-600' },
+                        'Cultural Significance': { label: 'Significance', icon: Sparkles, bg: 'bg-purple-50', text: 'text-purple-900', iconC: 'text-purple-600' },
+                        'Special Features': { label: 'Special Features', icon: Sparkles, bg: 'bg-rose-50', text: 'text-rose-900', iconC: 'text-rose-600' }
+                      };
 
-                          // If content is empty (was on same line), split it
-                          if (content === title) {
-                            ['Overview', 'Materials and Craftsmanship', 'Function and Use', 'Cultural Significance', 'Special Features'].forEach(h => {
-                              if (title.startsWith(h)) {
-                                headerText = h;
-                                bodyText = title.substring(h.length).trim();
-                              }
-                            });
-                          }
-
-                          return (
-                            <div key={index} className="mb-4 last:mb-0">
-                              <h4 className="font-bold text-stone-800 text-base sm:text-lg uppercase tracking-wide mb-1">{headerText}</h4>
-                              <p className="text-lg sm:text-xl text-stone-700">{bodyText}</p>
-                            </div>
-                          );
-                        } else {
-                          // Intro or unstructured text
-                          return <p key={index} className="mb-4">{section}</p>;
+                      for (const [key, config] of Object.entries(headerMap)) {
+                        if (trimmed.startsWith(key)) {
+                          title = config.label;
+                          content = trimmed.substring(key.length).trim();
+                          if (content.startsWith(':')) content = content.substring(1).trim();
+                          Icon = config.icon;
+                          bgColor = config.bg;
+                          textColor = config.text;
+                          iconColor = config.iconC;
+                          break;
                         }
-                      })}
-                    </div>
-                  </div>
+                      }
+
+                      return (
+                        <div key={index} className="bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md transition-all overflow-hidden group">
+                          <div className={`${bgColor} px-4 py-3 sm:px-6 sm:py-4 border-b border-black/5 flex items-center gap-3`}>
+                            <Icon size={20} className={`${iconColor} group-hover:scale-110 transition-transform`} />
+                            <h4 className={`font-sans text-sm sm:text-base font-bold uppercase tracking-wider ${textColor}`}>
+                              {title}
+                            </h4>
+                          </div>
+                          <div className="p-5 sm:p-6 md:p-8">
+                            <p className="text-lg sm:text-xl text-stone-700 leading-relaxed font-sans">
+                              {content}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
                 
                 {curatorVerified && verifiedBy && (
-                  <div className="bg-green-50 border border-green-300 rounded-lg p-4 sm:p-5 mt-4 sm:mt-5 flex items-start gap-3">
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div className="flex-1">
-                      <p className="text-sm sm:text-base font-semibold text-green-900">
-                        ✓ Verified by Curator
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-5 sm:p-6 flex items-start gap-4 shadow-sm">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <CheckCircle size={24} className="text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-green-900">
+                        Verified by Museum Curator
                       </p>
-                      <p className="text-xs sm:text-sm text-green-700 mt-1">
-                        Approved by <span className="font-semibold">{verifiedBy}</span>
+                      <p className="text-base text-green-700 mt-1">
+                        Content reviewed and approved by <span className="font-semibold">{verifiedBy}</span>
                       </p>
                     </div>
                   </div>
                 )}
                 
-                <p className="text-xs sm:text-sm text-stone-400 font-sans mt-3 sm:mt-4 text-right">
-                  {curatorVerified ? 'Curator-verified AI analysis' : 'Generated by AI • Academic analysis based on available data'}
-                </p>
+                <div className="pt-6 border-t border-stone-100 flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-stone-400 font-sans italic">
+                    {curatorVerified ? 'Verified Academic Analysis' : 'AI-Generated Preliminary Analysis'}
+                  </span>
+                  <div className="flex items-center gap-2 text-amber-600/40">
+                    <Sparkles size={14} />
+                    <span className="text-[10px] uppercase font-bold tracking-tighter">Basii Intelligence</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
