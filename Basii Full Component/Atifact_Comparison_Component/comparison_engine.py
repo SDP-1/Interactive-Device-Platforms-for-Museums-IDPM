@@ -135,6 +135,7 @@ class ComparisonEngine:
         'ritual_symbol':  ['kalasha', 'cornucopia', 'mandala', 'votive', 'sculpture', 'symbol'],
         'ritual_lamp':    ['deepam', 'diya', 'puja'],
         'social_tool':    ['betel', 'cutter', 'nut', 'buyo'],  # betel cutters are unique
+        'clothing':       ['garment', 'attire', 'robe', 'saree', 'kimono', 'jacket', 'skirt', 'sherwani', 'turban', 'imperial'],
     }
 
     def _category_similarity(self, idx1: int, idx2: int) -> float:

@@ -18,10 +18,23 @@ def retrain_from_json():
 
     print(f"📦 Found {len(artifacts)} artifacts in metadata.")
 
+    # 1a. Load latest image mappings
+    image_mapping = {}
+    if os.path.exists('artifact_images.json'):
+        with open('artifact_images.json', 'r', encoding='utf-8') as f:
+            image_mapping = json.load(f)
+        print(f"🖼️ Found {len(image_mapping)} image mappings.")
+
+    # Update artifacts with images from mapping
+    for a in artifacts:
+        a_id = a.get('id')
+        if a_id in image_mapping:
+            a['image'] = image_mapping[a_id]
+
     # 2. Initialize the model
     model = ArtifactComparisonModel()
 
-    # 3. Force a train using the JSON data
+    # 3. Force a train using the synced data
     print("🧠 Generating new AI embeddings (this may take a minute)...")
     model.train(artifacts)
 
