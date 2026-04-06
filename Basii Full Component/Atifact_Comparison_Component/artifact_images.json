@@ -51,7 +51,10 @@
   "A026": "images/A026_MughalArt.jpg",
   "C022": "images/C022_TangMural.jpg",
   "A029": "images/A029_KandyanRobes.jpg",
-  "C023": "images/C023_Kimono.jpg",
+  "C023": [
+    "images/C023_Kimono.jpg",
+    "images/C023_Kimono_2.jpg"
+  ],
   "A030": "images/A030_Saree.jpg",
   "C024": "images/C024_ImperialRobe.jpg",
   "A031": "images/A031_RajputAttire.jpg"

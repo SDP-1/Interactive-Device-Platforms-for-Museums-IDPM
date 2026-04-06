@@ -793,7 +793,10 @@
       "location": "Tokyo National Museum; Kyoto Costume Museum",
       "notes": "Distinctive features include elaborate yuzen dyeing, gold leaf applications, and family crests (kamon). Construction requires highly specialized tailoring; many imperial robes are registered national treasures.",
       "is_sri_lankan": false,
-      "image": "images/C023_Kimono.jpg"
+      "image": [
+        "images/C023_Kimono.jpg",
+        "images/C023_Kimono_2.jpg"
+      ]
     },
     {
       "id": "A030",
