@@ -358,7 +358,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
           <div className="bg-stone-100 p-6 md:p-8 lg:p-10 h-56 md:h-80 lg:h-96 xl:h-[560px]">
             <HotspotImage
               artifact={artifactA}
-              image={artifactA.image}
+              image={Array.isArray(artifactA.image) ? artifactA.image[0] : artifactA.image}
               alt={artifactA.name}
               activeHotspot={activeHotspot}
               onHotspotChange={setActiveHotspot}
@@ -384,7 +384,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
           <div className="bg-stone-100 p-6 md:p-8 lg:p-10 h-56 md:h-80 lg:h-96 xl:h-[560px]">
             <HotspotImage
               artifact={artifactB}
-              image={artifactB.image}
+              image={Array.isArray(artifactB.image) ? artifactB.image[0] : artifactB.image}
               alt={artifactB.name}
               activeHotspot={activeHotspot}
               onHotspotChange={setActiveHotspot}

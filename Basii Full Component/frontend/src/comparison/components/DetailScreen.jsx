@@ -191,14 +191,13 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                 <button
                   key={idx}
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`relative flex-shrink-0 w-24 sm:w-32 aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                    activeImageIndex === idx 
-                      ? 'border-orange-500 ring-2 ring-orange-500/20 scale-105 z-10' 
+                  className={`relative flex-shrink-0 w-24 sm:w-32 aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all duration-300 ${activeImageIndex === idx
+                      ? 'border-orange-500 ring-2 ring-orange-500/20 scale-105 z-10'
                       : 'border-stone-200 hover:border-stone-400 opacity-70 hover:opacity-100'
-                  }`}
+                    }`}
                 >
-                  <img 
-                    src={img} 
+                  <img
+                    src={img}
                     alt={`${artifact.name} view ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -360,7 +359,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                 <div className="grid grid-cols-1 gap-4 sm:gap-6">
                   {(() => {
                     const sections = aiExplanation.split(/(?=(?:Overview|Materials and Craftsmanship|Function and Use|Cultural Significance|Special Features))/g);
-                    
+
                     return sections.map((section, index) => {
                       const trimmed = section.trim();
                       if (!trimmed) return null;
@@ -411,7 +410,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                     });
                   })()}
                 </div>
-                
+
                 {curatorVerified && verifiedBy && (
                   <div className="bg-green-50 border border-green-200 rounded-2xl p-5 sm:p-6 flex items-start gap-4 shadow-sm">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -427,7 +426,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="pt-6 border-t border-stone-100 flex justify-between items-center">
                   <span className="text-xs sm:text-sm text-stone-400 font-sans italic">
                     {curatorVerified ? 'Verified Academic Analysis' : 'AI-Generated Preliminary Analysis'}

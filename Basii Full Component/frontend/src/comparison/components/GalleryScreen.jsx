@@ -27,7 +27,7 @@ const GalleryScreen = ({ onSelectArtifact }) => {
       // Transform API data to match expected format
       const transformedData = data.map(artifact => ({
         ...artifact,
-        image: artifact.image ? `/${artifact.image}` : null,
+        image: artifact.image ? (Array.isArray(artifact.image) ? artifact.image.map(img => `/${img}`) : `/${artifact.image}`) : null,
         description: artifact.function || artifact.notes || '',
         details: {
           material: artifact.materials || 'Unknown',
