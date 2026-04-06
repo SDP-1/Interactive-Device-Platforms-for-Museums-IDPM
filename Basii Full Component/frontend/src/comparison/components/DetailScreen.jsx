@@ -23,6 +23,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [similarError, setSimilarError] = useState(null);
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const _pollRef = useRef(null);
 
   // Poll explanation verification status — auto-show when curator approves
@@ -78,7 +79,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
       // Transform API data
       const transformedData = data.map(a => ({
         ...a,
-        image: a.image ? `/${a.image}` : null,
+        image: a.image ? (Array.isArray(a.image) ? a.image.map(img => `/${img}`) : `/${a.image}`) : null,
         similarityScore: Math.round((a.similarity_score ?? 0) * 100),
         description: a.function || a.notes || '',
         details: {
@@ -107,6 +108,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
     setAiError(null);
     setCuratorVerified(false);
     setVerifiedBy(null);
+    setActiveImageIndex(0);
   }, [artifact?.id]);
 
   // Handle AI analysis generation - fetch from API
@@ -147,6 +149,15 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
     );
   }
 
+  // Get current image from array or string
+  const getDisplayImage = (img) => {
+    if (Array.isArray(img)) return img[activeImageIndex] || img[0];
+    return img;
+  };
+
+  const displayImage = getDisplayImage(artifact.image);
+  const hasMultipleImages = Array.isArray(artifact.image) && artifact.image.length > 1;
+
   return (
     <div className="animate-fadeIn">
       {/* Back Button */}
@@ -167,10 +178,37 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
           <div className="aspect-[4/3]">
             <HotspotImage
               artifact={artifact}
-              image={artifact.image}
+              image={displayImage}
               alt={artifact.name}
+              showHotspots={activeImageIndex === 0}
             />
           </div>
+
+          {/* Thumbnail Switcher - Only if multiple images exist */}
+          {hasMultipleImages && (
+            <div className="flex gap-4 p-2 overflow-x-auto pb-4 scrollbar-hide">
+              {artifact.image.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImageIndex(idx)}
+                  className={`relative flex-shrink-0 w-24 sm:w-32 aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                    activeImageIndex === idx 
+                      ? 'border-orange-500 ring-2 ring-orange-500/20 scale-105 z-10' 
+                      : 'border-stone-200 hover:border-stone-400 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <img 
+                    src={img} 
+                    alt={`${artifact.name} view ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {activeImageIndex === idx && (
+                    <div className="absolute inset-0 bg-orange-500/10 pointer-events-none" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* View Enlarged Image Button */}
           <button
@@ -466,7 +504,7 @@ const DetailScreen = ({ artifact, onBack, onCompare }) => {
       {/* Enlarged Image Viewer Modal */}
       {showEnlargedImage && (
         <EnlargedImageViewer
-          image={artifact.image}
+          image={displayImage}
           alt={artifact.name}
           artifact={artifact}
           onClose={() => setShowEnlargedImage(false)}
