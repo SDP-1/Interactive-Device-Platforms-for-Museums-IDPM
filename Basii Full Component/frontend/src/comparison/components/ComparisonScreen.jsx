@@ -319,8 +319,51 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
               Comparative Analysis
             </h1>
           </div>
-          {/* Similarity Score Badge */}
+          {/* Premium Similarity Score Badge - Large Version */}
+          {apiComparison?.semantic_score !== undefined && (
+            <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-stone-200/60 shadow-xl shadow-stone-200/30 self-start sm:self-auto transition-all hover:scale-105 active:scale-95 group cursor-default">
+              <div className="relative flex items-center justify-center">
+                <div className={`absolute inset-0 rounded-full blur-lg opacity-50 animate-pulse ${
+                  apiComparison.semantic_score >= 80 ? 'bg-emerald-400' :
+                  apiComparison.semantic_score >= 50 ? 'bg-amber-400' :
+                  'bg-rose-400'
+                }`} />
+                <div className={`w-4 h-4 rounded-full relative z-10 ${
+                  apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
+                  apiComparison.semantic_score >= 50 ? 'bg-amber-500' :
+                  'bg-rose-500'
+                }`} />
+              </div>
+              
+              <div className="flex flex-col">
+                <span className="text-xs font-black font-sans uppercase tracking-[0.2em] text-stone-900 leading-none mb-1.5">
+                  Semantic Match
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className={`text-3xl md:text-4xl font-black font-sans leading-none tracking-tighter ${
+                    apiComparison.semantic_score >= 80 ? 'bg-gradient-to-br from-emerald-600 to-teal-700 bg-clip-text text-transparent' :
+                    apiComparison.semantic_score >= 50 ? 'bg-gradient-to-br from-amber-600 to-orange-700 bg-clip-text text-transparent' :
+                    'bg-gradient-to-br from-rose-600 to-red-700 bg-clip-text text-transparent'
+                  }`}>
+                    {apiComparison.semantic_score}
+                  </span>
+                  <span className="text-xl font-bold text-stone-400 font-sans">%</span>
+                </div>
+              </div>
 
+              {/* Enhanced progress bar */}
+              <div className="w-20 h-2.5 bg-stone-100 rounded-full overflow-hidden ml-2 hidden lg:block">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(0,0,0,0.1)] ${
+                    apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
+                    apiComparison.semantic_score >= 50 ? 'bg-amber-500' :
+                    'bg-rose-500'
+                  }`}
+                  style={{ width: `${apiComparison.semantic_score}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
         <p className="text-xs sm:text-sm text-stone-500 font-sans">
           {apiComparison?.source === 'trained_model'

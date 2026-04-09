@@ -246,14 +246,30 @@ def compare_artifacts():
     comparison = ai_explainer.compare_artifacts(artifact1, artifact2)
     structured_data = comparison_engine.compare_artifacts(artifact1_id, artifact2_id)
     
-    if isinstance(comparison, dict):
-        comparison.update(structured_data or {})
-    else:
-        comparison = {
-            'explanation': comparison,
-            **(structured_data or {})
-        }
+    if not isinstance(comparison, dict):
+        comparison = {'explanation': comparison}
         
+    # Get the AI score if it exists
+    ai_score = comparison.get('similarity_score')
+    
+    # Merge structured points, but don't let it overwrite the AI score
+    if structured_data:
+        for key, value in structured_data.items():
+            if key == 'similarity_score' and ai_score is not None:
+                continue # Keep the AI score
+            comparison[key] = value
+            
+    # Explicitly calculate/ensure semantic_score is available (0-100 scale)
+    if ai_score is not None:
+        comparison['semantic_score'] = ai_score
+    elif 'similarity_score' in comparison:
+        # Fallback: convert decimal to percentage if needed
+        score = comparison['similarity_score']
+        if score <= 1.0:
+            comparison['semantic_score'] = round(score * 100, 1)
+        else:
+            comparison['semantic_score'] = score
+            
     return jsonify(comparison)
 
 @app.route('/api/compare/visual', methods=['POST'])
