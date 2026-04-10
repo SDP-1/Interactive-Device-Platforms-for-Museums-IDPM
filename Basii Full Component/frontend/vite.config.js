@@ -18,10 +18,6 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
-      '/images': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
 
       // ── Scenario Generation backend (port 5001) ──────────────────────
       '/api/scenarios': {
