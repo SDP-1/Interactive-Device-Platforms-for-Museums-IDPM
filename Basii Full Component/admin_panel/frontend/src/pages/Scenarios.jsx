@@ -4,16 +4,7 @@ import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { fmtDate } from '../api'
 import StatusBadge from '../components/StatusBadge'
-
-function TopicCard({ topic, desc }) {
-  if (!topic) return null
-  return (
-    <div className="bg-gray-50 rounded-lg p-3 text-xs">
-      <div className="font-semibold text-gray-700 mb-1">{topic}</div>
-      <div className="text-gray-500 whitespace-pre-wrap leading-relaxed">{desc ?? ''}</div>
-    </div>
-  )
-}
+import EditableScenario from '../components/EditableScenario'
 
 // Placeholder card shown while waiting for the new AI scenario to be created
 function RegeneratingCard({ info }) {
@@ -133,6 +124,16 @@ export default function Scenarios() {
     }
   }
 
+  const doEdit = async (id, newContent, notes) => {
+    try {
+      await api('PUT', `/admin/scenarios/${id}/edit`, { edited_content: newContent, notes: notes })
+      toast('Scenario updated and returned to Pending')
+      load()
+    } catch (err) {
+      toast(`Error updating scenario: ${err.message}`, true)
+    }
+  }
+
   // Only show placeholder when the new ai_generated item isn't in the list yet
   const placeholders = Object.entries(regenKeys).filter(([, info]) =>
     !items.some(s =>
@@ -192,16 +193,15 @@ export default function Scenarios() {
                     </div>
 
                     {/* Topics — prefer edited_content over raw content */}
-                    {(() => { const ec = s.edited_content ?? c; return (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                      <TopicCard topic={ec.answerTopic1} desc={ec.answerDescription1} />
-                      <TopicCard topic={ec.answerTopic2} desc={ec.answerDescription2} />
-                      <TopicCard topic={ec.answerTopic3} desc={ec.answerDescription3} />
-                    </div>
-                    )})()}
+                    <EditableScenario 
+                      id={s.id}
+                      content={s.content}
+                      editedContent={s.edited_content}
+                      onSave={doEdit}
+                    />
 
                     {s.curator_notes && (
-                      <div className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mb-3">
+                      <div className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mb-3 mt-2">
                         📝 Notes: {s.curator_notes}
                       </div>
                     )}
