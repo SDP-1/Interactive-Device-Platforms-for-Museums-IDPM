@@ -1,22 +1,23 @@
 const STATUS_STYLES = {
-  draft:          'bg-gray-100 text-gray-700',
-  ai_generated:   'bg-purple-100 text-purple-700',
-  pending_review: 'bg-yellow-100 text-yellow-800',
-  approved:       'bg-green-100 text-green-700',
-  rejected:       'bg-red-100 text-red-700',
-  published:      'bg-blue-100 text-blue-700',
-  regenerating:   'bg-blue-100 text-blue-700 animate-pulse',
+  draft:          { bg: 'bg-slate-100/80', text: 'text-slate-600', dot: 'bg-slate-400' },
+  ai_generated:   { bg: 'bg-purple-100/80', text: 'text-purple-700', dot: 'bg-purple-500' },
+  pending_review: { bg: 'bg-amber-100/80', text: 'text-amber-700', dot: 'bg-amber-500 animate-pulse' },
+  approved:       { bg: 'bg-emerald-100/80', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  rejected:       { bg: 'bg-rose-100/80', text: 'text-rose-700', dot: 'bg-rose-500' },
+  published:      { bg: 'bg-indigo-100/80', text: 'text-indigo-700', dot: 'bg-indigo-500' },
+  regenerating:   { bg: 'bg-sky-100/80', text: 'text-sky-700', dot: 'bg-sky-500 animate-bounce' },
 }
 
 const STATUS_LABELS = {
-  regenerating: '🔄 Regenerating',
+  regenerating: 'Regenerating',
 }
 
 export default function StatusBadge({ status }) {
-  const cls = STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-700'
+  const style = STATUS_STYLES[status] ?? { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400' }
   const label = STATUS_LABELS[status] ?? status?.replace(/_/g, ' ')
   return (
-    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider backdrop-blur-sm border border-white/50 shadow-sm ${style.bg} ${style.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`}></span>
       {label}
     </span>
   )
