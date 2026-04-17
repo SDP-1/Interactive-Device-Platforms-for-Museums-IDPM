@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   MapPin, Clock, Layers, Ruler, Sparkles, ArrowLeft,
-  BookOpen, Zap, Scale, RefreshCw, AlertCircle, Expand
+  BookOpen, Zap, Scale, RefreshCw, AlertCircle, Expand, CheckCircle
 } from 'lucide-react';
 import SimilarArtifactCard from './SimilarArtifactCard';
 import HotspotImage from './HotspotImage';
