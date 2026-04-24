@@ -298,7 +298,7 @@ def graph_rag():
 
     fig, (ax_acc, ax_loss) = plt.subplots(1, 2, figsize=(12, 4.5))
     fig.suptitle("RAG Scenario Generation — Fine-Tuning Performance\n"
-                 "(GPT-3.5-turbo | 3 Epochs | Museum Heritage Dataset | 323K tokens)", fontsize=12, y=1.02)
+                 "(GPT-4o-mini | 3 Epochs | Museum Heritage Dataset | 323K tokens)", fontsize=12, y=1.02)
     _plot_pair(ax_acc, ax_loss, epochs, train_acc, val_acc, train_loss, val_loss)
     plt.tight_layout()
     _save(fig, "rag_training_curves.png")
