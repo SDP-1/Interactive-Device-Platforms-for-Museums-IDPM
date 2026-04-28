@@ -185,7 +185,24 @@ const SessionsPage: React.FC = () => {
         </div>
       </div>
 
-      {isLoading && <div className="text-gray-600">Loading sessions...</div>}
+      {isLoading && (
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="p-4 bg-white rounded-lg shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="skeleton w-12 h-12 rounded-full" />
+                  <div className="space-y-2">
+                    <div className="skeleton w-40 h-4" />
+                    <div className="skeleton w-24 h-3" />
+                  </div>
+                </div>
+                <div className="skeleton w-24 h-8" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {error && <div className="text-red-600">Failed to load sessions</div>}
 
       <DataTable

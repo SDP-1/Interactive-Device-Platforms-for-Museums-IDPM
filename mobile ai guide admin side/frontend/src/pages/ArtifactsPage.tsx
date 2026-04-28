@@ -3,6 +3,7 @@ import { Artifact } from "../types/Artifact";
 import { artifactService } from "../services/artifactService";
 import { ArtifactForm } from "../components/ArtifactForm";
 import { ArtifactList } from "../components/ArtifactList";
+import Skeleton from "../components/ui/Skeleton";
 
 export const ArtifactsPage: React.FC = () => {
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
@@ -145,8 +146,28 @@ export const ArtifactsPage: React.FC = () => {
         {!showForm && (
           <div>
             {loading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Loading artifacts...</p>
+              <div className="grid [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))] gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-full max-w-[420px] justify-self-center bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col"
+                  >
+                    <div className="w-full h-48">
+                      <Skeleton className="w-full h-48 skeleton-futuristic" />
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <Skeleton className="w-48 h-6 mb-3 skeleton-futuristic" />
+                      <div className="space-y-2 mt-3">
+                        <Skeleton className="w-3/4 h-4 rounded-md skeleton-futuristic" />
+                        <Skeleton className="w-1/2 h-4 rounded-md skeleton-futuristic" />
+                      </div>
+                      <div className="flex gap-3 items-center mt-auto">
+                        <Skeleton className="w-20 h-8 rounded-lg skeleton-futuristic" />
+                        <Skeleton className="flex-1 h-10 rounded-lg skeleton-futuristic" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <ArtifactList

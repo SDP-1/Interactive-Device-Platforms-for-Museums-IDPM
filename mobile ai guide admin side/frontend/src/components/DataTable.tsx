@@ -265,8 +265,8 @@ const DataTable = <T,>({
   return (
     <div className="space-y-3">
       {(enableSearch || enableColumnManagement || enableExport || filters) && (
-        <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm space-y-3">
-          <div className="flex flex-col lg:flex-row gap-2 lg:items-center lg:justify-between">
+        <div className="card space-y-3">
+          <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             {enableSearch ? (
               <input
                 value={query.search || ""}
@@ -274,7 +274,7 @@ const DataTable = <T,>({
                   setQuery({ ...query, search: e.target.value, page: 1 })
                 }
                 placeholder="Search..."
-                className="w-full lg:max-w-sm border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                className="input lg:max-w-sm"
               />
             ) : (
               <div />
@@ -285,7 +285,7 @@ const DataTable = <T,>({
                 <div className="relative">
                   <button
                     onClick={() => setColumnPanelOpen((v) => !v)}
-                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50"
+                    className="btn btn-secondary text-sm"
                   >
                     Columns
                   </button>
@@ -322,7 +322,7 @@ const DataTable = <T,>({
               {enableExport && (
                 <button
                   onClick={handleExportCsv}
-                  className="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50"
+                  className="btn btn-secondary text-sm"
                 >
                   Export CSV
                 </button>
@@ -334,12 +334,12 @@ const DataTable = <T,>({
         </div>
       )}
 
-      <div className="overflow-x-auto bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div className="table-modern">
         <table className="min-w-full text-sm">
           <thead className="bg-amber-50/70">
             <tr>
               {enableRowSelection && (
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold w-12">
+                <th className="px-4 py-3 text-left text-slate-700 font-semibold w-12">
                   <input
                     type="checkbox"
                     checked={allVisibleSelected}
@@ -363,17 +363,17 @@ const DataTable = <T,>({
                   key={column.key}
                   className={
                     column.headerClassName ||
-                    "px-4 py-3 text-left text-gray-700 font-semibold"
+                    "px-4 py-3 text-left text-slate-700 font-semibold"
                   }
                 >
                   <button
                     type="button"
                     onClick={() => toggleSort(column)}
-                    className={`inline-flex items-center gap-1 ${column.sortable ? "hover:text-gray-900" : "cursor-default"}`}
+                    className={`inline-flex items-center gap-2 ${column.sortable ? "hover:text-slate-900" : "cursor-default"}`}
                   >
                     <span>{column.header}</span>
                     {enableSorting && column.sortable && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-slate-500">
                         {query.sort === (column.sortKey || column.key)
                           ? query.order === "asc"
                             ? "▲"
@@ -426,7 +426,9 @@ const DataTable = <T,>({
                     {activeColumns.map((column) => (
                       <td
                         key={`${column.key}-${key}`}
-                        className={column.cellClassName || "px-4 py-3"}
+                        className={
+                          column.cellClassName || "px-4 py-3 align-top"
+                        }
                       >
                         {column.render(row, rowIndex)}
                       </td>
@@ -450,8 +452,8 @@ const DataTable = <T,>({
       </div>
 
       {enablePagination && (
-        <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <div className="text-sm text-gray-600">
+        <div className="card flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="text-sm text-slate-600">
             Showing page {safePage} of {totalPages} · {totalRows} records
           </div>
 
@@ -461,7 +463,7 @@ const DataTable = <T,>({
               onChange={(e) =>
                 setQuery({ ...query, limit: Number(e.target.value), page: 1 })
               }
-              className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+              className="input w-auto text-sm"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
@@ -475,7 +477,7 @@ const DataTable = <T,>({
                 setQuery({ ...query, page: Math.max(1, safePage - 1) })
               }
               disabled={safePage <= 1}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50"
+              className="btn btn-secondary text-sm disabled:opacity-50"
             >
               Prev
             </button>
@@ -483,7 +485,7 @@ const DataTable = <T,>({
             {pageItems.map((item) => {
               if (typeof item !== "number") {
                 return (
-                  <span key={item} className="px-2 text-sm text-gray-500">
+                  <span key={item} className="px-2 text-sm text-slate-500">
                     ...
                   </span>
                 );
@@ -494,7 +496,7 @@ const DataTable = <T,>({
                 <button
                   key={item}
                   onClick={() => setQuery({ ...query, page: item })}
-                  className={`px-3 py-1.5 rounded-lg border text-sm transition ${active ? "border-[#071428] bg-[#071428] text-white" : "border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+                  className={`px-3 py-1.5 rounded-md text-sm transition ${active ? "bg-[#071428] text-white" : "border border-gray-300 text-slate-700 hover:bg-gray-50"}`}
                 >
                   {item}
                 </button>
@@ -506,7 +508,7 @@ const DataTable = <T,>({
                 setQuery({ ...query, page: Math.min(totalPages, safePage + 1) })
               }
               disabled={safePage >= totalPages}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50"
+              className="btn btn-secondary text-sm disabled:opacity-50"
             >
               Next
             </button>

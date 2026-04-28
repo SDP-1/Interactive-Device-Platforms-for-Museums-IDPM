@@ -41,7 +41,39 @@ const FeedbackPage: React.FC = () => {
   }, [data, ratingFilter]);
 
   if (isLoading)
-    return <div className="p-4 text-gray-600">Loading feedback details...</div>;
+    return (
+      <div className="px-3 sm:px-4 lg:px-6 py-4 space-y-4">
+        <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+          <div className="skeleton w-48 h-6" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border p-4 shadow-sm bg-white">
+              <div className="skeleton w-full h-12" />
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="skeleton w-12 h-12 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="skeleton w-2/3 h-4" />
+                  <div className="skeleton w-1/2 h-3" />
+                </div>
+                <div className="skeleton w-16 h-8" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   if (error || !data)
     return (
       <div className="p-4 text-red-600">Failed to load feedback details</div>

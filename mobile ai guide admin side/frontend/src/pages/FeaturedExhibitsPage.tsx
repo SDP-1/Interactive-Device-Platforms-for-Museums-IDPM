@@ -158,84 +158,108 @@ const FeaturedExhibitsPage: React.FC = () => {
 
         {!showForm && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {loading && exhibits.length === 0 ? (
-              <div className="text-center py-12">Loading exhibits...</div>
-            ) : (
-              exhibits
-                .filter((ex) => {
-                  const q = search.trim().toLowerCase();
-                  if (!q) return true;
-                  return (
-                    (ex.name || "").toLowerCase().includes(q) ||
-                    (ex.description || "").toLowerCase().includes(q)
-                  );
-                })
-                .map((ex) => (
+            {loading && exhibits.length === 0
+              ? Array.from({ length: 6 }).map((_, i) => (
                   <div
-                    key={ex._id}
+                    key={i}
                     className="p-3 bg-white rounded shadow-sm flex flex-col"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-20 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                        {ex.imageUrl ? (
-                          <img
-                            src={ex.imageUrl}
-                            alt={ex.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : ex.artifacts &&
-                          ex.artifacts[0] &&
-                          (ex.artifacts[0] as any).imageUrls &&
-                          (ex.artifacts[0] as any).imageUrls[0] ? (
-                          <img
-                            src={(ex.artifacts[0] as any).imageUrls[0]}
-                            alt={ex.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-100" />
-                        )}
+                        <div className="skeleton w-full h-full" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold truncate">
-                          {ex.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 truncate">
-                          {ex.description}
-                        </p>
+                        <div className="skeleton w-32 h-4 mb-2" />
+                        <div className="skeleton w-48 h-3" />
                         <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
-                            {(ex.artifacts || []).length} items
-                          </span>
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                            {ex.estimated_visit_minutes || 0} mins
-                          </span>
+                          <div className="skeleton w-12 h-6 rounded" />
+                          <div className="skeleton w-12 h-6 rounded" />
                         </div>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => handleEdit(ex)}
-                          className="border-2 border-amber-400 text-amber-600 py-2 px-3 rounded-xl font-medium hover:bg-amber-50 transition"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(ex._id)}
-                          className="px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
-                        >
-                          Delete
-                        </button>
+                        <div className="skeleton w-20 h-8 rounded" />
+                        <div className="skeleton w-20 h-8 rounded" />
                       </div>
                     </div>
                     <div className="mt-3">
-                      <FeaturedExhibitList
-                        exhibit={ex}
-                        onReorder={(order) => handleReorder(ex._id!, order)}
-                      />
+                      <div className="skeleton w-full h-12 rounded" />
                     </div>
                   </div>
                 ))
-            )}
+              : exhibits
+                  .filter((ex) => {
+                    const q = search.trim().toLowerCase();
+                    if (!q) return true;
+                    return (
+                      (ex.name || "").toLowerCase().includes(q) ||
+                      (ex.description || "").toLowerCase().includes(q)
+                    );
+                  })
+                  .map((ex) => (
+                    <div
+                      key={ex._id}
+                      className="p-3 bg-white rounded shadow-sm flex flex-col"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-20 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                          {ex.imageUrl ? (
+                            <img
+                              src={ex.imageUrl}
+                              alt={ex.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : ex.artifacts &&
+                            ex.artifacts[0] &&
+                            (ex.artifacts[0] as any).imageUrls &&
+                            (ex.artifacts[0] as any).imageUrls[0] ? (
+                            <img
+                              src={(ex.artifacts[0] as any).imageUrls[0]}
+                              alt={ex.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-100" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold truncate">
+                            {ex.name}
+                          </h3>
+                          <p className="text-sm text-gray-500 truncate">
+                            {ex.description}
+                          </p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
+                              {(ex.artifacts || []).length} items
+                            </span>
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                              {ex.estimated_visit_minutes || 0} mins
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleEdit(ex)}
+                            className="border-2 border-amber-400 text-amber-600 py-2 px-3 rounded-xl font-medium hover:bg-amber-50 transition"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(ex._id)}
+                            className="px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <FeaturedExhibitList
+                          exhibit={ex}
+                          onReorder={(order) => handleReorder(ex._id!, order)}
+                        />
+                      </div>
+                    </div>
+                  ))}
           </div>
         )}
       </main>

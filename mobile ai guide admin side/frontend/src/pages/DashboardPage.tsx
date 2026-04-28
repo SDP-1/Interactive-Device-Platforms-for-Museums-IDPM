@@ -1,6 +1,10 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardOverview } from "../services/dashboardService";
+import Skeleton, {
+  SkeletonHeader,
+  SkeletonCard,
+} from "../components/ui/Skeleton";
 
 const currency = (value: number) => `₨${Math.round(value).toLocaleString()}`;
 
@@ -12,7 +16,36 @@ const DashboardPage: React.FC = () => {
   });
 
   if (isLoading) {
-    return <div className="p-4 text-gray-600">Loading dashboard...</div>;
+    return (
+      <div className="px-3 sm:px-4 lg:px-6 py-4 space-y-4">
+        <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+          <SkeletonHeader />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-xl p-4 bg-white">
+              <Skeleton className="w-24 h-4 mb-3" />
+              <Skeleton className="w-32 h-8" />
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <Skeleton className="w-full h-48" />
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
+            <Skeleton className="w-40 h-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Skeleton className="w-full h-20" />
+              <Skeleton className="w-full h-20" />
+              <Skeleton className="w-full h-20" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error || !data) {

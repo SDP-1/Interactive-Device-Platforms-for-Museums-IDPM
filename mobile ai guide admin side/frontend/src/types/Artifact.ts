@@ -10,6 +10,8 @@ export interface Artifact {
   category_si: string;
   description_en: string;
   description_si: string;
+  story_en?: string | null;
+  story_si?: string | null;
   aiKnowlageBase_en?: string | null;
   aiKnowlageBase_si?: string | null;
   material_en?: string | null;

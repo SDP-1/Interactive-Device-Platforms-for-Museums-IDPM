@@ -2,7 +2,11 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import Header from "./Header";
 
-const Sidebar: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
+const Sidebar: React.FC<{
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onClose: () => void;
+}> = ({ collapsed, mobileOpen, onClose }) => {
   const location = useLocation();
   const nav = [
     {
@@ -166,42 +170,84 @@ const Sidebar: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
   ];
 
   return (
-    <aside
-      className={`bg-white border-r hidden md:block fixed left-0 top-[72px] bottom-0 overflow-y-auto z-30 transition-all duration-200 ${collapsed ? "w-20" : "w-64"}`}
-    >
-      <div className="p-4 flex items-center justify-center">
+    <>
+      <aside
+        className={`bg-white/70 backdrop-blur-sm border-r hidden md:block fixed left-0 top-[72px] bottom-0 overflow-y-auto z-30 transition-all duration-200 ${collapsed ? "w-20" : "w-64"}`}
+      >
+        <div className="p-4 flex items-center justify-center">
+          <div
+            className={`flex items-center gap-3 ${collapsed ? "flex-col" : ""}`}
+          >
+            {!collapsed ? (
+              <>
+                <h2 className="text-lg font-semibold">Museum CMS</h2>
+                <p className="text-sm text-slate-500">Admin</p>
+              </>
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-pink-500 shadow-md" />
+            )}
+          </div>
+        </div>
+        <nav className="px-2 py-3 space-y-1">
+          {nav.map((n) => {
+            const active = location.pathname === n.to;
+            return (
+              <Link
+                key={n.to}
+                to={n.to}
+                title={n.label}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-250 ${active ? "bg-blue-50 text-blue-600" : "text-slate-700 hover:bg-gray-50"}`}
+              >
+                <div className="w-6 h-6 flex items-center justify-center text-gray-600">
+                  {n.icon}
+                </div>
+                {!collapsed && <span className="text-sm">{n.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* Mobile Drawer */}
+      <div
+        className={`md:hidden ${mobileOpen ? "fixed inset-0 z-40" : "pointer-events-none"}`}
+        aria-hidden={!mobileOpen}
+      >
         <div
-          className={`flex items-center gap-3 ${collapsed ? "flex-col" : ""}`}
+          className={`fixed inset-0 bg-black/40 transition-opacity ${mobileOpen ? "opacity-100" : "opacity-0"}`}
+          onClick={onClose}
+        />
+        <div
+          className={`fixed top-0 left-0 h-full w-64 bg-white p-4 shadow-soft transform transition-transform ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
-          {!collapsed ? (
-            <>
-              <h2 className="text-lg font-bold">Museum CMS</h2>
-              <p className="text-xs text-gray-500">Admin</p>
-            </>
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-pink-500" />
-          )}
+          <div className="p-2 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Museum CMS</h2>
+              <p className="text-sm text-slate-500">Admin</p>
+            </div>
+          </div>
+          <nav className="mt-4 px-2 py-3 space-y-1">
+            {nav.map((n) => {
+              const active = location.pathname === n.to;
+              return (
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  title={n.label}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-250 ${active ? "bg-blue-50 text-blue-600" : "text-slate-700 hover:bg-gray-50"}`}
+                  onClick={onClose}
+                >
+                  <div className="w-6 h-6 flex items-center justify-center text-gray-600">
+                    {n.icon}
+                  </div>
+                  <span className="text-sm">{n.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </div>
-      <nav className="px-2 py-3 space-y-1">
-        {nav.map((n) => {
-          const active = location.pathname === n.to;
-          return (
-            <Link
-              key={n.to}
-              to={n.to}
-              title={n.label}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md ${active ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
-            >
-              <div className="w-6 h-6 flex items-center justify-center text-gray-600">
-                {n.icon}
-              </div>
-              {!collapsed && <span className="text-sm">{n.label}</span>}
-            </Link>
-          );
-        })}
-      </nav>
-    </aside>
+    </>
   );
 };
 
@@ -209,13 +255,35 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [collapsed, setCollapsed] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const location = useLocation();
+
+  React.useEffect(() => {
+    // close mobile drawer on navigation
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  const handleToggle = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setMobileOpen((v) => !v);
+    } else {
+      setCollapsed((c) => !c);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FBF7F2] w-full">
-      <Header onToggle={() => setCollapsed((c) => !c)} />
-      <Sidebar collapsed={collapsed} />
-      <main className={`pt-[72px] px-0 ${collapsed ? "md:ml-20" : "md:ml-64"}`}>
-        {children}
+      <Header onToggle={handleToggle} collapsed={collapsed} />
+      <Sidebar
+        collapsed={collapsed}
+        mobileOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+      />
+      <main
+        className={`pt-[72px] px-4 sm:px-6 lg:px-8 transition-[margin] duration-250 ease-in-expo ${collapsed ? "md:ml-20" : "md:ml-64"}`}
+        style={{ willChange: "margin" }}
+      >
+        <div className="w-full">{children}</div>
       </main>
     </div>
   );

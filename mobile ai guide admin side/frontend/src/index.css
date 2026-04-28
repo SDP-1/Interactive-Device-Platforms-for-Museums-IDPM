@@ -2,6 +2,122 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import modern system font stack and set accessible base sizes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+@layer base {
+  html { font-size: 16px; }
+  body {
+    @apply bg-gray-50 text-slate-900 antialiased leading-6;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  h1,h2,h3,h4,h5 { @apply text-slate-900 font-semibold; }
+  a { @apply text-primary-600 hover:text-primary-700; }
+}
+
+/* Component utilities for consistent UI */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium shadow-sm transition-colors duration-250;
+  }
+  .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200; }
+  .btn-secondary { @apply bg-white text-slate-900 border border-gray-200 hover:bg-gray-50; }
+
+  .card {
+    @apply bg-white rounded-xl shadow-soft p-4;
+  }
+
+  .input {
+    @apply w-full rounded-md border border-gray-200 bg-white px-3 py-2 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-shadow;
+  }
+
+  .table-modern {
+    @apply w-full min-w-full divide-y divide-gray-100 bg-white rounded-lg shadow-sm overflow-hidden;
+  }
+
+  .modal-panel {
+    @apply bg-white rounded-xl shadow-soft-md p-6 max-w-3xl w-full;
+  }
+}
+
+/* Hamburger icon bars animation */
+@layer utilities {
+  .hamburger {
+    @apply relative w-6 h-6 flex items-center justify-center;
+  }
+  .hamburger-bar {
+    @apply absolute left-0 w-6 h-[2px] bg-white transition-transform duration-250 origin-center;
+  }
+  .hamburger-bar--top {
+    transform: translateY(-6px);
+  }
+  .hamburger-bar--bottom {
+    transform: translateY(6px);
+  }
+  .hamburger-open .hamburger-bar--top { transform: rotate(45deg); }
+  .hamburger-open .hamburger-bar--middle { transform: scaleX(0); }
+  .hamburger-open .hamburger-bar--bottom { transform: rotate(-45deg); }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.06) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Futuristic variant: neon edge + scanning beam */
+@keyframes neon-glow {
+  0% { box-shadow: 0 0 8px rgba(7,20,40,0.02), 0 0 0 rgba(2,132,199,0); }
+  50% { box-shadow: 0 6px 20px rgba(2,132,199,0.08), 0 0 40px rgba(124,58,237,0.06); }
+  100% { box-shadow: 0 0 8px rgba(7,20,40,0.02), 0 0 0 rgba(2,132,199,0); }
+}
+
+@keyframes scan {
+  0% { background-position: -150% 0; }
+  100% { background-position: 150% 0; }
+}
+
+.skeleton-futuristic {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(10,20,40,0.06) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.02) 70%, rgba(10,20,40,0.06) 100%);
+  border: 1px solid rgba(124,58,237,0.08);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+}
+
+.skeleton-futuristic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.00) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.00) 55%, rgba(255,255,255,0.00) 100%);
+  background-size: 200% 100%;
+  mix-blend-mode: screen;
+  animation: scan 1.6s linear infinite;
+  pointer-events: none;
+}
+
+.skeleton-futuristic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 24px rgba(124,58,237,0.02);
+  pointer-events: none;
+  animation: neon-glow 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .skeleton-futuristic, .skeleton-futuristic::before, .skeleton-futuristic::after {
+    animation: none !important;
+  }
+}
+
 /* Custom styles for React Quill */
 .quill {
   background: white;

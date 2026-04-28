@@ -32,6 +32,8 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
     dimensions_si: artifact?.dimensions_si || "",
     culturalSignificance_en: artifact?.culturalSignificance_en || "",
     culturalSignificance_si: artifact?.culturalSignificance_si || "",
+    story_en: artifact?.story_en || "",
+    story_si: artifact?.story_si || "",
     gallery_en: artifact?.gallery_en || "",
     gallery_si: artifact?.gallery_si || "",
     imageUrls: artifact?.imageUrls?.join(",") || "",
@@ -381,6 +383,36 @@ export const ArtifactForm: React.FC<ArtifactFormProps> = ({
           formats={formats}
           className="bg-white"
           placeholder="සංස්කෘතික වැදගත්කම ආකෘතිකරණය සමඟ ඇතුළත් කරන්න..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Story (English) — How did the museum get this artifact
+        </label>
+        <ReactQuill
+          theme="snow"
+          value={formData.story_en}
+          onChange={(value) => handleRichTextChange(value, "story_en")}
+          modules={modules}
+          formats={formats}
+          className="bg-white"
+          placeholder="Enter how the museum acquired this artifact..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Story (Sinhala) — මේ කෘතිය සංග්‍රහයේ බලාගත් හැටි
+        </label>
+        <ReactQuill
+          theme="snow"
+          value={formData.story_si}
+          onChange={(value) => handleRichTextChange(value, "story_si")}
+          modules={modules}
+          formats={formats}
+          className="bg-white"
+          placeholder="මෙම කෘතිය සංග්‍රහයට ගැනීමේ විස්තර ඇතුළත් කරන්න..."
         />
       </div>
 

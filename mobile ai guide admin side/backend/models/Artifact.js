@@ -42,6 +42,14 @@ const artifactSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  story_en: {
+    type: String,
+    default: null,
+  },
+  story_si: {
+    type: String,
+    default: null,
+  },
   aiKnowlageBase_en: {
     type: String,
     default: null,

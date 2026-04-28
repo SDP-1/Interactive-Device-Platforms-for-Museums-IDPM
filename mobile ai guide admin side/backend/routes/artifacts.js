@@ -14,6 +14,7 @@ function formatArtifactResponse(artifact, language = "en") {
       year: artifact.year,
       category: artifact.category_si || artifact.category_en || null,
       description: artifact.description_si || artifact.description_en || null,
+      story: artifact.story_si || artifact.story_en || null,
       aiKnowlageBase:
         artifact.aiKnowlageBase_si || artifact.aiKnowlageBase_en || null,
       material: artifact.material_si || artifact.material_en || null,
@@ -33,6 +34,7 @@ function formatArtifactResponse(artifact, language = "en") {
     year: artifact.year,
     category: artifact.category_en || artifact.category_si || null,
     description: artifact.description_en || artifact.description_si || null,
+    story: artifact.story_en || artifact.story_si || null,
     aiKnowlageBase:
       artifact.aiKnowlageBase_en || artifact.aiKnowlageBase_si || null,
     material: artifact.material_en || artifact.material_si || null,
@@ -146,6 +148,8 @@ router.post("/artifacts", async (req, res) => {
       category_si,
       description_en,
       description_si,
+      story_en,
+      story_si,
       material_en,
       material_si,
       dimensions_en,
@@ -200,6 +204,8 @@ router.post("/artifacts", async (req, res) => {
       dimensions_si: dimensions_si || null,
       culturalSignificance_en: culturalSignificance_en || null,
       culturalSignificance_si: culturalSignificance_si || null,
+      story_en: story_en || null,
+      story_si: story_si || null,
       gallery_en: gallery_en || null,
       gallery_si: gallery_si || null,
       imageUrls,
@@ -262,6 +268,10 @@ router.put("/artifacts/:id", async (req, res) => {
         typeof req.body.aiKnowlageBase_si !== "undefined"
           ? req.body.aiKnowlageBase_si
           : undefined,
+      story_en:
+        typeof req.body.story_en !== "undefined" ? req.body.story_en : undefined,
+      story_si:
+        typeof req.body.story_si !== "undefined" ? req.body.story_si : undefined,
       material_en: material_en || null,
       material_si: material_si || null,
       dimensions_en: dimensions_en || null,
