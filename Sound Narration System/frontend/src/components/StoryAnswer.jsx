@@ -360,7 +360,6 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   src={videoInfo.video_path}
                   poster={videoInfo.poster_path || undefined}
                   loop
-                  muted
                   playsInline
                   onLoadedData={() => {
                     setVideoLoaded(true)
