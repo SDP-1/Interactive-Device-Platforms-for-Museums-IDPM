@@ -250,7 +250,8 @@ if __name__ == '__main__':
     print("\n" + "="*60)
     print("🇱🇰 Sri Lankan History Q&A API Server")
     print("="*60)
-    print("Server starting on http://localhost:5000")
+    port = int(os.environ.get('PORT', 5000))
+    print(f"Server starting on http://localhost:{port}")
     print("\nAPI Endpoints:")
     print("  GET  /api/health            - Health check")
     print("  POST /api/ask               - Ask a question")
@@ -263,4 +264,4 @@ if __name__ == '__main__':
     print("  POST /api/videos/search     - Search videos")
     print("="*60 + "\n")
     # Use threaded=True to handle multiple requests
-    app.run(debug=True, port=5000, threaded=True, host='127.0.0.1')
+    app.run(debug=True, port=port, threaded=True, host='127.0.0.1')

@@ -48,6 +48,7 @@ dependencies:
   path: ^1.9.1
   audioplayers: ^5.2.0
   geolocator: ^14.0.0
+  model_viewer_plus: ^1.10.0
 
 dev_dependencies:
   flutter_test:
