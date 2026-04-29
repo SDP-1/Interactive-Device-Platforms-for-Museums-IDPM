@@ -32,6 +32,8 @@ const COLOR_PALETTE = [
   { id: 'white', name: 'Pure White', hex: '#FFFFFF', sinhala: 'සුදු', meaning: 'Purity & Peace' },
   { id: 'orange', name: 'Sunset', hex: '#FF6600', sinhala: 'තැඹිලි', meaning: 'Energy & Fire' },
   { id: 'brown', name: 'Earth', hex: '#8B4513', sinhala: 'දුඹුරු', meaning: 'Stability' },
+  { id: 'turmeric', name: 'Turmeric', hex: '#E29B12', sinhala: 'කහ', meaning: 'Ancient Healing' },
+  { id: 'coral', name: 'Blood Coral', hex: '#FF4040', sinhala: 'කොරල්', meaning: 'Primal Energy' },
 ];
 
 // ============================================================================
@@ -252,10 +254,19 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
+            // Explicit mapping to fix numbering mismatch between CSV and coloring assets
+            const MASK_ASSET_MAPPING = {
+              'raksha1': 'mask (3).png',
+              'gurulu': 'mask (1).png',
+              'yaka_mask': 'mask (5).png',
+              'naga_raksha_v2': 'mask (4).png',
+              'gara_yaka': 'mask (2).png'
+            };
+
             const loadedMasks = results.data.map(row => ({
               id: row.id,
               name: row.name,
-              src: 'mask (' + (results.data.indexOf(row) + 1) + ').png',
+              src: MASK_ASSET_MAPPING[row.id] || `mask (${results.data.indexOf(row) + 1}).png`,
               displayImage: row.src,
               origin: row.origin || 'Southern Province',
               shortDescription: row.shortDescription,
@@ -302,11 +313,6 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
       const y = (canvas.height - img.height * scale) / 2;
 
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-
-      // Convert to line art
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const lineArt = convertToLineArt(imageData, canvas.width, canvas.height);
-      ctx.putImageData(lineArt, 0, 0);
 
       // Store original for reset
       originalImageRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -450,47 +456,93 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
             </p>
           </div>
 
-          {/* Mask Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 pb-20">
-            {masks.map((mask) => (
-              <div
-                key={mask.id}
-                className="bg-white border border-stone-200 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-xl group flex flex-col h-full"
-                style={{
-                  transform: hoveredCard === mask.id ? 'translateY(-10px)' : 'none',
-                  borderColor: hoveredCard === mask.id ? '#C2410C' : '#E5E7EB',
-                }}
-                onMouseEnter={() => setHoveredCard(mask.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                onClick={() => setSelectedMask(mask)}
-              >
-                <div className="h-[400px] bg-stone-50 flex items-center justify-center p-10 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-stone-100/50 z-10" />
-                  <img
-                    src={mask.displayImage}
-                    alt={mask.name}
-                    className="h-full object-contain filter drop-shadow-2xl transition-transform duration-700 ease-out z-0"
-                    style={{
-                      transform: hoveredCard === mask.id ? 'scale(1.15)' : 'none',
-                    }}
-                  />
-                </div>
-
-                <div className="p-10 flex-1 flex flex-col bg-white border-t border-stone-100">
-                  <h3 className="text-3xl font-serif font-bold text-museum-primary mb-4 group-hover:text-museum-accent transition-colors">{mask.name}</h3>
-                  <p className="text-lg text-museum-secondary mb-8 leading-relaxed flex-1 font-light italic">"{mask.shortDescription}"</p>
-
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    <span className="px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">📍 {mask.origin}</span>
-                    <span className="px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">🎭 {mask.maskType}</span>
+          {/* Mask Grid - Explicitly splitting into 3-over-2 centered layout with full width */}
+          <div className="flex flex-col gap-12 pb-24">
+            {/* Top Row: 3 Masks */}
+            <div className="flex flex-wrap justify-center gap-10">
+              {masks.slice(0, 3).map((mask) => (
+                <div
+                  key={mask.id}
+                  className="bg-white border border-stone-200 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-xl group flex flex-col w-full md:w-[calc(50%-2.5rem)] lg:w-[calc(33.333%-2.5rem)]"
+                  style={{
+                    transform: hoveredCard === mask.id ? 'translateY(-10px)' : 'none',
+                    borderColor: hoveredCard === mask.id ? '#C2410C' : '#E5E7EB',
+                  }}
+                  onMouseEnter={() => setHoveredCard(mask.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  onClick={() => setSelectedMask(mask)}
+                >
+                  <div className="h-[450px] bg-stone-50 flex items-center justify-center p-12 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-stone-100/50 z-10" />
+                    <img
+                      src={mask.displayImage}
+                      alt={mask.name}
+                      className="h-full object-contain filter drop-shadow-2xl transition-transform duration-700 ease-out z-0"
+                      style={{
+                        transform: hoveredCard === mask.id ? 'scale(1.15)' : 'none',
+                      }}
+                    />
                   </div>
 
-                  <button className="w-full py-5 bg-museum-primary text-white font-bold tracking-widest text-lg rounded-2xl hover:bg-black transition-all shadow-lg flex items-center justify-center gap-3 group-hover:shadow-2xl active:scale-95">
-                    <span>🎨</span> START COLORING
-                  </button>
+                  <div className="p-12 flex-1 flex flex-col bg-white border-t border-stone-100">
+                    <h3 className="text-4xl font-serif font-bold text-museum-primary mb-4 group-hover:text-museum-accent transition-colors">{mask.name}</h3>
+                    <p className="text-xl text-museum-secondary mb-10 leading-relaxed flex-1 font-light italic">"{mask.shortDescription}"</p>
+
+                    <div className="flex flex-wrap gap-3 mb-10">
+                      <span className="px-5 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">📍 {mask.origin}</span>
+                      <span className="px-5 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">🎭 {mask.maskType}</span>
+                    </div>
+
+                    <button className="w-full py-6 bg-museum-primary text-white font-bold tracking-widest text-xl rounded-2xl hover:bg-black transition-all shadow-lg flex items-center justify-center gap-3 group-hover:shadow-2xl active:scale-95">
+                      <span>🎨</span> START COLORING
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Bottom Row: 2 Masks Centered */}
+            <div className="flex flex-wrap justify-center gap-10">
+              {masks.slice(3).map((mask) => (
+                <div
+                  key={mask.id}
+                  className="bg-white border border-stone-200 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-xl group flex flex-col w-full md:w-[calc(50%-2.5rem)] lg:w-[calc(33.333%-2.5rem)]"
+                  style={{
+                    transform: hoveredCard === mask.id ? 'translateY(-10px)' : 'none',
+                    borderColor: hoveredCard === mask.id ? '#C2410C' : '#E5E7EB',
+                  }}
+                  onMouseEnter={() => setHoveredCard(mask.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  onClick={() => setSelectedMask(mask)}
+                >
+                  <div className="h-[450px] bg-stone-50 flex items-center justify-center p-12 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-stone-100/50 z-10" />
+                    <img
+                      src={mask.displayImage}
+                      alt={mask.name}
+                      className="h-full object-contain filter drop-shadow-2xl transition-transform duration-700 ease-out z-0"
+                      style={{
+                        transform: hoveredCard === mask.id ? 'scale(1.15)' : 'none',
+                      }}
+                    />
+                  </div>
+
+                  <div className="p-12 flex-1 flex flex-col bg-white border-t border-stone-100">
+                    <h3 className="text-4xl font-serif font-bold text-museum-primary mb-4 group-hover:text-museum-accent transition-colors">{mask.name}</h3>
+                    <p className="text-xl text-museum-secondary mb-10 leading-relaxed flex-1 font-light italic">"{mask.shortDescription}"</p>
+
+                    <div className="flex flex-wrap gap-3 mb-10">
+                      <span className="px-5 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">📍 {mask.origin}</span>
+                      <span className="px-5 py-2 rounded-full bg-stone-100 border border-stone-200 text-sm text-museum-primary font-bold tracking-wider flex items-center gap-2">🎭 {mask.maskType}</span>
+                    </div>
+
+                    <button className="w-full py-6 bg-museum-primary text-white font-bold tracking-widest text-xl rounded-2xl hover:bg-black transition-all shadow-lg flex items-center justify-center gap-3 group-hover:shadow-2xl active:scale-95">
+                      <span>🎨</span> START COLORING
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
 

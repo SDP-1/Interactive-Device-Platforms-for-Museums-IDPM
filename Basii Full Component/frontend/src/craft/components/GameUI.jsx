@@ -10,9 +10,25 @@
 import React from 'react';
 
 
-const GameUI = ({ gameState }) => {
-  const { score, level, progress } = gameState;
-  const overallProgress = Math.min(100, Math.floor((score / 1000) * 100));
+const GameUI = ({ gameState, currentCraft }) => {
+  const { score, level, progress = {} } = gameState;
+  
+  // Calculate based on actual progress if available, otherwise fallback to score-based
+  let displayProgress = 0;
+  if (currentCraft && progress[currentCraft] !== undefined) {
+    displayProgress = progress[currentCraft] * 100;
+  } else {
+    const values = Object.values(progress);
+    if (values.length > 0) {
+      // Average of all active crafts
+      displayProgress = (values.reduce((a, b) => a + b, 0) / values.length) * 100;
+    } else {
+      // Fallback for initial state
+      displayProgress = (score / 1000) * 100;
+    }
+  }
+
+  const overallProgress = Math.min(100, Math.floor(displayProgress));
 
   return (
     <div className="w-[95%] mx-auto mb-6 z-10 relative">
