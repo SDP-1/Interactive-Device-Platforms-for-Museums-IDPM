@@ -135,6 +135,7 @@ class ComparisonEngine:
         'ritual_symbol':  ['kalasha', 'cornucopia', 'mandala', 'votive', 'sculpture', 'symbol'],
         'ritual_lamp':    ['deepam', 'diya', 'puja'],
         'social_tool':    ['betel', 'cutter', 'nut', 'buyo'],  # betel cutters are unique
+        'clothing':       ['garment', 'attire', 'robe', 'saree', 'kimono', 'jacket', 'skirt', 'sherwani', 'turban', 'imperial'],
     }
 
     def _category_similarity(self, idx1: int, idx2: int) -> float:
@@ -218,10 +219,7 @@ class ComparisonEngine:
     def find_similar(self, artifact_id, num_results=5):
         """Find similar artifacts to the given artifact.
 
-        Always returns up to *num_results* entries, sorted by score descending,
-        so the Similar-Artifacts section is always populated.  Scores reflect
-        true weighted similarity — a 15% score honestly means "somewhat related"
-        while a 60% score means "very closely related".
+        Enforces strict category bounds: only returns items matching the exact semantic category.
         """
         if artifact_id not in self.artifact_dict:
             return []
@@ -231,20 +229,39 @@ class ComparisonEngine:
         )
         artifact = self.artifact_dict[artifact_id]
 
-        # Compute combined score for every other artifact
+        c_source = str(artifact.get('category', '')).lower()
+        n_source = c_source + ' ' + str(artifact.get('name', '')).lower()
+        toks_source = _tokenize(n_source)
+        grp_source = next((g for g, kws in self._CATEGORY_KEYWORDS.items() if any(k in toks_source for k in kws)), None)
+
+        # Compute combined score for every other artifact in SAME category
         all_scores = []
         for idx in range(len(self.artifacts)):
             if idx == artifact_idx:
                 continue
+            
+            target_artifact = self.artifacts[idx]
+            c_target = str(target_artifact.get('category', '')).lower()
+            n_target = c_target + ' ' + str(target_artifact.get('name', '')).lower()
+            toks_target = _tokenize(n_target)
+            grp_target = next((g for g, kws in self._CATEGORY_KEYWORDS.items() if any(k in toks_target for k in kws)), None)
+            
+            # Enforce strict category match
+            if grp_source is not None and grp_target is not None:
+                if grp_source != grp_target:
+                    continue
+            else:
+                if c_source != c_target:
+                    continue
+
             score = self._combined_score(artifact_idx, idx)
             all_scores.append((idx, score))
 
-        # Sort best-first; always take top N (floor-filtered only to exclude
-        # truly zero-score entries so completely unrelated items don't show)
+        # Sort best-first
         all_scores.sort(key=lambda x: x[1], reverse=True)
         top = [(idx, s) for idx, s in all_scores if s >= MIN_SIMILARITY_THRESHOLD][:num_results]
 
-        # If still short (very unusual), pad with next best regardless of floor
+        # If still short (very unusual), pad with next best regardless of floor (but they already match category)
         if len(top) < num_results:
             shown_idxs = {idx for idx, _ in top}
             for idx, s in all_scores:
@@ -308,3 +325,23 @@ class ComparisonEngine:
 
         return points
 
+    def compare_artifacts(self, id1, id2):
+        """Return structured comparison for two artifacts."""
+        if id1 not in self.artifact_dict or id2 not in self.artifact_dict:
+            return None
+            
+        artifact1 = self.artifact_dict[id1]
+        artifact2 = self.artifact_dict[id2]
+        
+        idx1 = next(i for i, a in enumerate(self.artifacts) if a['id'] == id1)
+        idx2 = next(i for i, a in enumerate(self.artifacts) if a['id'] == id2)
+        
+        score = self._combined_score(idx1, idx2)
+        points = self._extract_comparison_points(artifact1, artifact2)
+        
+        return {
+            'artifact1_id': id1,
+            'artifact2_id': id2,
+            'similarity_score': round(score, 4),
+            'comparison_points': points
+        }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Scale, CheckCircle, XCircle, BookOpen,
-  Sparkles, MapPin, Clock, Layers, Home, RefreshCw, AlertCircle, Eye
+  Sparkles, MapPin, Clock, Layers, Home, RefreshCw, AlertCircle, Eye, Info
 } from 'lucide-react';
 import HotspotImage from './HotspotImage';
 
@@ -32,6 +32,23 @@ const truncateToSentence = (text, maxChars = 220) => {
   // No sentence boundary found — cut at last word boundary
   const wordEnd = slice.lastIndexOf(' ');
   return (wordEnd > 30 ? text.slice(0, wordEnd) : slice) + '\u2026'; // …
+};
+
+/**
+ * Basic markdown-lite parser to support **bold** text in strings.
+ * Returns a React node array.
+ */
+const parseBoldText = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  if (!text.includes('**')) return text;
+
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-bold text-stone-900">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
 };
 
 const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => {
@@ -68,7 +85,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
 
     // Animated loading steps (purely visual — runs regardless of cache)
     const steps = [
-      { delay: 0,    msg: 0 },
+      { delay: 0, msg: 0 },
       { delay: 1800, msg: 1 },
       { delay: 3800, msg: 2 },
       { delay: 5500, msg: 3 },
@@ -302,15 +319,49 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
               Comparative Analysis
             </h1>
           </div>
-          {/* Similarity Score Badge */}
-          {apiComparison?.similarity_score !== undefined && (
-            <div className={`self-start px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold ${apiComparison.similarity_score >= 70
-              ? 'bg-emerald-100 text-emerald-800'
-              : apiComparison.similarity_score >= 50
-                ? 'bg-amber-100 text-amber-800'
-                : 'bg-rose-100 text-rose-800'
-              }`}>
-              {apiComparison.similarity_score}% Match
+          {/* Premium Similarity Score Badge - Large Version */}
+          {apiComparison?.semantic_score !== undefined && (
+            <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-stone-200/60 shadow-xl shadow-stone-200/30 self-start sm:self-auto transition-all hover:scale-105 active:scale-95 group cursor-default">
+              <div className="relative flex items-center justify-center">
+                <div className={`absolute inset-0 rounded-full blur-lg opacity-50 animate-pulse ${
+                  apiComparison.semantic_score >= 80 ? 'bg-emerald-400' :
+                  apiComparison.semantic_score >= 50 ? 'bg-amber-400' :
+                  'bg-rose-400'
+                }`} />
+                <div className={`w-4 h-4 rounded-full relative z-10 ${
+                  apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
+                  apiComparison.semantic_score >= 50 ? 'bg-amber-500' :
+                  'bg-rose-500'
+                }`} />
+              </div>
+              
+              <div className="flex flex-col">
+                <span className="text-xs font-black font-sans uppercase tracking-[0.2em] text-stone-900 leading-none mb-1.5">
+                  Semantic Match
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className={`text-3xl md:text-4xl font-black font-sans leading-none tracking-tighter ${
+                    apiComparison.semantic_score >= 80 ? 'bg-gradient-to-br from-emerald-600 to-teal-700 bg-clip-text text-transparent' :
+                    apiComparison.semantic_score >= 50 ? 'bg-gradient-to-br from-amber-600 to-orange-700 bg-clip-text text-transparent' :
+                    'bg-gradient-to-br from-rose-600 to-red-700 bg-clip-text text-transparent'
+                  }`}>
+                    {apiComparison.semantic_score}
+                  </span>
+                  <span className="text-xl font-bold text-stone-400 font-sans">%</span>
+                </div>
+              </div>
+
+              {/* Enhanced progress bar */}
+              <div className="w-20 h-2.5 bg-stone-100 rounded-full overflow-hidden ml-2 hidden lg:block">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(0,0,0,0.1)] ${
+                    apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
+                    apiComparison.semantic_score >= 50 ? 'bg-amber-500' :
+                    'bg-rose-500'
+                  }`}
+                  style={{ width: `${apiComparison.semantic_score}%` }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -350,7 +401,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
           <div className="bg-stone-100 p-6 md:p-8 lg:p-10 h-56 md:h-80 lg:h-96 xl:h-[560px]">
             <HotspotImage
               artifact={artifactA}
-              image={artifactA.image}
+              image={Array.isArray(artifactA.image) ? artifactA.image[0] : artifactA.image}
               alt={artifactA.name}
               activeHotspot={activeHotspot}
               onHotspotChange={setActiveHotspot}
@@ -376,7 +427,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
           <div className="bg-stone-100 p-6 md:p-8 lg:p-10 h-56 md:h-80 lg:h-96 xl:h-[560px]">
             <HotspotImage
               artifact={artifactB}
-              image={artifactB.image}
+              image={Array.isArray(artifactB.image) ? artifactB.image[0] : artifactB.image}
               alt={artifactB.name}
               activeHotspot={activeHotspot}
               onHotspotChange={setActiveHotspot}
@@ -418,7 +469,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                 className="flex items-center gap-2 text-orange-500 hover:text-orange-600 
                            text-lg font-bold font-sans"
               >
-              
+
               </button>
             )}
             <button
@@ -453,124 +504,249 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
             {apiComparison ? (
               <>
                 {/* Artifact Details Comparison Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                  {/* Artifact 1 Details */}
-                  <div className="bg-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-amber-200">
-                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-amber-900 mb-3 sm:mb-4 line-clamp-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+                  {/* Artifact 1 Premium Card */}
+                  <div className="bg-gradient-to-b from-amber-50 to-white rounded-2xl p-5 sm:p-6 md:p-8 border border-amber-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200 rounded-full blur-3xl opacity-20 -mr-10 -mt-10 pointer-events-none transition-opacity group-hover:opacity-40" />
+
+                    <h3 className="font-serif text-2xl md:text-3xl font-bold text-amber-950 mb-6 pb-4 border-b border-amber-200/60 relative z-10 leading-tight">
                       {apiComparison.artifact1?.name || artifactA.name}
                     </h3>
-                    <div className="space-y-2 sm:space-y-3 text-base sm:text-lg">
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-medium text-amber-800">Origin:</span>
-                        <span className="text-amber-700 text-base sm:text-lg">{apiComparison.artifact1?.origin || artifactA.origin}</span>
+
+                    <div className="space-y-6 relative z-10">
+                      {/* Grid for quick stats */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/60 rounded-xl p-3 sm:p-4 border border-amber-100">
+                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-800/60 block mb-1">Origin</span>
+                          <span className="text-amber-900 font-semibold text-sm sm:text-base">{apiComparison.artifact1?.origin || artifactA.origin}</span>
+                        </div>
+                        <div className="bg-white/60 rounded-xl p-3 sm:p-4 border border-amber-100">
+                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-800/60 block mb-1">Era</span>
+                          <span className="text-amber-900 font-semibold text-sm sm:text-base">{apiComparison.artifact1?.era || artifactA.era}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-medium text-amber-800">Era:</span>
-                        <span className="text-amber-700 text-base sm:text-lg">{apiComparison.artifact1?.era || artifactA.era}</span>
+
+                      <div className="bg-amber-100/30 rounded-xl p-3 sm:p-4 border border-amber-200/30">
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-800/60 block mb-1.5">Materials</span>
+                        <span className="text-amber-900 font-medium text-sm sm:text-base leading-snug">{apiComparison.artifact1?.materials || artifactA.details?.material}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-medium text-amber-800">Materials:</span>
-                        <span className="text-amber-700 text-base sm:text-lg">{apiComparison.artifact1?.materials || artifactA.details?.material}</span>
+
+                      <div className="pt-2">
+                        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-800/70 mb-2">
+                          <Info size={14} /> Function
+                        </span>
+                        <p className="text-stone-700 text-base sm:text-lg leading-relaxed">{truncateToSentence(apiComparison.artifact1?.function || artifactA.details?.function)}</p>
                       </div>
-                      <div>
-                        <span className="font-medium text-amber-800">Function:</span>
-                        <p className="mt-0.5 sm:mt-1 text-amber-700 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact1?.function || artifactA.details?.function)}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-amber-800">Symbolism:</span>
-                        <p className="mt-0.5 sm:mt-1 text-amber-700 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact1?.symbolism)}</p>
+
+                      <div className="pt-4 border-t border-amber-100/60 mt-4">
+                        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-800/70 mb-2">
+                          <Sparkles size={14} /> Symbolism
+                        </span>
+                        <p className="text-stone-700 text-base sm:text-lg leading-relaxed">{truncateToSentence(apiComparison.artifact1?.symbolism)}</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Artifact 2 Details */}
-                  <div className="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200">
-                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-slate-800 mb-3 sm:mb-4 line-clamp-2">
+                  {/* Artifact 2 Premium Card */}
+                  <div className="bg-gradient-to-b from-slate-50 to-white rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-slate-300 rounded-full blur-3xl opacity-20 -mr-10 -mt-10 pointer-events-none transition-opacity group-hover:opacity-40" />
+
+                    <h3 className="font-serif text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-4 border-b border-slate-200/60 relative z-10 leading-tight">
                       {apiComparison.artifact2?.name || artifactB.name}
                     </h3>
-                    <div className="space-y-2 sm:space-y-3 text-base sm:text-lg">
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-medium text-slate-700">Origin:</span>
-                        <span className="text-slate-600 text-base sm:text-lg">{apiComparison.artifact2?.origin || artifactB.origin}</span>
+
+                    <div className="space-y-6 relative z-10">
+                      {/* Grid for quick stats */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/60 rounded-xl p-3 sm:p-4 border border-slate-100">
+                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 block mb-1">Origin</span>
+                          <span className="text-slate-800 font-semibold text-sm sm:text-base">{apiComparison.artifact2?.origin || artifactB.origin}</span>
+                        </div>
+                        <div className="bg-white/60 rounded-xl p-3 sm:p-4 border border-slate-100">
+                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 block mb-1">Era</span>
+                          <span className="text-slate-800 font-semibold text-sm sm:text-base">{apiComparison.artifact2?.era || artifactB.era}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-medium text-slate-700">Era:</span>
-                        <span className="text-slate-600 text-base sm:text-lg">{apiComparison.artifact2?.era || artifactB.era}</span>
+
+                      <div className="bg-slate-100/50 rounded-xl p-3 sm:p-4 border border-slate-200/50">
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 block mb-1.5">Materials</span>
+                        <span className="text-slate-800 font-medium text-sm sm:text-base leading-snug">{apiComparison.artifact2?.materials || artifactB.details?.material}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        <span className="font-medium text-slate-700">Materials:</span>
-                        <span className="text-slate-600 text-base sm:text-lg">{apiComparison.artifact2?.materials || artifactB.details?.material}</span>
+
+                      <div className="pt-2">
+                        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                          <Info size={14} /> Function
+                        </span>
+                        <p className="text-stone-700 text-base sm:text-lg leading-relaxed">{truncateToSentence(apiComparison.artifact2?.function || artifactB.details?.function)}</p>
                       </div>
-                      <div>
-                        <span className="font-medium text-slate-700">Function:</span>
-                        <p className="mt-0.5 sm:mt-1 text-slate-600 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact2?.function || artifactB.details?.function)}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-700">Symbolism:</span>
-                        <p className="mt-0.5 sm:mt-1 text-slate-600 text-base sm:text-lg">{truncateToSentence(apiComparison.artifact2?.symbolism)}</p>
+
+                      <div className="pt-4 border-t border-slate-200/60 mt-4">
+                        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                          <Sparkles size={14} /> Symbolism
+                        </span>
+                        <p className="text-stone-700 text-base sm:text-lg leading-relaxed">{truncateToSentence(apiComparison.artifact2?.symbolism)}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* API-generated Similarities */}
-                <div className="bg-emerald-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-emerald-100">
-                  <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                    <CheckCircle size={16} className="text-emerald-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-emerald-800">
+
+                {/* Styles API-generated Similarities */}
+                <div className="bg-emerald-50/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-emerald-100 mb-6 sm:mb-8">
+                  <div className="flex items-center gap-3 mb-5 sm:mb-6">
+                    <div className="p-2 bg-emerald-100 rounded-lg">
+                      <CheckCircle size={24} className="text-emerald-700" />
+                    </div>
+                    <h3 className="font-serif text-xl md:text-2xl font-bold text-emerald-900">
                       Similarities
                     </h3>
                   </div>
-                  <ul className="space-y-2 sm:space-y-3">
+                  <div className="space-y-3 sm:space-y-4">
                     {apiComparison.similarities && apiComparison.similarities.length > 0 ? (
-                      apiComparison.similarities.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2 sm:gap-3">
-                          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
-                          <span className="text-base sm:text-lg text-emerald-800 font-sans">{item}</span>
-                        </li>
-                      ))
+                      apiComparison.similarities.map((item, index) => {
+                        const colonIndex = item.indexOf(':');
+                        return (
+                          <div key={index} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white border border-emerald-100 shadow-sm hover:border-emerald-300 transition-all group">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                              <CheckCircle size={14} className="text-emerald-500 sm:w-4 sm:h-4" />
+                            </div>
+                            <div className="text-base sm:text-lg text-stone-700 font-sans leading-relaxed flex-grow">
+                              {colonIndex !== -1 ? (
+                                <>
+                                  <span className="font-bold text-emerald-900">{item.substring(0, colonIndex)}</span>
+                                  <span className="text-stone-600">{parseBoldText(item.substring(colonIndex))}</span>
+                                </>
+                              ) : (
+                                <span className="text-stone-700">{parseBoldText(item)}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
                     ) : (
-                      <li className="text-base sm:text-lg text-emerald-700 font-sans italic">
-                        These artifacts represent distinct cultural traditions.
-                      </li>
+                      <div className="p-4 bg-white rounded-xl border border-emerald-100">
+                        <p className="text-lg text-emerald-700 font-sans italic font-medium">
+                          These artifacts represent distinct cultural traditions.
+                        </p>
+                      </div>
                     )}
-                  </ul>
+                  </div>
                 </div>
 
                 {/* API-generated Differences */}
-                <div className="bg-rose-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-rose-100">
-                  <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                    <XCircle size={16} className="text-rose-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-rose-800">
+                <div className="bg-rose-50/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-rose-100 mb-6 sm:mb-8">
+                  <div className="flex items-center gap-3 mb-5 sm:mb-6">
+                    <div className="p-2 bg-rose-100 rounded-lg">
+                      <XCircle size={24} className="text-rose-700" />
+                    </div>
+                    <h3 className="font-serif text-xl md:text-2xl font-bold text-rose-900">
                       Differences
                     </h3>
                   </div>
-                  <ul className="space-y-2 sm:space-y-3">
+                  <div className="space-y-3 sm:space-y-4">
                     {apiComparison.differences && apiComparison.differences.length > 0 ? (
-                      apiComparison.differences.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2 sm:gap-3">
-                          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-rose-500 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
-                          <span className="text-base sm:text-lg text-rose-800 font-sans">{item}</span>
-                        </li>
-                      ))
+                      apiComparison.differences.map((item, index) => {
+                        const colonIndex = item.indexOf(':');
+                        return (
+                          <div key={index} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white border border-rose-100 shadow-sm hover:border-rose-300 transition-all group">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                              <XCircle size={14} className="text-rose-500 sm:w-4 sm:h-4" />
+                            </div>
+                            <div className="text-base sm:text-lg text-stone-700 font-sans leading-relaxed flex-grow">
+                              {colonIndex !== -1 ? (
+                                <>
+                                  <span className="font-bold text-rose-900">{item.substring(0, colonIndex)}</span>
+                                  <span className="text-stone-600">{parseBoldText(item.substring(colonIndex))}</span>
+                                </>
+                              ) : (
+                                <span className="text-stone-700">{parseBoldText(item)}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
                     ) : (
-                      <p className="text-base sm:text-lg text-rose-700 font-sans italic">
-                        These artifacts share remarkable similarities.
-                      </p>
+                      <div className="p-4 bg-white rounded-xl border border-rose-100">
+                        <p className="text-lg text-rose-700 font-sans italic font-medium">
+                          These artifacts share remarkable similarities.
+                        </p>
+                      </div>
                     )}
-                  </ul>
+                  </div>
                 </div>
 
-                {/* API-generated Full Comparison */}
-                <div className="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-slate-200">
-                  <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                    <BookOpen size={16} className="text-slate-600 sm:w-5 sm:h-5" />
-                    <h3 className="font-serif text-lg sm:text-xl font-semibold text-slate-800">
-                      AI-Generated Comparison
+                {/* API-generated Full Comparison Narrative */}
+                <div className="bg-slate-50/50 rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200 mb-6 sm:mb-8 shadow-inner">
+                  <div className="flex items-center gap-3 mb-6 sm:mb-8 pb-4 border-b border-slate-200">
+                    <BookOpen size={28} className="text-slate-600" />
+                    <h3 className="font-serif text-2xl md:text-3xl font-bold text-slate-800 tracking-wide">
+                      AI Narrative Comparison
                     </h3>
                   </div>
-                  <div className="text-base sm:text-lg text-slate-700 font-sans leading-relaxed whitespace-pre-line">
-                    {apiComparison.comparison}
+                  <div className="space-y-4 sm:space-y-6">
+                    {(() => {
+                      const rawText = apiComparison.comparison || '';
+                      if (!rawText) return null;
+
+                      // Strip basic markdown syntax if present to ensure clean processing
+                      const cleaned = rawText.replace(/###\s*/g, '').replace(/\*\*/g, '');
+                      const lines = cleaned.split('\n').map(l => l.trim()).filter(l => l);
+
+                      let blocks = [];
+                      let currentTitle = null;
+                      let currentBody = [];
+
+                      lines.forEach(line => {
+                        // Dynamically determine if the line acts as a header (short, lacks sentence-ending punctuation)
+                        const isHeader = line.length < 50 && !line.match(/[.!?"]$/) && !line.includes(': ');
+
+                        if (isHeader) {
+                          if (currentBody.length > 0 || currentTitle) {
+                            blocks.push({ title: currentTitle, body: currentBody });
+                          }
+                          currentTitle = line;
+                          currentBody = [];
+                        } else {
+                          currentBody.push(line);
+                        }
+                      });
+
+                      if (currentBody.length > 0 || currentTitle) {
+                        blocks.push({ title: currentTitle, body: currentBody });
+                      }
+
+                      return blocks.map((block, i) => (
+                        <div key={i} className="bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
+                          {block.title && (
+                            <h4 className="font-sans text-sm sm:text-base font-bold text-indigo-800 mb-3 sm:mb-4 uppercase tracking-wider flex items-center gap-2 border-b border-stone-100 pb-2">
+                              <Sparkles size={16} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                              {block.title}
+                            </h4>
+                          )}
+                          {block.body && block.body.length > 0 && (
+                            <div className="space-y-3">
+                              {block.body.map((paragraph, pIdx) => {
+                                // Safely bold lines that have colons prefixing them like "Artifact Name: definition"
+                                const colonIdx = paragraph.indexOf(': ');
+                                if (colonIdx !== -1 && colonIdx < 60) {
+                                  return (
+                                    <p key={pIdx} className="text-base sm:text-lg text-stone-700 leading-relaxed font-sans">
+                                      <strong className="text-stone-900 font-semibold">{paragraph.substring(0, colonIdx)}</strong>:
+                                      {paragraph.substring(colonIdx + 1)}
+                                    </p>
+                                  );
+                                }
+                                return (
+                                  <p key={pIdx} className="text-base sm:text-lg text-stone-700 leading-relaxed font-sans">
+                                    {paragraph}
+                                  </p>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               </>

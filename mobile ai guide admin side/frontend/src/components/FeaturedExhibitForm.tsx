@@ -17,7 +17,7 @@ export const FeaturedExhibitForm: React.FC<Props> = ({
   const [name, setName] = useState(exhibit?.name || "");
   const [description, setDescription] = useState(exhibit?.description || "");
   const [estimated, setEstimated] = useState<number>(
-    exhibit?.estimated_visit_minutes || 30,
+    exhibit?.estimated_visit_minutes || 0,
   );
   const [imageUrl, setImageUrl] = useState<string | undefined>(
     (exhibit && (exhibit as any).imageUrl) || undefined,

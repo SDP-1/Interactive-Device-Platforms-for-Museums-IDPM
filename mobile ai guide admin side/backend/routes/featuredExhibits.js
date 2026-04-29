@@ -142,7 +142,7 @@ router.post("/featured-exhibits", async (req, res) => {
       name,
       description: description || null,
       imageUrl: imageUrl || null,
-      estimated_visit_minutes: estimated_visit_minutes || 30,
+      estimated_visit_minutes: estimated_visit_minutes || 0,
       // store artifact_id strings
       artifacts: validatedArtifacts.map((a) => a.artifact_id),
       order: Array.isArray(order)
