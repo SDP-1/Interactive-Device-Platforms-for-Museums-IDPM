@@ -7,6 +7,8 @@ import chromadb
 from chromadb.utils import embedding_functions
 import os
 import json
+import shutil
+from datetime import datetime
 
 class VideoVectorDB:
     def __init__(self, persist_directory=None):
@@ -26,18 +28,60 @@ class VideoVectorDB:
         self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2"  # Fast and accurate, good for semantic search
         )
-        
-        # Initialize ChromaDB with persistence
-        self.client = chromadb.PersistentClient(path=persist_directory)
-        
-        # Create or get the videos collection
-        self.collection = self.client.get_or_create_collection(
-            name="historical_videos",
-            embedding_function=self.embedding_fn,
-            metadata={"description": "Sri Lankan historical event videos"}
-        )
+
+        self.persist_directory = persist_directory
+        self._initialize_collection_with_recovery()
         
         print(f"✓ Video DB initialized with {self.collection.count()} videos")
+
+    def _initialize_collection_with_recovery(self):
+        """Initialize Chroma collection, auto-recovering from schema mismatch."""
+        try:
+            # Initialize ChromaDB with persistence
+            self.client = chromadb.PersistentClient(path=self.persist_directory)
+
+            # Create or get the videos collection
+            self.collection = self.client.get_or_create_collection(
+                name="historical_videos",
+                embedding_function=self.embedding_fn,
+                metadata={"description": "Sri Lankan historical event videos"}
+            )
+        except Exception as exc:
+            error_text = str(exc)
+            if "no such column: collections.topic" not in error_text:
+                raise
+
+            # Existing DB is from an incompatible schema/version. Keep backup, then recreate.
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_dir = f"{self.persist_directory}_backup_{timestamp}"
+            print(
+                "⚠ Incompatible ChromaDB schema detected. "
+                f"Backing up old DB to: {backup_dir}"
+            )
+
+            target_directory = self.persist_directory
+            try:
+                shutil.move(self.persist_directory, backup_dir)
+                os.makedirs(self.persist_directory, exist_ok=True)
+            except PermissionError:
+                # On Windows the sqlite file can be locked by another process.
+                # If so, keep the old folder as-is and continue with a fresh folder.
+                target_directory = f"{self.persist_directory}_fresh_{timestamp}"
+                os.makedirs(target_directory, exist_ok=True)
+                print(
+                    "⚠ Existing DB is locked by another process. "
+                    f"Using fresh DB folder: {target_directory}"
+                )
+
+            self.persist_directory = target_directory
+
+            self.client = chromadb.PersistentClient(path=self.persist_directory)
+            self.collection = self.client.get_or_create_collection(
+                name="historical_videos",
+                embedding_function=self.embedding_fn,
+                metadata={"description": "Sri Lankan historical event videos"}
+            )
+            print("✓ Recreated fresh compatible video database")
     
     def add_video(self, video_id: str, video_path: str, 
                   description: str, topics: list, 
