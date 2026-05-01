@@ -315,11 +315,16 @@ const PaintingSimulation = ({ gameState, updateGameState, onBackToMenu }) => {
 
   const resetPuzzle = () => {
     if (puzzlePieces.length > 0 && selectedDifficulty) {
+      // Calculate score reduction based on currently placed pieces
+      const placedCount = pieces.filter(p => p.placed).length;
+      const scoreReduction = placedCount * 100;
+
       setPieces(puzzlePieces);
       setCompletedPieces(0);
       setShowSuccess(false);
 
       updateGameState({
+        score: Math.max(0, gameState.score - scoreReduction),
         progress: { ...gameState.progress, painting: 0 }
       });
     }
@@ -955,7 +960,7 @@ const PaintingSimulation = ({ gameState, updateGameState, onBackToMenu }) => {
   return (
     <div className="w-full h-screen overflow-hidden flex flex-col bg-[#2D2E28]">
       <div className="pt-4">
-        <GameUI gameState={gameState} />
+        <GameUI gameState={gameState} currentCraft="painting" />
       </div>
       {/* Header - Styled as per NewDesign.png */}
       <div className="bg-[#21221D] px-8 pt-6 pb-2 border-b-4 border-[#1A1B16] relative z-50">
