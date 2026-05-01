@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { askQuestion, getExampleQuestions, checkHealth } from './services/api'
 import StoryAnswer from './components/StoryAnswer'
 import HomePage from './components/HomePage'
+import logo from './assets/logo.png'
 import { 
   Landmark, 
   Mic, 
@@ -237,23 +238,36 @@ function App() {
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col text-stone-900">
       {/* Header */}
-      <header className="border-b border-stone-200 bg-white py-4 px-4 md:px-6 shadow-sm">
+      <header className="border-b border-stone-200 bg-white/95 backdrop-blur py-3 px-4 md:px-6 shadow-sm sticky top-0 z-30">
         <div className="w-full max-w-[1780px] mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-              <Landmark className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 rounded-xl border border-stone-200 bg-white flex items-center justify-center overflow-hidden shadow-sm">
+              <img src={logo} alt="Museum logo" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-xl font-bold text-stone-800">
-              Ask About Sri Lankan History
-            </h1>
-      </div>
-          <div className="flex items-center gap-4">
-            <button className="text-orange-500 hover:text-orange-600 transition-colors">
-              <Globe className="w-6 h-6" />
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-stone-800 leading-tight">
+                Sri Lankan History Narrator
+              </h1>
+              <p className="text-xs md:text-sm text-stone-500">
+                Interactive Museum Kiosk
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border border-stone-200 bg-stone-50">
+              <span className={`w-2 h-2 rounded-full ${
+                backendStatus === 'connected' ? 'bg-emerald-500' : 'bg-rose-500'
+              }`} />
+              <span className="text-xs font-semibold text-stone-600 uppercase tracking-wide">
+                {backendStatus === 'connected' ? 'Online' : 'Offline'}
+              </span>
+            </div>
+            <button className="w-10 h-10 rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center justify-center">
+              <Globe className="w-5 h-5" />
             </button>
             <a 
               href="http://localhost:8000/kiosk_home.html"
-              className="bg-white hover:bg-orange-500 border-2 border-orange-500 text-orange-500 hover:text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-colors no-underline font-semibold"
+              className="bg-white hover:bg-orange-500 border-2 border-orange-500 text-orange-500 hover:text-white px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors no-underline font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
