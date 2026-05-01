@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { askQuestion, getExampleQuestions, checkHealth } from './services/api'
 import StoryAnswer from './components/StoryAnswer'
 import HomePage from './components/HomePage'
@@ -34,6 +34,11 @@ function App() {
   const [examples, setExamples] = useState([])
   const [backendStatus, setBackendStatus] = useState('checking')
   const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [isListening, setIsListening] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(true)
+  const equalizerHeights = useMemo(() => [22, 34, 28, 38, 26], [])
+  const recognitionRef = useRef(null)
 
   // Check backend health with retry
   const checkBackendHealth = async (retries = 3) => {
@@ -70,6 +75,51 @@ function App() {
     return () => clearInterval(healthInterval)
   }, [])
 
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setSpeechSupported(false)
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = true
+    recognition.continuous = false
+
+    recognition.onresult = (event) => {
+      let transcript = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript
+      }
+      setQuestion(transcript.trim())
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognition.onerror = () => {
+      setIsListening(false)
+      setError('Voice input failed. Please try again.')
+    }
+
+    recognitionRef.current = recognition
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+    }
+  }, [])
+
   const handleSubmit = async (e) => {
     e?.preventDefault()
     if (!question.trim()) return
@@ -94,10 +144,26 @@ function App() {
   }
 
   const handleListenClick = () => {
-    if (!question.trim()) {
-      handleSubmit()
+    if (!speechSupported || !recognitionRef.current) {
+      setError('Voice input is not supported in this browser.')
+      return
     }
-    setIsPlaying(!isPlaying)
+
+    setError(null)
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+      return
+    }
+
+    try {
+      recognitionRef.current.start()
+      setIsListening(true)
+    } catch {
+      setIsListening(false)
+      setError('Could not start voice input. Please try again.')
+    }
   }
 
   const handleAskAnother = () => {
@@ -128,6 +194,23 @@ function App() {
     "What happened during King Dutugemunu's reign?",
     "How did the Kingdom of Kandy resist colonial rule?"
   ]
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })
+  }
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
 
   // Show HomePage (Dashboard)
   if (currentPage === 'home') {
@@ -181,7 +264,7 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 w-full max-w-[1780px] mx-auto px-4 md:px-6 py-6 md:py-8 flex flex-col">
-        <section className="mb-5 bg-gradient-to-r from-[#292524] via-[#44403C] to-[#57534E] rounded-3xl p-6 md:p-8 xl:p-10 text-white shadow-2xl">
+        <section className="mb-5 bg-[#292524] rounded-3xl p-6 md:p-8 xl:p-10 text-white shadow-2xl">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs uppercase tracking-wider mb-4">
@@ -196,6 +279,14 @@ function App() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 min-w-[220px] xl:min-w-[260px]">
+              <div className="col-span-2 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center">
+                <p className="text-3xl md:text-4xl font-extrabold text-orange-300 leading-none">
+                  {formatTime(currentTime)}
+                </p>
+                <p className="text-sm md:text-base font-semibold text-orange-200 mt-1">
+                  {formatDate(currentTime)}
+                </p>
+              </div>
               <div className="bg-white/10 border border-white/20 rounded-2xl px-4 py-3">
                 <p className="text-xs uppercase tracking-wide text-white/70">Session</p>
                 <p className="text-sm font-semibold">Walk-in Visitor</p>
@@ -224,13 +315,15 @@ function App() {
                 disabled={loading}
               />
               <button
-                onClick={question.trim() ? handleSubmit : undefined}
+                onClick={question.trim() ? handleSubmit : handleListenClick}
                 className={`absolute right-4 top-4 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${
                   question.trim()
                     ? 'bg-orange-500 hover:bg-orange-600 hover:scale-105'
-                    : 'bg-stone-300 hover:bg-stone-400'
+                    : isListening
+                    ? 'bg-orange-700 hover:bg-orange-800 animate-pulse'
+                    : 'bg-orange-500 hover:bg-orange-600 hover:scale-105'
                 }`}
-                title={question.trim() ? "Send question" : "Voice input"}
+                title={question.trim() ? "Send question" : isListening ? "Stop voice input" : "Start voice input"}
                 disabled={loading}
               >
                 {question.trim() ? (
@@ -306,11 +399,11 @@ function App() {
             <p className="text-sm text-stone-500 mb-6">Audio mood presets and backend health</p>
 
             <div className="flex justify-center gap-1 mb-6">
-              {[...Array(5)].map((_, i) => (
+              {equalizerHeights.map((barHeight, i) => (
                 <div
                   key={i}
                   className={`w-2 bg-orange-300 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}
-                  style={{ height: `${20 + Math.random() * 30}px`, animationDelay: `${i * 0.1}s` }}
+                  style={{ height: `${barHeight}px`, animationDelay: `${i * 0.1}s` }}
                 />
               ))}
             </div>
