@@ -122,7 +122,7 @@ class VideoVectorDB:
         )
         print(f"✓ Added video: {video_id}")
     
-    def find_video(self, question: str, answer: str = "", threshold: float = 0.75):
+    def find_video(self, question: str, answer: str = "", threshold: float = 0.55):
         """
         Find the best matching video for a question/answer
         
@@ -138,27 +138,63 @@ class VideoVectorDB:
         if self.collection.count() == 0:
             return None
         
-        # Combine question and answer for better matching
-        search_text = f"{question} {answer}"
-        
-        results = self.collection.query(
-            query_texts=[search_text],
-            n_results=1,
-            include=["metadatas", "distances"]
-        )
-        
-        if results and results['ids'] and results['ids'][0]:
-            # ChromaDB returns L2 distance - lower is better
-            # Convert to similarity score (0-1, higher is better)
-            distance = results['distances'][0][0]
-            similarity = 1 / (1 + distance)  # Normalize to 0-1 range
-            
-            print(f"  Video match: {results['ids'][0][0]} (similarity: {similarity:.3f})")
-            
-            if similarity >= threshold:
-                metadata = results['metadatas'][0][0]
+        # Evaluate both focused and contextual queries.
+        # Question-only helps targeted matches (e.g. "elara dutugemunu war"),
+        # while question+answer helps when answer adds useful context.
+        query_texts = [question]
+        if answer and answer.strip():
+            query_texts.append(f"{question} {answer}")
+
+        best_match = None
+        best_adjusted_score = 0.0
+        question_tokens = {
+            token.lower()
+            for token in question.replace(",", " ").split()
+            if len(token.strip()) > 2
+        }
+
+        for search_text in query_texts:
+            results = self.collection.query(
+                query_texts=[search_text],
+                n_results=min(3, self.collection.count()),
+                include=["metadatas", "distances"]
+            )
+
+            if not (results and results['ids'] and results['ids'][0]):
+                continue
+
+            for i, video_id in enumerate(results['ids'][0]):
+                # ChromaDB returns L2 distance - lower is better
+                distance = results['distances'][0][i]
+                similarity = 1 / (1 + distance)
+                metadata = results['metadatas'][0][i]
+
+                # Add a small boost when question tokens overlap with video topics.
+                # This improves retrieval for multi-keyword questions.
+                topics = json.loads(metadata.get('topics', '[]'))
+                topic_tokens = {
+                    token.lower()
+                    for topic in topics
+                    for token in str(topic).replace(",", " ").split()
+                    if len(token.strip()) > 2
+                }
+                overlap = len(question_tokens.intersection(topic_tokens))
+                adjusted_score = similarity + min(0.12, overlap * 0.04)
+
+                if adjusted_score > best_adjusted_score:
+                    best_adjusted_score = adjusted_score
+                    best_match = (video_id, metadata, similarity)
+
+        if best_match:
+            video_id, metadata, similarity = best_match
+            print(
+                f"  Video match: {video_id} "
+                f"(similarity: {similarity:.3f}, adjusted: {best_adjusted_score:.3f})"
+            )
+
+            if best_adjusted_score >= threshold:
                 return {
-                    "video_id": results['ids'][0][0],
+                    "video_id": video_id,
                     "video_path": metadata['video_path'],
                     "poster_path": metadata.get('poster_path') or None,
                     "description": metadata['description'],
@@ -166,8 +202,11 @@ class VideoVectorDB:
                     "era": metadata.get('era') or None,
                     "similarity": round(similarity, 3)
                 }
-            else:
-                print(f"  Similarity {similarity:.3f} below threshold {threshold}")
+
+            print(
+                f"  Adjusted similarity {best_adjusted_score:.3f} "
+                f"below threshold {threshold}"
+            )
         
         return None
     
