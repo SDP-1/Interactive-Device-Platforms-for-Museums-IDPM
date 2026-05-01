@@ -306,12 +306,12 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   const showVideo = videoInfo && videoInfo.video_path && !videoError
 
   return (
-    <div className="min-h-screen bg-[#F5F3EE] flex flex-col">
+    <div className="min-h-screen bg-stone-100 flex flex-col text-stone-900">
       {/* Header */}
-      <header className="bg-white border-b border-stone-200 py-4 px-6">
-        <div className="container mx-auto flex items-center justify-between">
+      <header className="border-b border-stone-200 bg-white py-4 px-4 md:px-6 shadow-sm">
+        <div className="w-full max-w-[1780px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#D97706] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30">
               <Circle className="w-5 h-5 text-white fill-white" />
             </div>
             <h1 className="text-xl font-bold text-stone-800">
@@ -319,10 +319,10 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <button className="text-stone-600 hover:text-stone-800 transition-colors">
+            <button className="text-stone-500 hover:text-stone-700 transition-colors">
               <Settings className="w-6 h-6" />
             </button>
-            <button className="text-stone-600 hover:text-stone-800 transition-colors">
+            <button className="text-stone-500 hover:text-stone-700 transition-colors">
               <HelpCircle className="w-6 h-6" />
             </button>
           </div>
@@ -330,14 +330,36 @@ function StoryAnswer({ answer, question, onAskAnother }) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 py-8">
-        <div className="flex flex-col lg:flex-row gap-6 h-full">
-          
-          {/* Left Side - Video/Image Card */}
-          <div 
-            ref={videoContainerRef}
-            className={`relative rounded-2xl overflow-hidden shadow-xl flex-1 aspect-video ${isFullscreen ? 'bg-black' : ''}`}
-          >
+      <main className="flex-1 px-4 md:px-6 py-5 md:py-6">
+        <div className="w-full max-w-[1780px] mx-auto space-y-5 md:space-y-6">
+          <section className="bg-white border border-stone-200 rounded-3xl shadow-xl p-5 md:p-6">
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-stone-500 mb-1">Now Playing</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-stone-800">{storyTitle}</h2>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-stone-200 px-4 py-2 bg-stone-50">
+                  <p className="text-xs uppercase tracking-wider text-stone-500">Progress</p>
+                  <p className="font-semibold text-stone-800">{formatTime(currentTime)} / {formatTime(totalTime)}</p>
+                </div>
+                <button
+                  onClick={onAskAnother}
+                  className="bg-white hover:bg-stone-50 text-stone-700 font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-stone-300"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  New Question
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 xl:gap-6">
+            {/* Left Side - Video/Image Card */}
+            <div
+              ref={videoContainerRef}
+              className={`xl:col-span-9 relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 aspect-video ${isFullscreen ? 'bg-black' : 'bg-stone-200'}`}
+            >
             {/* Fullscreen Toggle Button */}
             <button
               onClick={toggleFullscreen}
@@ -404,8 +426,8 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             
             {/* Title Badge */}
             <div className="absolute top-6 left-6 z-10">
-              <div className="bg-[#D97706] text-white px-4 py-2 rounded-lg font-semibold shadow-lg">
-                {storyTitle}
+              <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-xl font-semibold shadow-lg">
+                Immersive Narration
               </div>
               {/* Video indicator badge */}
               {videoInfo && (
@@ -434,7 +456,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             {/* Story Text Overlay - Hidden in fullscreen */}
             {!isFullscreen && (
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="p-5">
+                <div className="rounded-2xl bg-black/30 backdrop-blur-sm p-5 border border-white/20">
                   <p className="text-xl leading-relaxed text-white drop-shadow-lg">
                     {/* Show current sentence and 1 sentence context (before/after) */}
                     {(() => {
@@ -449,7 +471,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                             key={actualIndex}
                             className={`transition-all duration-500 drop-shadow-md ${
                               actualIndex === currentSentenceIndex
-                                ? 'text-[#D97706] font-bold text-2xl'
+                                ? 'text-[#F97316] font-bold text-2xl'
                                 : actualIndex < currentSentenceIndex
                                 ? 'text-white/40 text-lg'
                                 : 'text-white/60 text-lg'
@@ -468,7 +490,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                     </span>
                     <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-[#D97706] rounded-full transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-300"
                         style={{ width: `${((currentSentenceIndex + 1) / sentences.length) * 100}%` }}
                       />
                     </div>
@@ -496,7 +518,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                             key={actualIndex}
                             className={`transition-all duration-500 ${
                               actualIndex === currentSentenceIndex
-                                ? 'text-[#D97706] font-bold text-4xl'
+                                ? 'text-[#F97316] font-bold text-4xl'
                                 : actualIndex < currentSentenceIndex
                                 ? 'text-white/30 text-xl'
                                 : 'text-white/50 text-xl'
@@ -520,7 +542,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                 <div className="max-w-4xl mx-auto mb-4">
                   <div className="h-1.5 bg-white/30 rounded-full overflow-hidden cursor-pointer">
                     <div 
-                      className="h-full bg-[#D97706] rounded-full transition-all duration-300"
+                      className="h-full bg-[#F97316] rounded-full transition-all duration-300"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
@@ -541,7 +563,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   </button>
                   <button 
                     onClick={togglePlayPause}
-                    className="w-16 h-16 bg-[#D97706] hover:bg-[#B45309] rounded-full flex items-center justify-center shadow-lg transition-colors"
+                    className="w-16 h-16 bg-[#F97316] hover:bg-[#EA580C] rounded-full flex items-center justify-center shadow-lg transition-colors"
                   >
                     {isPlaying ? (
                       <Pause className="w-8 h-8 text-white" />
@@ -552,15 +574,15 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                 </div>
               </div>
             )}
-          </div>
+            </div>
 
-          {/* Right Side - Narrator Panel */}
-          <div className="space-y-4 w-full lg:w-[420px] lg:ml-auto lg:mr-0 lg:flex-shrink-0">
+            {/* Right Side - Narrator Panel */}
+            <div className="xl:col-span-3 space-y-4 xl:sticky xl:top-5 self-start">
             {/* AI Narrator Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white border border-stone-200 rounded-3xl shadow-xl p-8">
               {/* Mic Icon */}
               <div className="flex justify-center mb-4">
-                <div className="w-20 h-20 bg-[#D97706] rounded-full flex items-center justify-center shadow-lg">
+                <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
               </div>
@@ -577,7 +599,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                 {[...Array(7)].map((_, i) => (
                   <div
                     key={i}
-                    className="w-2 bg-[#D97706] rounded-full transition-all duration-150"
+                    className="w-2 bg-gradient-to-t from-orange-500 to-orange-500 rounded-full transition-all duration-150"
                     style={{
                       height: isPlaying 
                         ? `${12 + Math.sin(Date.now() / 200 + i * 0.8) * 15 + 10}px` 
@@ -591,7 +613,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               <div className="mb-2">
                 <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-[#D97706] rounded-full transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -605,7 +627,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               <div className="flex justify-center items-center gap-4">
                 <button 
                   onClick={togglePlayPause}
-                  className="w-14 h-14 bg-[#D97706] hover:bg-[#B45309] rounded-full flex items-center justify-center shadow-lg transition-colors"
+                  className="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                 >
                   {isPlaying ? (
                     <Pause className="w-7 h-7 text-white" />
@@ -613,13 +635,13 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                     <Play className="w-7 h-7 text-white ml-1" />
                   )}
                 </button>
-                <button 
+                <button
                   onClick={restartStory}
-                  className="w-12 h-12 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center transition-colors"
+                  className="w-12 h-12 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center transition-colors border border-stone-200"
                 >
                   <RotateCcw className="w-5 h-5 text-stone-600" />
                 </button>
-                <button className="w-12 h-12 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center transition-colors">
+                <button className="w-12 h-12 bg-stone-100 hover:bg-stone-200 rounded-full flex items-center justify-center transition-colors border border-stone-200">
                   <HelpCircle className="w-5 h-5 text-stone-600" />
                 </button>
               </div>
@@ -628,7 +650,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             {/* Replay Story Button */}
             <button 
               onClick={restartStory}
-              className="w-full bg-[#D97706] hover:bg-[#B45309] text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-md"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-200 shadow-md hover:-translate-y-0.5"
             >
               <RotateCcw className="w-5 h-5" />
               Replay Story
@@ -644,11 +666,11 @@ function StoryAnswer({ answer, question, onAskAnother }) {
             </button>
 
             {/* Current Topic Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white border border-stone-200 rounded-3xl shadow-xl p-6">
               <h4 className="font-bold text-stone-800 mb-4">Current Topic</h4>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-stone-600">
-                  <MapPin className="w-5 h-5 text-[#D97706]" />
+                  <MapPin className="w-5 h-5 text-[#F97316]" />
                   <span className="text-sm">{topicInfo.location}</span>
                 </div>
                 <div className="flex items-center gap-3 text-stone-600">
@@ -660,8 +682,41 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   <span className="text-sm">{topicInfo.period}</span>
                 </div>
               </div>
+              <div className="mt-4 pt-4 border-t border-stone-200">
+                <p className="text-xs text-stone-500">
+                  Pro tip: Use fullscreen mode for immersive museum kiosk playback.
+                </p>
+              </div>
+            </div>
             </div>
           </div>
+
+          <section className="bg-white border border-stone-200 rounded-3xl shadow-xl p-5 md:p-6">
+            <h3 className="text-lg font-semibold text-stone-800 mb-4">Narration Controls</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button
+                onClick={togglePlayPause}
+                className="rounded-2xl bg-stone-900 hover:bg-black text-white py-4 px-5 flex items-center justify-center gap-2 font-semibold transition-colors"
+              >
+                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                {isPlaying ? 'Pause Narration' : 'Play Narration'}
+              </button>
+              <button
+                onClick={restartStory}
+                className="rounded-2xl bg-white hover:bg-stone-50 text-stone-700 py-4 px-5 flex items-center justify-center gap-2 font-semibold border border-stone-300 transition-colors"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Restart Story
+              </button>
+              <button
+                onClick={toggleFullscreen}
+                className="rounded-2xl bg-white hover:bg-stone-50 text-stone-700 py-4 px-5 flex items-center justify-center gap-2 font-semibold border border-stone-300 transition-colors"
+              >
+                {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Mode'}
+              </button>
+            </div>
+          </section>
         </div>
       </main>
     </div>
