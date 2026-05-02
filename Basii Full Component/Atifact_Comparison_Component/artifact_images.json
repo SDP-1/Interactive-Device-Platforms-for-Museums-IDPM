@@ -50,12 +50,26 @@
   "C021": "images/C021_MexicanMural.jpg",
   "A026": "images/A026_MughalArt.jpg",
   "C022": "images/C022_TangMural.jpg",
-  "A029": "images/A029_KandyanRobes.jpg",
+  "A029": [
+    "images/A029_KandyanRobes.jpg",
+    "images/A029_KandyanRobes_2.jpg"
+  ],
   "C023": [
     "images/C023_Kimono.jpg",
     "images/C023_Kimono_2.jpg"
   ],
-  "A030": "images/A030_Saree.jpg",
-  "C024": "images/C024_ImperialRobe.jpg",
-  "A031": "images/A031_RajputAttire.jpg"
+  "A030": [
+    "images/A030_Saree.jpg",
+    "images/A030_Saree_2.jpg"
+  ],
+  "C024": [
+    "images/C024_ImperialRobe.jpg",
+    "images/C024_ImperialRobe_2.jpg",
+    "images/C024_ImperialRobe_3.jpg"
+  ],
+  "A031": [
+    "images/A031_RajputAttire.jpg",
+    "images/A031_RajputAttire_2.jpg",
+    "images/A031_RajputAttire_3.jpg"
+  ]
 }
