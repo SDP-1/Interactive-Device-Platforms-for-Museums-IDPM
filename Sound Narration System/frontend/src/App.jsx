@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { askQuestion, getExampleQuestions, checkHealth } from './services/api'
+import { askQuestion, getExampleQuestions, checkHealth, getReviewSummary } from './services/api'
 import StoryAnswer from './components/StoryAnswer'
 import HomePage from './components/HomePage'
+import ReviewsPage from './components/ReviewsPage'
 import logo from './assets/logo.png'
 import { 
   Landmark, 
@@ -16,30 +17,89 @@ import {
   Drum,
   Loader2,
   CircleHelp,
-  ArrowLeft
+  ArrowLeft,
+  Star
 } from 'lucide-react'
 
-// Start on Ask screen when opened from kiosk (e.g. ?page=ask)
-function getInitialPage() {
-  if (typeof window === 'undefined') return 'home'
+function parseUrlRoute() {
+  if (typeof window === 'undefined') {
+    return { page: 'home', reviewReturn: null }
+  }
   const params = new URLSearchParams(window.location.search)
-  return params.get('page') === 'ask' ? 'ask' : 'home'
+  const p = params.get('page')
+  const ret = params.get('return')
+  let page = 'home'
+  if (p === 'ask') page = 'ask'
+  else if (p === 'reviews') page = 'reviews'
+
+  // `return` means different things depending on `page`
+  const reviewReturn = page === 'reviews' ? ret : null
+  return { page, reviewReturn }
+}
+
+// Deep link: ?page=ask | ?page=reviews | default home
+function getInitialPage() {
+  return parseUrlRoute().page
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState(getInitialPage) // 'home', 'ask', 'answer'
+  const [currentPage, setCurrentPage] = useState(getInitialPage) // 'home', 'ask', 'answer', 'reviews'
+  const [reviewsReturnTarget, setReviewsReturnTarget] = useState(() => parseUrlRoute().reviewReturn)
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [examples, setExamples] = useState([])
   const [backendStatus, setBackendStatus] = useState('checking')
-  const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isListening, setIsListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(true)
+  const [avgRating, setAvgRating] = useState(null)
+  const [reviewCount, setReviewCount] = useState(null)
   const equalizerHeights = useMemo(() => [22, 34, 28, 38, 26], [])
   const recognitionRef = useRef(null)
+
+  const syncLocationForPage = (page, options = {}) => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const usePush = Boolean(options.push)
+    if (page === 'home') {
+      params.delete('page')
+      params.delete('return')
+    } else if (page === 'ask') {
+      params.set('page', 'ask')
+      if (options.returnMarker === 'story') params.set('return', 'story')
+      else params.delete('return')
+    } else if (page === 'reviews') {
+      params.set('page', 'reviews')
+      if (options.returnTarget === 'story') params.set('return', 'story')
+      else if (options.returnTarget === 'ask') params.set('return', 'ask')
+      else params.delete('return')
+    }
+    const qs = params.toString()
+    const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`
+    if (usePush) window.history.pushState({}, '', url)
+    else window.history.replaceState({}, '', url)
+  }
+
+  useEffect(() => {
+    const onPopState = () => {
+      const { page, reviewReturn } = parseUrlRoute()
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        const ret = params.get('return')
+        if (page === 'ask' && ret === 'story') {
+          setCurrentPage('answer')
+          setReviewsReturnTarget(null)
+          return
+        }
+      }
+      setCurrentPage(page)
+      setReviewsReturnTarget(reviewReturn)
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
 
   // Check backend health with retry
   const checkBackendHealth = async (retries = 3) => {
@@ -48,7 +108,7 @@ function App() {
         await checkHealth()
         setBackendStatus('connected')
         return true
-      } catch (err) {
+      } catch {
         console.log(`Health check attempt ${i + 1} failed, retrying...`)
         await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second before retry
       }
@@ -74,6 +134,20 @@ function App() {
     }, 10000)
 
     return () => clearInterval(healthInterval)
+  }, [])
+
+  useEffect(() => {
+    getReviewSummary()
+      .then((data) => {
+        if (data.success && typeof data.avgRating === 'number') {
+          setAvgRating(data.avgRating)
+          setReviewCount(typeof data.totalReviews === 'number' ? data.totalReviews : 0)
+        }
+      })
+      .catch(() => {
+        setAvgRating(null)
+        setReviewCount(null)
+      })
   }, [])
 
   useEffect(() => {
@@ -133,7 +207,8 @@ function App() {
       const response = await askQuestion(question)
       setAnswer(response)
       setCurrentPage('answer')
-    } catch (err) {
+      syncLocationForPage('ask', { returnMarker: 'story' })
+    } catch {
       setError('Failed to get answer. Please make sure the backend is running.')
     } finally {
       setLoading(false)
@@ -172,6 +247,7 @@ function App() {
     setQuestion('')
     setError(null)
     setCurrentPage('ask')
+    syncLocationForPage('ask')
   }
 
   // Navigation handler for HomePage
@@ -180,13 +256,26 @@ function App() {
       setQuestion(`Tell me about ${prefillQuestion}`)
     }
     setCurrentPage(page)
+    if (page === 'ask') syncLocationForPage('ask')
+    else if (page === 'home') syncLocationForPage('home')
   }
 
-  const handleGoHome = () => {
-    setCurrentPage('home')
-    setAnswer(null)
-    setQuestion('')
-    setError(null)
+  const goToReviews = (returnTarget) => {
+    setReviewsReturnTarget(returnTarget || null)
+    setCurrentPage('reviews')
+    syncLocationForPage('reviews', { returnTarget, push: true })
+  }
+
+  const handleBackFromReviews = () => {
+    const target = reviewsReturnTarget
+    setReviewsReturnTarget(null)
+    if (target === 'story' && answer) {
+      setCurrentPage('answer')
+      syncLocationForPage('ask')
+      return
+    }
+    setCurrentPage('ask')
+    syncLocationForPage('ask')
   }
 
   // Default examples if API fails
@@ -223,6 +312,16 @@ function App() {
     )
   }
 
+  if (currentPage === 'reviews') {
+    const sessionType = reviewsReturnTarget === 'story' ? 'after_story' : 'ask_screen'
+    return (
+      <ReviewsPage
+        onBack={handleBackFromReviews}
+        defaultSessionType={sessionType}
+      />
+    )
+  }
+
   // Show Story Answer page when we have an answer
   if (answer && currentPage === 'answer') {
     return (
@@ -230,6 +329,8 @@ function App() {
         answer={answer}
         question={question}
         onAskAnother={handleAskAnother}
+        onGoToReviews={() => goToReviews('story')}
+        backendStatus={backendStatus}
       />
     )
   }
@@ -264,6 +365,17 @@ function App() {
             </div>
             <button className="w-10 h-10 rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center justify-center">
               <Globe className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => goToReviews('ask')}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl border-2 border-orange-500 bg-white text-orange-600 hover:bg-orange-500 hover:text-white font-semibold transition-colors text-sm sm:text-base"
+            >
+              <Star className="w-4 h-4" />
+              Reviews
+              {avgRating != null && reviewCount != null && reviewCount > 0 && (
+                <span className="text-xs font-bold opacity-90">{avgRating.toFixed(1)}</span>
+              )}
             </button>
             <a 
               href="http://localhost:8000/kiosk_home.html"
@@ -416,7 +528,7 @@ function App() {
               {equalizerHeights.map((barHeight, i) => (
                 <div
                   key={i}
-                  className={`w-2 bg-orange-300 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}
+                  className="w-2 bg-orange-300 rounded-full"
                   style={{ height: `${barHeight}px`, animationDelay: `${i * 0.1}s` }}
                 />
               ))}

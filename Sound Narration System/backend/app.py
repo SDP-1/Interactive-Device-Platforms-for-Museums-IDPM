@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts.inference_structured import SriLankanHistoryQA
 from services.video_db import get_video_db
+from services.reviews_store import get_reviews_store
 
 app = Flask(__name__)
 
@@ -33,14 +34,138 @@ print("Initializing Video Vector Database...")
 video_db = get_video_db()
 print("Video DB ready!")
 
+reviews_store = get_reviews_store()
+if reviews_store.enabled:
+    print("Reviews store ready!")
+else:
+    print(f"Reviews store unavailable: {reviews_store.last_error}")
+
+
+def _serialize_review(doc):
+    created = doc.get("created_at")
+    created_iso = created.isoformat().replace("+00:00", "Z") if hasattr(created, "isoformat") else None
+    out = {
+        "id": doc.get("_id"),
+        "name": doc.get("name"),
+        "age": doc.get("age"),
+        "rating": int(doc.get("rating")),
+        "comment": doc.get("comment"),
+        "session_type": doc.get("session_type"),
+        "created_at": created_iso,
+    }
+    return out
+
+
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint"""
     return jsonify({
         "status": "ok", 
         "message": "Sri Lankan History Q&A API is running",
-        "video_count": video_db.collection.count()
+        "video_count": video_db.collection.count(),
+        "reviews_enabled": reviews_store.enabled,
     })
+
+@app.route('/api/reviews/summary', methods=['GET', 'OPTIONS'])
+def reviews_summary():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    try:
+        if not reviews_store.enabled:
+            return jsonify({
+                "success": False,
+                "avgRating": 0,
+                "totalReviews": 0,
+                "enabled": False,
+                "error": reviews_store.last_error or "Reviews unavailable",
+            }), 503
+
+        avg, total = reviews_store.summary()
+        return jsonify({
+            "success": True,
+            "avgRating": round(avg, 2) if total else 0,
+            "totalReviews": total,
+            "enabled": True,
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/reviews', methods=['GET', 'POST', 'OPTIONS'])
+def reviews():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    if request.method == 'GET':
+        try:
+            if not reviews_store.enabled:
+                return jsonify({
+                    "success": False,
+                    "reviews": [],
+                    "enabled": False,
+                    "error": reviews_store.last_error or "Reviews unavailable",
+                }), 503
+
+            limit = request.args.get('limit', default=50, type=int)
+            docs = reviews_store.list_recent(limit=limit)
+            return jsonify({
+                "success": True,
+                "reviews": [_serialize_review(d) for d in docs],
+                "enabled": True,
+            })
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+
+    # POST
+    try:
+        if not reviews_store.enabled:
+            return jsonify({
+                "success": False,
+                "enabled": False,
+                "error": reviews_store.last_error or "Reviews unavailable",
+            }), 503
+
+        data = request.get_json(silent=True) or {}
+        rating = data.get('rating')
+        comment = data.get('comment')
+        session_type = (data.get('session_type') or 'kiosk').strip() or 'kiosk'
+        name = data.get('name')
+        age = data.get('age')
+
+        if not isinstance(name, str) or not name.strip():
+            return jsonify({"success": False, "error": "name is required"}), 400
+        name_clean = name.strip()
+        if len(name_clean) > 120:
+            return jsonify({"success": False, "error": "name must be at most 120 characters"}), 400
+
+        try:
+            age_int = int(age)
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "error": "age must be a whole number"}), 400
+
+        if age_int < 1 or age_int > 120:
+            return jsonify({"success": False, "error": "age must be between 1 and 120"}), 400
+
+        try:
+            rating_int = int(rating)
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "error": "rating must be an integer 1-5"}), 400
+
+        if rating_int < 1 or rating_int > 5:
+            return jsonify({"success": False, "error": "rating must be between 1 and 5"}), 400
+
+        if comment is not None and not isinstance(comment, str):
+            return jsonify({"success": False, "error": "comment must be a string"}), 400
+
+        doc = reviews_store.insert_review(rating_int, comment, session_type, name_clean, age_int)
+        return jsonify({
+            "success": True,
+            "review": _serialize_review(doc),
+            "enabled": True,
+        }), 201
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/ask', methods=['POST', 'OPTIONS'])
 def ask_question():

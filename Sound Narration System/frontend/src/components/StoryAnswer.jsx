@@ -3,25 +3,34 @@ import {
   Mic, 
   Play, 
   Pause,
-  Settings,
   HelpCircle,
   RotateCcw,
   MessageSquare,
   MapPin,
   Calendar,
   Crown,
-  Circle,
   Maximize2,
   Minimize2,
   Video,
-  VideoOff
+  VideoOff,
+  Star,
+  Globe,
+  ArrowLeft
 } from 'lucide-react'
+import logo from '../assets/logo.png'
 
-function StoryAnswer({ answer, question, onAskAnother }) {
+function StoryAnswer({
+  answer,
+  question,
+  onAskAnother,
+  onGoToReviews,
+  backendStatus = 'checking',
+}) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isSpeechSupported, setIsSpeechSupported] = useState(true)
+  const isSpeechSupported =
+    typeof window !== 'undefined' && 'speechSynthesis' in window
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(-1)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [videoError, setVideoError] = useState(false)
@@ -55,16 +64,9 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   const wordCount = storyText.split(/\s+/).length
   const totalTime = Math.ceil((wordCount / 127) * 60) // seconds - adjusted for slower speech rate
   
-  // Calculate time per sentence (proportional to word count)
-  const sentenceTimings = sentences.map(sentence => {
-    const words = sentence.split(/\s+/).length
-    return (words / wordCount) * totalTime
-  })
-
-  // Initialize speech synthesis
+  // Initialize speech synthesis utterance (browser-only)
   useEffect(() => {
-    if (!('speechSynthesis' in window)) {
-      setIsSpeechSupported(false)
+    if (!isSpeechSupported) {
       console.warn('Text-to-speech not supported in this browser')
       return
     }
@@ -161,7 +163,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
     return () => {
       window.speechSynthesis.cancel()
     }
-  }, [storyText, totalTime])
+  }, [storyText, totalTime, isSpeechSupported])
 
   // Sync video with audio playback
   useEffect(() => {
@@ -258,13 +260,6 @@ function StoryAnswer({ answer, question, onAskAnother }) {
     return () => clearInterval(interval)
   }, [isPlaying, totalTime])
   
-  // Reset sentence index when restarting
-  useEffect(() => {
-    if (currentTime === 0) {
-      setCurrentSentenceIndex(isPlaying ? 0 : -1)
-    }
-  }, [currentTime, isPlaying])
-
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -272,6 +267,9 @@ function StoryAnswer({ answer, question, onAskAnother }) {
   }
 
   const progressPercent = (currentTime / totalTime) * 100
+
+  const activeSentenceIndex =
+    currentTime === 0 ? (isPlaying ? 0 : -1) : currentSentenceIndex
 
   // Extract topic info from answer or video info
   const topicInfo = {
@@ -307,24 +305,47 @@ function StoryAnswer({ answer, question, onAskAnother }) {
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col text-stone-900">
-      {/* Header */}
-      <header className="border-b border-stone-200 bg-white py-4 px-4 md:px-6 shadow-sm">
-        <div className="w-full max-w-[1780px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30">
-              <Circle className="w-5 h-5 text-white fill-white" />
+      {/* Header — aligned with Ask page */}
+      <header className="border-b border-stone-200 bg-white/95 backdrop-blur py-3 px-4 md:px-6 shadow-sm sticky top-0 z-30">
+        <div className="w-full max-w-[1780px] mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-14 h-14 rounded-xl border border-stone-200 bg-white flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+              <img src={logo} alt="Museum logo" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-xl font-bold text-stone-800">
-              AI Historical Narration
-            </h1>
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-2xl font-bold text-stone-800 leading-tight truncate">
+                Sri Lankan History Narrator
+              </h1>
+              <p className="text-xs md:text-sm text-stone-500 line-clamp-2" title={storyTitle}>
+                {storyTitle}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="text-stone-500 hover:text-stone-700 transition-colors">
-              <Settings className="w-6 h-6" />
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border border-stone-200 bg-stone-50">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  backendStatus === 'connected' ? 'bg-emerald-500' : 'bg-rose-500'
+                }`}
+              />
+              <span className="text-xs font-semibold text-stone-600 uppercase tracking-wide">
+                {backendStatus === 'connected' ? 'Online' : 'Offline'}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="w-10 h-10 rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center justify-center"
+              aria-label="Language"
+            >
+              <Globe className="w-5 h-5" />
             </button>
-            <button className="text-stone-500 hover:text-stone-700 transition-colors">
-              <HelpCircle className="w-6 h-6" />
-            </button>
+            <a
+              href="http://localhost:8000/kiosk_home.html"
+              className="bg-white hover:bg-orange-500 border-2 border-orange-500 text-orange-500 hover:text-white px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors no-underline font-semibold"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </a>
           </div>
         </div>
       </header>
@@ -350,6 +371,16 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   <MessageSquare className="w-4 h-4" />
                   New Question
                 </button>
+                {onGoToReviews && (
+                  <button
+                    type="button"
+                    onClick={onGoToReviews}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-orange-900/20"
+                  >
+                    <Star className="w-4 h-4" />
+                    Add review
+                  </button>
+                )}
               </div>
             </div>
           </section>
@@ -460,8 +491,8 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   <p className="text-xl leading-relaxed text-white drop-shadow-lg">
                     {/* Show current sentence and 1 sentence context (before/after) */}
                     {(() => {
-                      const startIdx = Math.max(0, currentSentenceIndex - 1)
-                      const endIdx = Math.min(sentences.length, Math.max(2, currentSentenceIndex + 2))
+                      const startIdx = Math.max(0, activeSentenceIndex - 1)
+                      const endIdx = Math.min(sentences.length, Math.max(2, activeSentenceIndex + 2))
                       const visibleSentences = sentences.slice(startIdx, endIdx)
                       
                       return visibleSentences.map((sentence, i) => {
@@ -470,9 +501,9 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                           <span
                             key={actualIndex}
                             className={`transition-all duration-500 drop-shadow-md ${
-                              actualIndex === currentSentenceIndex
+                              actualIndex === activeSentenceIndex
                                 ? 'text-[#F97316] font-bold text-2xl'
-                                : actualIndex < currentSentenceIndex
+                                : actualIndex < activeSentenceIndex
                                 ? 'text-white/40 text-lg'
                                 : 'text-white/60 text-lg'
                             }`}
@@ -486,12 +517,12 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   {/* Part indicator */}
                   <div className="mt-3 flex items-center gap-2">
                     <span className="text-white/60 text-sm">
-                      Part {Math.max(1, currentSentenceIndex + 1)} of {sentences.length}
+                      Part {Math.max(1, activeSentenceIndex + 1)} of {sentences.length}
                     </span>
                     <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-300"
-                        style={{ width: `${((currentSentenceIndex + 1) / sentences.length) * 100}%` }}
+                        style={{ width: `${((activeSentenceIndex + 1) / sentences.length) * 100}%` }}
                       />
                     </div>
                   </div>
@@ -507,8 +538,8 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   <p className="text-2xl leading-relaxed text-center">
                     {(() => {
                       // Show current sentence + 1 before and 1 after for context
-                      const startIdx = Math.max(0, currentSentenceIndex - 1)
-                      const endIdx = Math.min(sentences.length, Math.max(2, currentSentenceIndex + 2))
+                      const startIdx = Math.max(0, activeSentenceIndex - 1)
+                      const endIdx = Math.min(sentences.length, Math.max(2, activeSentenceIndex + 2))
                       const visibleSentences = sentences.slice(startIdx, endIdx)
                       
                       return visibleSentences.map((sentence, i) => {
@@ -517,9 +548,9 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                           <span
                             key={actualIndex}
                             className={`transition-all duration-500 ${
-                              actualIndex === currentSentenceIndex
+                              actualIndex === activeSentenceIndex
                                 ? 'text-[#F97316] font-bold text-4xl'
-                                : actualIndex < currentSentenceIndex
+                                : actualIndex < activeSentenceIndex
                                 ? 'text-white/30 text-xl'
                                 : 'text-white/50 text-xl'
                             }`}
@@ -533,7 +564,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                   {/* Part indicator in fullscreen */}
                   <div className="mt-4 flex items-center justify-center gap-3">
                     <span className="text-white/60 text-sm">
-                      Part {Math.max(1, currentSentenceIndex + 1)} of {sentences.length}
+                      Part {Math.max(1, activeSentenceIndex + 1)} of {sentences.length}
                     </span>
                   </div>
                 </div>
@@ -601,9 +632,7 @@ function StoryAnswer({ answer, question, onAskAnother }) {
                     key={i}
                     className="w-2 bg-gradient-to-t from-orange-500 to-orange-500 rounded-full transition-all duration-150"
                     style={{
-                      height: isPlaying 
-                        ? `${12 + Math.sin(Date.now() / 200 + i * 0.8) * 15 + 10}px` 
-                        : '8px',
+                      height: isPlaying ? `${14 + (i % 5) * 6}px` : '8px',
                     }}
                   />
                 ))}
@@ -647,15 +676,6 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               </div>
             </div>
 
-            {/* Replay Story Button */}
-            <button 
-              onClick={restartStory}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-200 shadow-md hover:-translate-y-0.5"
-            >
-              <RotateCcw className="w-5 h-5" />
-              Replay Story
-            </button>
-
             {/* Ask Another Question Button */}
             <button 
               onClick={onAskAnother}
@@ -664,6 +684,17 @@ function StoryAnswer({ answer, question, onAskAnother }) {
               <MessageSquare className="w-5 h-5" />
               Ask Another Question
             </button>
+
+            {onGoToReviews && (
+              <button
+                type="button"
+                onClick={onGoToReviews}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:-translate-y-0.5"
+              >
+                <Star className="w-5 h-5" />
+                Add review
+              </button>
+            )}
 
             {/* Current Topic Card */}
             <div className="bg-white border border-stone-200 rounded-3xl shadow-xl p-6">
