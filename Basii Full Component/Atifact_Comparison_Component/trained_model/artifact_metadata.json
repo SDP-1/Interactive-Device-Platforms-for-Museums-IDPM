@@ -778,7 +778,10 @@
       "location": "National Museum, Colombo; Royal Palace Museum, Kandy",
       "notes": "Typically features elaborate gold threadwork depicting religious motifs and palatial scenes. Many robes were commissioned by royal decree and became heirlooms. The distinctive shape and fastening techniques are uniquely Kandyan.",
       "is_sri_lankan": true,
-      "image": "images/A029_KandyanRobes.jpg"
+      "image": [
+        "images/A029_KandyanRobes.jpg",
+        "images/A029_KandyanRobes_2.jpg"
+      ]
     },
     {
       "id": "C023",
@@ -811,7 +814,10 @@
       "location": "Textile museums, Colombo; private collections; artisan weaving centers",
       "notes": "Distinguished by specific weaving patterns including the famous 'kandyan pattern' with gold accents. Many families maintain heirloom sarees passed through generations; traditional dyeing and weaving methods are still practiced.",
       "is_sri_lankan": true,
-      "image": "images/A030_Saree.jpg"
+      "image": [
+        "images/A030_Saree.jpg",
+        "images/A030_Saree_2.jpg"
+      ]
     },
     {
       "id": "C024",
@@ -826,7 +832,11 @@
       "location": "Palace Museum, Beijing; Metropolitan Museum of Art (NYC)",
       "notes": "Strictly hierarchical designs with imperial dragon positions and prohibited patterns for lower ranks. Many robes feature complex silk embroidery requiring months of skilled labor. Each dragon has specific iconographic meaning.",
       "is_sri_lankan": false,
-      "image": "images/C024_ImperialRobe.jpg"
+      "image": [
+        "images/C024_ImperialRobe.jpg",
+        "images/C024_ImperialRobe_2.jpg",
+        "images/C024_ImperialRobe_3.jpg"
+      ]
     },
     {
       "id": "A031",
@@ -841,7 +851,11 @@
       "location": "Museums of Rajasthan (Jaipur, Udaipur); Indian textile museums",
       "notes": "Distinctive Rajput variations in turban wrapping style and color preferences (red, saffron, gold). Many sherwanis retain intricate pattern work depicting hunting scenes and religious motifs. Ensemble often paired with ornate jewelry and weapons.",
       "is_sri_lankan": false,
-      "image": "images/A031_RajputAttire.jpg"
+      "image": [
+        "images/A031_RajputAttire.jpg",
+        "images/A031_RajputAttire_2.jpg",
+        "images/A031_RajputAttire_3.jpg"
+      ]
     }
   ],
   "artifact_index": {
