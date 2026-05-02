@@ -912,7 +912,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     <div className="flex flex-col gap-2">
                       <div className="relative aspect-[4/3] bg-white rounded-lg border border-stone-200 overflow-hidden shadow-sm group">
                         <img
-                          src={artifactA.image}
+                          src={Array.isArray(artifactA.image) ? artifactA.image[0] : artifactA.image}
                           alt={artifactA.name}
                           className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                         />
@@ -929,7 +929,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     <div className="flex flex-col gap-2">
                       <div className="relative aspect-[4/3] bg-white rounded-lg border border-stone-200 overflow-hidden shadow-sm group">
                         <img
-                          src={artifactB.image}
+                          src={Array.isArray(artifactB.image) ? artifactB.image[0] : artifactB.image}
                           alt={artifactB.name}
                           className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                         />

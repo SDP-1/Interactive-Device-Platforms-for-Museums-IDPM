@@ -763,6 +763,12 @@ Provide detailed, specific observations based on what you see in the images."""
         Returns:
             Base64 encoded string
         """
+        # Handle case where a list of images might be passed
+        if isinstance(image_path, list):
+            if not image_path:
+                raise FileNotFoundError("Image list is empty")
+            image_path = image_path[0]
+            
         script_dir = os.path.dirname(os.path.abspath(__file__))
         
         # If already absolute and exists, use it

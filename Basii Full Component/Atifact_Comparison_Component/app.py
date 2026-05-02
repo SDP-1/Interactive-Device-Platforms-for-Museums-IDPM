@@ -289,6 +289,12 @@ def compare_artifacts_visual():
     image1 = artifact1.get('image')
     image2 = artifact2.get('image')
     
+    # Handle multi-image artifacts by using the first image for visual comparison
+    if isinstance(image1, list) and len(image1) > 0:
+        image1 = image1[0]
+    if isinstance(image2, list) and len(image2) > 0:
+        image2 = image2[0]
+        
     if not image1 or not image2:
         return jsonify({'error': 'One or both artifacts missing images'}), 404
     
