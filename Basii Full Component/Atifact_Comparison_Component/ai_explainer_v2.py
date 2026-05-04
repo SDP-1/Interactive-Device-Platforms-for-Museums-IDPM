@@ -676,6 +676,10 @@ Return your analysis as a JSON object with this exact structure:
     "artifact_a": "Description of Artifact A's patterns, decorations, and iconography",
     "artifact_b": "Description of Artifact B's patterns, decorations, and iconography"
   }},
+  "symmetry_balance": {{
+    "artifact_a": "Description of Artifact A's symmetry, geometric balance, and visual weight",
+    "artifact_b": "Description of Artifact B's symmetry, geometric balance, and visual weight"
+  }},
   "craftsmanship": {{
     "artifact_a": "Description of Artifact A's technique and manufacturing quality",
     "artifact_b": "Description of Artifact B's technique and manufacturing quality"

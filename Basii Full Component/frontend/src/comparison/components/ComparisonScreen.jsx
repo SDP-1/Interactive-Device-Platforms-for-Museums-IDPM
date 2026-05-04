@@ -323,28 +323,25 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
           {apiComparison?.semantic_score !== undefined && (
             <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-stone-200/60 shadow-xl shadow-stone-200/30 self-start sm:self-auto transition-all hover:scale-105 active:scale-95 group cursor-default">
               <div className="relative flex items-center justify-center">
-                <div className={`absolute inset-0 rounded-full blur-lg opacity-50 animate-pulse ${
-                  apiComparison.semantic_score >= 80 ? 'bg-emerald-400' :
+                <div className={`absolute inset-0 rounded-full blur-lg opacity-50 animate-pulse ${apiComparison.semantic_score >= 80 ? 'bg-emerald-400' :
                   apiComparison.semantic_score >= 50 ? 'bg-amber-400' :
-                  'bg-rose-400'
-                }`} />
-                <div className={`w-4 h-4 rounded-full relative z-10 ${
-                  apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
+                    'bg-rose-400'
+                  }`} />
+                <div className={`w-4 h-4 rounded-full relative z-10 ${apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
                   apiComparison.semantic_score >= 50 ? 'bg-amber-500' :
-                  'bg-rose-500'
-                }`} />
+                    'bg-rose-500'
+                  }`} />
               </div>
-              
+
               <div className="flex flex-col">
                 <span className="text-xs font-black font-sans uppercase tracking-[0.2em] text-stone-900 leading-none mb-1.5">
                   Semantic Match
                 </span>
                 <div className="flex items-baseline gap-1.5">
-                  <span className={`text-3xl md:text-4xl font-black font-sans leading-none tracking-tighter ${
-                    apiComparison.semantic_score >= 80 ? 'bg-gradient-to-br from-emerald-600 to-teal-700 bg-clip-text text-transparent' :
+                  <span className={`text-3xl md:text-4xl font-black font-sans leading-none tracking-tighter ${apiComparison.semantic_score >= 80 ? 'bg-gradient-to-br from-emerald-600 to-teal-700 bg-clip-text text-transparent' :
                     apiComparison.semantic_score >= 50 ? 'bg-gradient-to-br from-amber-600 to-orange-700 bg-clip-text text-transparent' :
-                    'bg-gradient-to-br from-rose-600 to-red-700 bg-clip-text text-transparent'
-                  }`}>
+                      'bg-gradient-to-br from-rose-600 to-red-700 bg-clip-text text-transparent'
+                    }`}>
                     {apiComparison.semantic_score}
                   </span>
                   <span className="text-xl font-bold text-stone-400 font-sans">%</span>
@@ -353,12 +350,11 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
 
               {/* Enhanced progress bar */}
               <div className="w-20 h-2.5 bg-stone-100 rounded-full overflow-hidden ml-2 hidden lg:block">
-                <div 
-                  className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(0,0,0,0.1)] ${
-                    apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(0,0,0,0.1)] ${apiComparison.semantic_score >= 80 ? 'bg-emerald-500' :
                     apiComparison.semantic_score >= 50 ? 'bg-amber-500' :
-                    'bg-rose-500'
-                  }`}
+                      'bg-rose-500'
+                    }`}
                   style={{ width: `${apiComparison.semantic_score}%` }}
                 />
               </div>
@@ -862,7 +858,7 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
       {showVisualModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
           onClick={() => setShowVisualModal(false)}>
-          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+          <div className="bg-white rounded-xl shadow-2xl max-w-[1500px] w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}>
 
             {/* Modal Header */}
@@ -945,32 +941,34 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
 
                   {/* Comparison Grid */}
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 sm:gap-6">
                     {/* Header Row */}
-                    <div className="font-semibold text-stone-700 text-sm"></div>
-                    <div className="font-semibold text-amber-700 text-center bg-amber-50 rounded-lg p-3 border border-amber-200">
-                      <p className="text-xs text-amber-600 mb-1">Artifact A</p>
-                      <p className="font-serif text-sm line-clamp-2">{artifactA.name}</p>
+                    <div className="flex items-end pb-2">
+                      <span className="text-xs sm:text-sm font-bold text-stone-400 uppercase tracking-wider pl-2">Analysis Criteria</span>
                     </div>
-                    <div className="font-semibold text-slate-700 text-center bg-slate-50 rounded-lg p-3 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Artifact B</p>
-                      <p className="font-serif text-sm line-clamp-2">{artifactB.name}</p>
+                    <div className="font-semibold text-center bg-gradient-to-b from-amber-50 to-amber-100/50 rounded-xl p-4 border border-amber-200 shadow-sm">
+                      <p className="text-xs font-bold uppercase tracking-widest text-amber-600/80 mb-1.5">Artifact A</p>
+                      <p className="font-serif text-base sm:text-lg text-amber-900 line-clamp-2">{artifactA.name}</p>
+                    </div>
+                    <div className="font-semibold text-center bg-gradient-to-b from-slate-50 to-slate-100/50 rounded-xl p-4 border border-slate-200 shadow-sm">
+                      <p className="text-xs font-bold uppercase tracking-widest text-slate-500/80 mb-1.5">Artifact B</p>
+                      <p className="font-serif text-base sm:text-lg text-slate-900 line-clamp-2">{artifactB.name}</p>
                     </div>
 
                     {/* Shape & Form */}
                     {visualComparison.visual_comparison.shape_form && (
                       <>
-                        <div className="font-medium text-stone-800 flex items-center">
-                          <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
+                        <div className="text-sm sm:text-base font-bold text-stone-800 flex items-center bg-stone-50/80 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                          <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full mr-3 shadow-sm shadow-indigo-200 shrink-0"></div>
                           Shape & Form
                         </div>
-                        <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-amber-50/40 rounded-xl p-4 sm:p-5 border border-amber-100 shadow-sm hover:shadow-md transition-shadow hover:bg-amber-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.shape_form.artifact_a}
                           </p>
                         </div>
-                        <div className="bg-slate-50/50 rounded-lg p-3 border border-slate-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-slate-50/40 rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:bg-slate-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.shape_form.artifact_b}
                           </p>
                         </div>
@@ -980,17 +978,17 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     {/* Color & Texture */}
                     {visualComparison.visual_comparison.color_texture && (
                       <>
-                        <div className="font-medium text-stone-800 flex items-center">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                        <div className="text-sm sm:text-base font-bold text-stone-800 flex items-center bg-stone-50/80 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                          <div className="w-2.5 h-2.5 bg-purple-500 rounded-full mr-3 shadow-sm shadow-purple-200 shrink-0"></div>
                           Color & Texture
                         </div>
-                        <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-amber-50/40 rounded-xl p-4 sm:p-5 border border-amber-100 shadow-sm hover:shadow-md transition-shadow hover:bg-amber-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.color_texture.artifact_a}
                           </p>
                         </div>
-                        <div className="bg-slate-50/50 rounded-lg p-3 border border-slate-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-slate-50/40 rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:bg-slate-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.color_texture.artifact_b}
                           </p>
                         </div>
@@ -1000,18 +998,38 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     {/* Design Motifs */}
                     {visualComparison.visual_comparison.design_motifs && (
                       <>
-                        <div className="font-medium text-stone-800 flex items-center">
-                          <div className="w-2 h-2 bg-pink-500 rounded-full mr-2"></div>
+                        <div className="text-sm sm:text-base font-bold text-stone-800 flex items-center bg-stone-50/80 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                          <div className="w-2.5 h-2.5 bg-pink-500 rounded-full mr-3 shadow-sm shadow-pink-200 shrink-0"></div>
                           Design Motifs
                         </div>
-                        <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-amber-50/40 rounded-xl p-4 sm:p-5 border border-amber-100 shadow-sm hover:shadow-md transition-shadow hover:bg-amber-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.design_motifs.artifact_a}
                           </p>
                         </div>
-                        <div className="bg-slate-50/50 rounded-lg p-3 border border-slate-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-slate-50/40 rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:bg-slate-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.design_motifs.artifact_b}
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Symmetry & Visual Balance */}
+                    {visualComparison.visual_comparison.symmetry_balance && (
+                      <>
+                        <div className="text-sm sm:text-base font-bold text-stone-800 flex items-center bg-stone-50/80 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full mr-3 shadow-sm shadow-blue-200 shrink-0"></div>
+                          Symmetry & Balance
+                        </div>
+                        <div className="bg-amber-50/40 rounded-xl p-4 sm:p-5 border border-amber-100 shadow-sm hover:shadow-md transition-shadow hover:bg-amber-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
+                            {visualComparison.visual_comparison.symmetry_balance.artifact_a}
+                          </p>
+                        </div>
+                        <div className="bg-slate-50/40 rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:bg-slate-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
+                            {visualComparison.visual_comparison.symmetry_balance.artifact_b}
                           </p>
                         </div>
                       </>
@@ -1020,17 +1038,17 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     {/* Craftsmanship */}
                     {visualComparison.visual_comparison.craftsmanship && (
                       <>
-                        <div className="font-medium text-stone-800 flex items-center">
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                        <div className="text-sm sm:text-base font-bold text-stone-800 flex items-center bg-stone-50/80 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full mr-3 shadow-sm shadow-emerald-200 shrink-0"></div>
                           Craftsmanship
                         </div>
-                        <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-amber-50/40 rounded-xl p-4 sm:p-5 border border-amber-100 shadow-sm hover:shadow-md transition-shadow hover:bg-amber-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.craftsmanship.artifact_a}
                           </p>
                         </div>
-                        <div className="bg-slate-50/50 rounded-lg p-3 border border-slate-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-slate-50/40 rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:bg-slate-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.craftsmanship.artifact_b}
                           </p>
                         </div>
@@ -1040,17 +1058,17 @@ const ComparisonScreen = ({ artifactA, artifactB, onBack, onBackToGallery }) => 
                     {/* Overall Impression */}
                     {visualComparison.visual_comparison.overall_impression && (
                       <>
-                        <div className="font-medium text-stone-800 flex items-center">
-                          <div className="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                        <div className="text-sm sm:text-base font-bold text-stone-800 flex items-center bg-stone-50/80 p-4 rounded-xl border border-stone-200/60 shadow-sm">
+                          <div className="w-2.5 h-2.5 bg-amber-500 rounded-full mr-3 shadow-sm shadow-amber-200 shrink-0"></div>
                           Overall Impression
                         </div>
-                        <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-amber-50/40 rounded-xl p-4 sm:p-5 border border-amber-100 shadow-sm hover:shadow-md transition-shadow hover:bg-amber-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.overall_impression.artifact_a}
                           </p>
                         </div>
-                        <div className="bg-slate-50/50 rounded-lg p-3 border border-slate-100">
-                          <p className="text-sm text-stone-700">
+                        <div className="bg-slate-50/40 rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:bg-slate-50/80">
+                          <p className="text-sm sm:text-base text-stone-700 leading-relaxed">
                             {visualComparison.visual_comparison.overall_impression.artifact_b}
                           </p>
                         </div>
