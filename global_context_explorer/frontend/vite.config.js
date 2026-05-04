@@ -1,13 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Port 5176 avoids Basii unified frontend (5173) in the full kiosk launcher.
+// When running beside Basii, set MUSEUM_GCE_API_PROXY to the GCE Node port (e.g. http://127.0.0.1:5004).
+const apiProxyTarget = process.env.MUSEUM_GCE_API_PROXY || 'http://127.0.0.1:5000';
+
 export default defineConfig({
     plugins: [react()],
     server: {
-        port: 5173,
+        port: 5176,
         proxy: {
             '/api': {
-                target: 'http://127.0.0.1:5000',
+                target: apiProxyTarget,
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, '/api'),
                 configure: (proxy, options) => {

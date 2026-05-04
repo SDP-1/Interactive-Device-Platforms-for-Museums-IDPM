@@ -34,6 +34,8 @@ def main():
     print("   6. Unified Kiosk Server (Port 8000)")
     print("   7. [Sound Narration] Backend (Port 5003)")
     print("   8. [Sound Narration] Frontend (Port 3001)")
+    print("   9. [Global Context Explorer] API — timeline/map data (Port 5004)")
+    print("  10. [Global Context Explorer] Frontend — MapExplorer / kiosk (Port 5176)")
     print("="*80)
     print()
 
@@ -97,6 +99,23 @@ def main():
         "npm run dev",
         os.path.join(sound_narration_dir, "frontend"),
         "Sound Narration - Frontend"
+    )
+
+    # GLOBAL CONTEXT EXPLORER (timeline / map kiosk — must not use 5173; Basii owns that port)
+    gce_dir = os.path.join(base_dir, "global_context_explorer")
+
+    # 9. GCE Node API on 5004 (5000 is Basii comparison backend in this launcher)
+    run_command(
+        "set PORT=5004 && npm run dev",
+        os.path.join(gce_dir, "node_backend"),
+        "Global Context Explorer - API"
+    )
+
+    # 10. GCE Vite dev server on 5176, proxy /api → port 5004
+    run_command(
+        "set MUSEUM_GCE_API_PROXY=http://127.0.0.1:5004&& npm run dev",
+        os.path.join(gce_dir, "frontend"),
+        "Global Context Explorer - Frontend (MapExplorer)"
     )
 
     print("\n⏳ Waiting for servers to initialize...")
