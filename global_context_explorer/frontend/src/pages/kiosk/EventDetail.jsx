@@ -57,6 +57,7 @@ export default function EventDetail() {
                                 <div className="event-detail__badge-row">
                                     <span className="badge badge-info">{event.date}</span>
                                     {event.purpose && <span className="badge badge-warning">{event.purpose}</span>}
+                                    {event.nodeId && <span className="badge badge-glass">{event.nodeId}</span>}
                                 </div>
                                 <h1 className="event-detail__title">{event.eventName}</h1>
                             </div>
@@ -79,22 +80,41 @@ export default function EventDetail() {
                             {event.exhibitName && (
                                 <div className="event-detail__info-item">
                                     <span className="event-detail__info-label">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                                         Exhibit
                                     </span>
                                     <span className="event-detail__info-value">{event.exhibitName}</span>
                                 </div>
                             )}
-                            {event.sourceReferences && (
+                            {event.wikiUrl && (
                                 <div className="event-detail__info-item">
                                     <span className="event-detail__info-label">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                        Sources
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                        Wikipedia
                                     </span>
-                                    <span className="event-detail__info-value">{event.sourceReferences}</span>
+                                    <a href={event.wikiUrl} target="_blank" rel="noopener noreferrer" className="event-detail__info-link">
+                                        View Resource
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    </a>
                                 </div>
                             )}
                         </div>
+
+                        {/* Discovery References */}
+                        {event.referenceLinks && event.referenceLinks.length > 0 && (
+                            <div className="event-detail__references">
+                                <h4 className="event-detail__sub-section-title">Discovery References</h4>
+                                <div className="event-detail__reference-list">
+                                    {event.referenceLinks.map((link, i) => (
+                                        <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="event-detail__reference-item glass-card">
+                                            <span className="event-detail__ref-index">{i + 1}</span>
+                                            <span className="event-detail__ref-title">{link.title}</span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </article>
 
@@ -103,7 +123,7 @@ export default function EventDetail() {
                     <section className="event-detail__influences">
                         <h3 className="event-detail__section-title">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                            Global Historical Context
+                             Global Influences
                         </h3>
                         <div className="event-detail__influence-list">
                             {influences.map((inf, idx) => {
@@ -115,10 +135,17 @@ export default function EventDetail() {
                                         style={{ animationDelay: `${idx * 0.15}s` }}
                                     >
                                         <div className="event-detail__influence-header">
-                                            <h4>{inf.globalEventName}</h4>
-                                            <span className="badge badge-success">
-                                                {(inf.reliabilityScore || 0).toFixed(1)}% Match
-                                            </span>
+                                            <div>
+                                                <h4>{inf.globalEventName}</h4>
+                                                <div className="event-detail__influence-badges">
+                                                    <span className={`badge ${inf.influenceType === 'direct' ? 'badge-warning' : 'badge-info'}`}>
+                                                        {inf.influenceType === 'direct' ? 'Direct Influence' : 'Indirect Influence'}
+                                                    </span>
+                                                    <span className="badge badge-success">
+                                                        {(inf.reliabilityScore || 0).toFixed(1)}% Match
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="event-detail__influence-body">
@@ -139,11 +166,38 @@ export default function EventDetail() {
                                                     </svg>
                                                 </button>
                                             )}
+
+                                            <div className="event-detail__influence-metrics-grid">
+                                                <div className="event-detail__metric-item">
+                                                    <span className="event-detail__metric-label">Directness</span>
+                                                    <div className="event-detail__metric-bar">
+                                                        <div className="event-detail__metric-fill" style={{ width: `${(inf.reliabilityComponents?.directness || 0) * 100}%` }} />
+                                                    </div>
+                                                </div>
+                                                <div className="event-detail__metric-item">
+                                                    <span className="event-detail__metric-label">Consistency</span>
+                                                    <div className="event-detail__metric-bar">
+                                                        <div className="event-detail__metric-fill" style={{ width: `${(inf.reliabilityComponents?.sourceConsistency || 0) * 100}%` }} />
+                                                    </div>
+                                                </div>
+                                                <div className="event-detail__metric-item">
+                                                    <span className="event-detail__metric-label">Temporal</span>
+                                                    <div className="event-detail__metric-bar">
+                                                        <div className="event-detail__metric-fill" style={{ width: `${(inf.reliabilityComponents?.temporalProximity || 0) * 100}%` }} />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="event-detail__influence-footer">
                                             <div className="event-detail__strength-box">
-                                                <span className="event-detail__metric-label">Causal Strength</span>
+                                                <div className="event-detail__strength-header">
+                                                    <span className="event-detail__metric-label">Causal Strength</span>
+                                                    <span className="event-detail__strength-value">
+                                                        {(inf.causalStrength || 0).toFixed(2)}
+                                                        {inf.causalStrength < 0.4 && <span className="event-detail__strength-hint"> (Unlikely)</span>}
+                                                    </span>
+                                                </div>
                                                 <div className="event-detail__score-bar-bg">
                                                     <div
                                                         className="event-detail__score-bar-fill"
@@ -157,6 +211,7 @@ export default function EventDetail() {
                                                 {inf.mechanism && (
                                                     <span className="badge badge-warning">{inf.mechanism}</span>
                                                 )}
+                                                <span className="badge badge-glass">Score: {(inf.finalScore || 0).toFixed(3)}</span>
                                             </div>
                                         </div>
                                     </div>

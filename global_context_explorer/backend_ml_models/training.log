@@ -1,0 +1,910 @@
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6959 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0052 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6637 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0019 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6959 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0052 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6637 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0019 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6789 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0842 | train acc=0.500 prec=0.364 rec=0.800 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0020 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0237 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6560 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0079 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0018 | train acc=0.562 prec=0.417 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6560 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0079 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0018 | train acc=0.562 prec=0.417 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6665 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0108 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0400 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6733 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0010 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0373 | train acc=0.500 prec=0.385 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=0.375 prec=0.333 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6578 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0094 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0033 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0013 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6578 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0094 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0033 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0013 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6578 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0094 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0033 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0013 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6545 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0065 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0790 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0046 | train acc=0.375 prec=0.333 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=0.938 prec=0.833 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6791 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0116 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0045 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6588 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0211 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0617 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6791 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0116 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0045 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6588 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0211 | train acc=0.750 prec=1.000 rec=0.200 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0617 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6689 | train acc=0.688 prec=0.500 rec=0.400 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0338 | train acc=0.812 prec=1.000 rec=0.400 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6689 | train acc=0.688 prec=0.500 rec=0.400 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0338 | train acc=0.812 prec=1.000 rec=0.400 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6959 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0052 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.7010 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0004 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=0.438 prec=0.357 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 080] loss=0.0027 | train acc=0.438 prec=0.357 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=0.938 prec=0.833 rec=1.000 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0019 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6959 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0052 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.7010 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0004 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=0.438 prec=0.357 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 080] loss=0.0027 | train acc=0.438 prec=0.357 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=0.938 prec=0.833 rec=1.000 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0019 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6959 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0052 | train acc=0.812 prec=1.000 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6637 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0019 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6789 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0842 | train acc=0.500 prec=0.364 rec=0.800 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0020 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0237 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6637 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0019 | train acc=0.688 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6835 | train acc=0.688 prec=0.400 rec=0.500 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 020] loss=0.0781 | train acc=0.938 prec=0.800 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 040] loss=0.0212 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 060] loss=0.0012 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.0322 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 100] loss=0.0184 | train acc=0.875 prec=1.000 rec=0.500 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0118 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.1050 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 180] loss=0.0447 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.1031 | train acc=0.875 prec=1.000 rec=0.500 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6835 | train acc=0.688 prec=0.400 rec=0.500 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 020] loss=0.0781 | train acc=0.938 prec=0.800 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 040] loss=0.0212 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 060] loss=0.0012 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.0322 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 100] loss=0.0184 | train acc=0.875 prec=1.000 rec=0.500 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0118 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.1050 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 180] loss=0.0447 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.1031 | train acc=0.875 prec=1.000 rec=0.500 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6813 | train acc=0.625 prec=0.000 rec=0.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 020] loss=0.1176 | train acc=0.938 prec=0.800 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 040] loss=0.4726 | train acc=0.938 prec=0.800 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 060] loss=0.0108 | train acc=0.875 prec=1.000 rec=0.500 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.0604 | train acc=0.875 prec=1.000 rec=0.500 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 100] loss=0.0470 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0215 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0235 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.0859 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 180] loss=0.2337 | train acc=0.875 prec=0.667 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.0021 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6556 | train acc=0.750 prec=0.000 rec=0.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 020] loss=0.2195 | train acc=0.875 prec=0.750 rec=0.750 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0161 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 060] loss=0.0040 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.1055 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 100] loss=0.0258 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 120] loss=0.0238 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0142 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.0010 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 180] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6913 | train acc=0.688 prec=0.500 rec=0.400 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 020] loss=0.1605 | train acc=0.938 prec=0.833 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0452 | train acc=0.938 prec=0.833 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0183 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0104 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0029 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0491 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0073 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.3924 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0580 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0403 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6164 | train acc=0.688 prec=0.000 rec=0.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 020] loss=0.1606 | train acc=0.812 prec=1.000 rec=0.250 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0739 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 060] loss=0.0214 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.0209 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 100] loss=0.0332 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 120] loss=0.0198 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0022 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.0038 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 180] loss=0.0879 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.0068 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6913 | train acc=0.688 prec=0.500 rec=0.400 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 020] loss=0.1605 | train acc=0.938 prec=0.833 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0452 | train acc=0.938 prec=0.833 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0183 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0104 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0029 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0491 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0073 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.3924 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0580 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0403 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6164 | train acc=0.688 prec=0.000 rec=0.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 020] loss=0.1606 | train acc=0.812 prec=1.000 rec=0.250 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0739 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 060] loss=0.0214 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.0209 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 100] loss=0.0332 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 120] loss=0.0198 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0022 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.0038 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 180] loss=0.0879 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.0068 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6214 | train acc=0.625 prec=0.000 rec=0.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.1843 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0245 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.2379 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.1156 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0011 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.1082 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0049 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0029 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0034 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0058 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6591 | train acc=0.250 prec=0.214 rec=0.750 | val acc=0.500 prec=0.333 rec=1.000
+[epoch 020] loss=0.0631 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 040] loss=0.0515 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 060] loss=0.0197 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 080] loss=0.0096 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 100] loss=0.0030 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 120] loss=0.0007 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 140] loss=0.0008 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 160] loss=0.0016 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 180] loss=0.0200 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 200] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6453 | train acc=0.312 prec=0.231 rec=0.750 | val acc=0.250 prec=0.250 rec=1.000
+[epoch 020] loss=0.1716 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0375 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0272 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 080] loss=0.0072 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0062 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 120] loss=0.0031 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 140] loss=0.0128 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 160] loss=0.1667 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0225 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=1.000 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6662 | train acc=0.625 prec=0.400 rec=0.400 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.2221 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0381 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0057 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0008 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0011 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0012 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6473 | train acc=0.312 prec=0.231 rec=0.750 | val acc=0.250 prec=0.250 rec=1.000
+[epoch 020] loss=0.1161 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 040] loss=0.1749 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 060] loss=0.0163 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 080] loss=0.0080 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 100] loss=0.0197 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 140] loss=0.0319 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 160] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6882 | train acc=0.250 prec=0.267 rec=0.800 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.1039 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0958 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0120 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0008 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0020 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0506 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0023 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0039 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6305 | train acc=0.312 prec=0.286 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.1193 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 040] loss=0.0384 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 060] loss=0.0242 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 080] loss=0.0630 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 100] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 120] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 140] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 160] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 180] loss=0.0013 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 200] loss=0.0039 | train acc=1.000 prec=1.000 rec=1.000 | val acc=1.000 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6750 | train acc=0.250 prec=0.267 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0381 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0017 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0011 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0024 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0019 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0030 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6256 | train acc=0.188 prec=0.200 rec=0.750 | val acc=0.500 prec=0.333 rec=1.000
+[epoch 020] loss=0.0251 | train acc=0.938 prec=1.000 rec=0.750 | val acc=0.500 prec=0.000 rec=0.000
+[epoch 040] loss=0.0009 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 100] loss=0.0067 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 120] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.500 rec=1.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6840 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0400 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0033 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0226 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6852 | train acc=0.562 prec=0.417 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0517 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0210 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0009 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0007 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0009 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.7011 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0718 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0128 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0009 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0025 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6766 | train acc=0.500 prec=0.364 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0368 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0013 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0094 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6926 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0286 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0172 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0014 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6744 | train acc=0.875 prec=1.000 rec=0.600 | val acc=1.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0085 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6480 | train acc=0.250 prec=0.267 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0457 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0029 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6764 | train acc=0.250 prec=0.267 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0292 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6709 | train acc=0.250 prec=0.267 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.2017 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6792 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0179 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0023 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0005 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6398 | train acc=0.250 prec=0.267 rec=0.800 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0228 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0008 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6517 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0065 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0020 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6769 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.250 prec=0.000 rec=0.000
+[epoch 020] loss=0.0333 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0016 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6298 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0356 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6212 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0157 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0006 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6294 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0284 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0003 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6470 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0105 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0007 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6489 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0282 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0019 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6470 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0105 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0007 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6489 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0282 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0004 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0019 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt
+[train] total pairs: 20 (pos+neg)
+[train] train: 16 | val: 4
+[epoch 001] loss=0.6335 | train acc=0.312 prec=0.312 rec=1.000 | val acc=0.000 prec=0.000 rec=0.000
+[epoch 020] loss=0.0536 | train acc=0.875 prec=1.000 rec=0.600 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 040] loss=0.0002 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 060] loss=0.0001 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 080] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 100] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 120] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 140] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 160] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 180] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[epoch 200] loss=0.0000 | train acc=1.000 prec=1.000 rec=1.000 | val acc=0.750 prec=0.000 rec=0.000
+[train] saved model to: models\causal_gnn.pt

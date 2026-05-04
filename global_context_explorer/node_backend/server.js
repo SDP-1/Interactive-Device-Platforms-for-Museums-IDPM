@@ -56,8 +56,16 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = config.port;
-app.listen(PORT, () => {
-    console.log(`[Server] Running on port ${PORT} (${config.nodeEnv})`);
+const server = app.listen(PORT, () => {
+    console.log(`[${new Date().toLocaleTimeString()}] [Server] Running on port ${PORT} (${config.nodeEnv})`);
+});
+
+process.on('unhandledRejection', (err, promise) => {
+    console.error(`[Unhandled Rejection] Error: ${err.message}`);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error(`[Uncaught Exception] Error: ${err.message}`);
 });
 
 module.exports = app;
