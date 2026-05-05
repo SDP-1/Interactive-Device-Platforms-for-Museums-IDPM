@@ -2365,8 +2365,80 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
         foregroundColor: AppTheme.stone800,
         title: const Text('Artifact'),
         actions: [
-          IconButton(icon: const Icon(Icons.edit_outlined), onPressed: _editArtifact, tooltip: 'Edit'),
-          IconButton(icon: const Icon(Icons.delete_outline), onPressed: _deleteArtifact, tooltip: 'Delete'),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_horiz_rounded, color: AppTheme.stone600),
+            padding: const EdgeInsets.only(right: 14),
+            tooltip: 'More actions',
+            color: Colors.white,
+            surfaceTintColor: Colors.white,
+            elevation: 10,
+            constraints: const BoxConstraints(
+              minWidth: 196,
+              maxWidth: 220,
+            ),
+            shadowColor: Colors.black.withValues(alpha: 0.14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppTheme.stone200),
+            ),
+            onSelected: (value) async {
+              if (value == 'edit') {
+                await _editArtifact();
+              } else if (value == 'delete') {
+                await _deleteArtifact();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.edit_outlined, size: 17, color: AppTheme.primary),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Edit',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.stone800,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.delete_outline, size: 17, color: Colors.red),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Delete',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.red.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: SingleChildScrollView(
