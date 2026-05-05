@@ -423,27 +423,43 @@ class AdminHomeScreen extends StatelessWidget {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const UserProfileScreen(),
-                ),
-              );
-            },
-            tooltip: 'Profile',
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: IconButton.filledTonal(
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.stone600,
+                side: const BorderSide(color: AppTheme.stone200),
+              ),
+              icon: const Icon(Icons.person_2_outlined, size: 20),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const UserProfileScreen(),
+                  ),
+                );
+              },
+              tooltip: 'Profile',
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.list_alt),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ArtifactListScreen(),
-                ),
-              );
-            },
-            tooltip: 'List of artifacts',
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: IconButton.filledTonal(
+              style: IconButton.styleFrom(
+                backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
+                foregroundColor: AppTheme.primaryDark,
+                side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.22)),
+              ),
+              icon: const Icon(Icons.view_list_rounded, size: 20),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ArtifactListScreen(),
+                  ),
+                );
+              },
+              tooltip: 'List of artifacts',
+            ),
           ),
         ],
       ),
