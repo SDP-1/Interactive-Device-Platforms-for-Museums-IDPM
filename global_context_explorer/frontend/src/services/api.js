@@ -22,8 +22,8 @@ api.interceptors.response.use(
             localStorage.removeItem('museum_token');
             localStorage.removeItem('museum_user');
             // Redirect only if on tablet pages
-            if (window.location.pathname.startsWith('/tablet')) {
-                window.location.href = '/tablet/login';
+            if (globalThis.location?.pathname.startsWith('/tablet')) {
+                globalThis.location.href = '/tablet/login';
             }
         }
         return Promise.reject(err);
@@ -62,6 +62,12 @@ export const influenceService = {
     getAll: (params) => api.get('/influences', { params }),
     accept: (id, data) => (id ? api.put(`/influences/${id}/accept`) : api.post('/influences/accept', data)),
     reject: (id, data) => (id ? api.put(`/influences/${id}/reject`, data) : api.post('/influences/reject', data)),
+    update: (id, data) => api.put(`/influences/${id}`, data),
+};
+
+// ---------- District Museums ----------
+export const districtMuseumService = {
+    getByDistrict: (districtSlug) => api.get(`/district-museums/${districtSlug}`),
 };
 
 export default api;

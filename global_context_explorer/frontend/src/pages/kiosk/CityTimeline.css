@@ -5,21 +5,33 @@
     flex-direction: column;
     gap: var(--space-xl);
     background-color: #ffffff;
-    background-image: repeating-linear-gradient(45deg,
-            rgba(217, 119, 6, 0.03),
-            rgba(217, 119, 6, 0.03) 1px,
-            transparent 1px,
-            transparent 10px);
+    background-image: url('../../assets/kioskbg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     overflow-x: hidden;
 }
 
 /* Header */
 .city-timeline__header {
+    position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
+    text-align: center;
     gap: var(--space-lg);
     padding: var(--space-lg) var(--space-xl);
-    border: 1px solid rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(20, 40, 70, 0.6) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.city-timeline__header>.btn {
+    position: absolute;
+    left: var(--space-xl);
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .city-timeline__header h2 {
@@ -27,12 +39,12 @@
     font-size: 1.8rem;
     font-weight: 700;
     margin: 0;
-    color: #1a1a1a;
+    color: #ffffff;
 }
 
 .city-timeline__province {
     font-size: 0.9rem;
-    color: var(--text-tertiary);
+    color: rgba(224, 236, 255, 0.9);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -41,8 +53,11 @@
 
 /* Slider section */
 .city-timeline__slider-section {
-    padding: var(--space-xl);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: var(--space-md) var(--space-lg);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(20, 40, 70, 0.6) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .city-timeline__slider-title {
@@ -209,8 +224,7 @@
     gap: var(--space-xl);
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: var(--space-lg) 0;
-    padding-bottom: var(--space-3xl);
+    padding: var(--space-lg) 56px var(--space-3xl);
     width: 100%;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -268,31 +282,31 @@
 
 /* Event Card */
 .city-timeline__event {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     padding: 0;
     min-width: 320px;
     width: 320px;
     cursor: pointer;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: visible;
+    transition: transform 0.3s ease;
+    border: none;
     flex-shrink: 0;
 }
 
 .city-timeline__event:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 .city-timeline__event-img-wrap {
     height: 160px;
-    background: #f1f2f6;
+    background: rgba(255, 255, 255, 0.12);
     position: relative;
     overflow: hidden;
+    border-radius: 12px;
 }
 
 .city-timeline__event-img-wrap img {
@@ -314,7 +328,7 @@
 }
 
 .city-timeline__event-content {
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-xs) 0;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -325,8 +339,10 @@
     font-size: 1.05rem;
     font-weight: 700;
     margin-bottom: 6px;
-    color: #1a1a1a;
+    color: rgba(255, 255, 255, 0.98);
     line-height: 1.4;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .city-timeline__event-content p {
@@ -344,23 +360,34 @@
 
 .city-timeline__event-location {
     font-size: 0.85rem;
-    color: var(--text-tertiary);
+    color: rgba(224, 236, 255, 0.95);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     margin-bottom: 12px;
 }
 
 .city-timeline__event-footer {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     margin-top: auto;
     padding-top: var(--space-md);
-    border-top: 1px solid #f1f2f6;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.city-timeline__event-footer .badge {
+    color: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .city-timeline__event-arrow {
+    position: absolute;
+    right: 0;
     width: 28px;
     height: 28px;
     background: transparent;
@@ -368,7 +395,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-heritage);
+    color: rgba(255, 255, 255, 0.95);
     transition: all 0.3s ease;
 }
 
@@ -405,6 +432,11 @@
     .city-timeline__nav-btn--right {
         right: -15px;
     }
+
+    .city-timeline__events {
+        padding-left: 42px;
+        padding-right: 42px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -412,8 +444,23 @@
         padding: var(--space-md);
     }
 
+    .city-timeline__header {
+        padding: var(--space-md) var(--space-lg);
+        min-height: 90px;
+    }
+
+    .city-timeline__header>.btn {
+        left: var(--space-md);
+    }
+
+    .city-timeline__header h2 {
+        font-size: 1.35rem;
+    }
+
     .city-timeline__events {
         gap: var(--space-lg);
+        padding-left: 28px;
+        padding-right: 28px;
     }
 
     .city-timeline__nav-btn {

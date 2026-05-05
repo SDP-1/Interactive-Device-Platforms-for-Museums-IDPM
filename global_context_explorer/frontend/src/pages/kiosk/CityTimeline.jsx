@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { cityService, eventService } from '../../services/api';
 import './CityTimeline.css';
+import SimpleTimeline from "./SimpleTimeline";
 
 export default function CityTimeline() {
     const { cityId } = useParams();
@@ -44,7 +45,7 @@ export default function CityTimeline() {
 
     /* Generate tick labels */
     const ticks = [];
-    for (let y = -600; y <= 2100; y += 100) {
+    for (let y = -600; y <= 2000; y += 100) {
         ticks.push(y);
     }
 
@@ -71,52 +72,7 @@ export default function CityTimeline() {
 
             {/* Timeline slider section */}
             <section className="city-timeline__slider-section glass-card animate-fade-in">
-                <h4 className="city-timeline__slider-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    Chronological Exploration — {formatYear(cursorYear - WINDOW_SIZE / 2)} to {formatYear(cursorYear + WINDOW_SIZE / 2)}
-                </h4>
-
-                <div className="city-timeline__slider-track-container">
-                    {/* Era background bands */}
-                    <div className="city-timeline__eras">
-                        <span className="era era--ancient" style={{ left: '0%', width: '22.8%' }}>Ancient</span>
-                        <span className="era era--classical" style={{ left: '22.8%', width: '19%' }}>Classical</span>
-                        <span className="era era--medieval" style={{ left: '41.8%', width: '19%' }}>Medieval</span>
-                        <span className="era era--colonial" style={{ left: '60.8%', width: '26.6%' }}>Colonial</span>
-                        <span className="era era--modern" style={{ left: '87.4%', width: '12.6%' }}>Modern</span>
-                    </div>
-
-                    {/* Tick marks */}
-                    <div className="city-timeline__ticks">
-                        {ticks.map((y) => {
-                            const pct = ((y - (-600)) / (2030 - (-600))) * 100;
-                            return (
-                                <div key={y} className="city-timeline__tick" style={{ left: `${pct}%` }}>
-                                    <div className="city-timeline__tick-line" />
-                                    {y % 500 === 0 && (
-                                        <span className="city-timeline__tick-label">{formatYear(y)}</span>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Range input */}
-                    <input
-                        type="range"
-                        className="city-timeline__range"
-                        min={-600}
-                        max={2030}
-                        step={10}
-                        value={cursorYear}
-                        onChange={(e) => setCursorYear(Number(e.target.value))}
-                    />
-
-                    {/* Cursor position indicator */}
-                    <div className="city-timeline__cursor-indicator" style={{ left: `${((cursorYear - (-600)) / (2030 - (-600))) * 100}%` }}>
-                        <span>{formatYear(cursorYear)}</span>
-                    </div>
-                </div>
+                <SimpleTimeline year={cursorYear} onYearChange={setCursorYear} />
             </section>
 
             {/* Events Horizontal Scroll Wrapper */}
@@ -146,12 +102,9 @@ export default function CityTimeline() {
                                         <img src={evt.imageUrl} alt={evt.eventName} />
                                     ) : (
                                         <div className="event-card-square__placeholder era-bg--medieval" style={{ height: '100%', borderRadius: 0 }}>
-                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.2 }}><path d="M3 21h18"></path><path d="M3 10h18"></path><path d="M5 10v11"></path><path d="M19 10v11"></path><path d="M9 10v11"></path><path d="M15 10v11"></path><path d="M4 10l8-7 8 7"></path></svg>
+                                            <span>Historic Monument</span>
                                         </div>
                                     )}
-                                    <div className="city-timeline__event-date-tag">
-                                        <span className="badge badge-info">{evt.date}</span>
-                                    </div>
                                 </div>
 
                                 <div className="city-timeline__event-content">
@@ -160,7 +113,6 @@ export default function CityTimeline() {
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                                         {evt.location || 'Colombo National Museum'}
                                     </div>
-                                    <p>{evt.description}</p>
 
                                     <div className="city-timeline__event-footer">
                                         <span className="badge badge-glass">View Chronicles</span>

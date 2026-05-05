@@ -73,6 +73,7 @@ class CuratorInputParser:
         s = str(text or "")
         # common observed typo
         s = re.sub(r"\bbudhhism\b", "buddhism", s, flags=re.IGNORECASE)
+        s = re.sub(r"\bintroducyion\b", "introduction", s, flags=re.IGNORECASE)
         return s
     
     def _parse_date(self, date_str: str) -> Optional[Dict]:

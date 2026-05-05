@@ -5,7 +5,6 @@ R = w_d * D + w_s * S + w_t * T
 """
 
 import numpy as np
-import torch
 from typing import Dict, Optional
 
 
@@ -66,25 +65,49 @@ class ReliabilityCalculator:
     
     def calculate_temporal_proximity(self, temporal_gap_days: float) -> float:
         """
-        Calculate T (Temporal Proximity) using exponential decay.
-        
-        Formula: T = e^(-Δt), where Δt is the time gap in years
+        Calculate T (Temporal Proximity) using a piecewise historical scale.
+
+        This is designed for historical influence discovery where valid causal links
+        can still occur hundreds of years apart. The score decays gently instead of
+        collapsing to ~0 for ancient events.
         
         Args:
             temporal_gap_days: Time gap between events in days
         
         Returns:
-            Temporal proximity value (T), between 0 and 1
+            Temporal proximity value (T), between 0 and 1, with a small floor
         """
-        # Convert days to years for better scaling
-        temporal_gap_years = temporal_gap_days / 365.25
-        
-        # Exponential decay: e^(-Δt)
-        # For very large gaps, this approaches 0
-        # For gap = 0, this equals 1
-        temporal_proximity = np.exp(-temporal_gap_years)
-        
-        return max(0.0, min(1.0, float(temporal_proximity)))
+        temporal_gap_years = abs(float(temporal_gap_days)) / 365.25
+
+        # Anchors reflect a sensible scale:
+        # 0 years -> 1.00, <10 years -> above 0.90, 20 years -> 0.80,
+        # 50 years -> 0.70, 100 years -> 0.55, 250 years -> 0.35,
+        # 500 years -> 0.20, and a non-zero floor beyond that.
+        anchors = [
+            (0.0, 1.00),
+            (10.0, 0.92),
+            (20.0, 0.80),
+            (50.0, 0.70),
+            (100.0, 0.55),
+            (250.0, 0.35),
+            (500.0, 0.20),
+            (1000.0, 0.10),
+        ]
+
+        if temporal_gap_years <= anchors[0][0]:
+            return anchors[0][1]
+
+        for (start_years, start_score), (end_years, end_score) in zip(anchors, anchors[1:]):
+            if temporal_gap_years <= end_years:
+                span = end_years - start_years
+                if span <= 0:
+                    return end_score
+                ratio = (temporal_gap_years - start_years) / span
+                temporal_proximity = start_score + ratio * (end_score - start_score)
+                return max(0.10, min(1.0, float(temporal_proximity)))
+
+        # Beyond the last anchor, keep a small but non-zero floor.
+        return 0.10
     
     def calculate_reliability(
         self,
@@ -113,11 +136,11 @@ class ReliabilityCalculator:
         R = (self.w_d * D) + (self.w_s * S) + (self.w_t * T)
         
         # Convert to 0-100 scale for display
-        R_percent = R * 100
+        reliability_percent = R * 100
         
         return {
             'reliability_score': R,
-            'reliability_percent': R_percent,
+            'reliability_percent': reliability_percent,
             'directness': D,
             'source_consistency': S,
             'temporal_proximity': T,

@@ -15,6 +15,9 @@ export default function GlobalContextExplorer() {
 
     /* Reject confirmation modal */
     const [rejectModal, setRejectModal] = useState(null); // influence ID
+    const [editModal, setEditModal] = useState(null);
+    const [editForm, setEditForm] = useState({});
+    const [savingEdit, setSavingEdit] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -29,7 +32,7 @@ export default function GlobalContextExplorer() {
             const infRes = await influenceService.getAll({ eventId, status: 'pending,accepted' });
             setInfluences(infRes.data);
         } catch (err) {
-            setError('Failed to load event');
+            setError(err.response?.data?.message || 'Failed to load event');
         } finally {
             setLoading(false);
         }
@@ -65,7 +68,7 @@ export default function GlobalContextExplorer() {
                 })
             );
         } catch (err) {
-            setError('Failed to accept');
+            setError(err.response?.data?.message || 'Failed to accept');
         }
     };
 
@@ -80,13 +83,66 @@ export default function GlobalContextExplorer() {
             }));
             setRejectModal(null);
         } catch (err) {
-            setError('Failed to reject');
+            setError(err.response?.data?.message || 'Failed to reject');
+        }
+    };
+
+    const openEditModal = (inf) => {
+        setEditModal(inf);
+        setEditForm({
+            globalEventName: inf.globalEventName || '',
+            globalEventDate: inf.globalEventDate || '',
+            globalEventLocation: inf.globalEventLocation || '',
+            globalEventDescription: inf.globalEventDescription || '',
+            globalEventDescriptionShort: inf.globalEventDescriptionShort || '',
+            globalEventDescriptionFull: inf.globalEventDescriptionFull || '',
+            mechanism: inf.mechanism || '',
+            influenceType: inf.influenceType || 'indirect',
+        });
+    };
+
+    const handleEditChange = (e) => {
+        const { name, value } = e.target;
+        setEditForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleUpdateInfluence = async (e) => {
+        e.preventDefault();
+        if (!editModal?._id) return;
+
+        setSavingEdit(true);
+        setError('');
+        try {
+            const res = await influenceService.update(editModal._id, editForm);
+            const updated = res.data;
+
+            setInfluences((prev) => prev.map((item) => (item._id === editModal._id ? { ...item, ...updated } : item)));
+            setEditModal(null);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update influence');
+        } finally {
+            setSavingEdit(false);
         }
     };
 
     const handleCopyLink = (url) => {
         navigator.clipboard.writeText(url);
     };
+
+    let analyzeButtonContent;
+    if (analyzing) {
+        analyzeButtonContent = <><div className="loader-spinner btn-spinner" /> Analyzing…</>;
+    } else if (event?.noGlobalInfluence) {
+        analyzeButtonContent = 'Analysis Disabled';
+    } else {
+        analyzeButtonContent = <>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Find Global Influences
+        </>;
+    }
 
     return (
         <div className="gce-layout">
@@ -129,37 +185,28 @@ export default function GlobalContextExplorer() {
                             style={{ margin: '16px 0 0' }}
                             title={event.noGlobalInfluence ? 'Global influence analysis is disabled for this event' : 'Find Global Influences'}
                         >
-                            {analyzing ? (
-                                <><div className="loader-spinner btn-spinner" /> Analyzing…</>
-                            ) : event.noGlobalInfluence ? (
-                                'Analysis Disabled'
-                            ) : (
-                                <>
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    Find Global Influences
-                                </>
-                            )}
+                            {analyzeButtonContent}
                         </button>
                     </div>
                 )}
 
                 {/* Discovery References */}
-                {event && event.referenceLinks && event.referenceLinks.length > 0 && (
+                {event?.referenceLinks?.length > 0 && (
                     <div className="gce__references glass-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
                         <div className="gce__references-header">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                             <h4>Discovery References</h4>
                         </div>
                         <div className="gce__reference-list">
-                            {event.referenceLinks.map((link, i) => (
-                                <div key={i} className="gce__reference-item">
+                            {event.referenceLinks.map((link) => (
+                                <div key={link.url || link.title} className="gce__reference-item">
                                     <a
                                         href={link.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="gce__reference-link"
                                     >
-                                        <span className="gce__ref-index">{i + 1}</span>
+                                        <span className="gce__ref-index">•</span>
                                         <span className="gce__ref-title">{link.title}</span>
                                         <svg className="gce__ref-external" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                     </a>
@@ -294,6 +341,18 @@ export default function GlobalContextExplorer() {
                                     </button>
                                 </div>
                             )}
+
+                            {inf.status === 'accepted' && (
+                                <div className="gce__influence-actions">
+                                    <button
+                                        className="btn-orange-outline btn-sm"
+                                        onClick={() => openEditModal(inf)}
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                                        Update Description
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))}
 
@@ -306,8 +365,12 @@ export default function GlobalContextExplorer() {
 
                 {/* Reject Confirmation Modal */}
                 {rejectModal && (
-                    <div className="modal-overlay" onClick={() => setRejectModal(null)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <dialog
+                        className="modal-overlay"
+                        aria-modal="true"
+                        open
+                    >
+                        <div className="modal-content">
                             <div className="modal-header-with-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                                 <h3>Confirm Rejection</h3>
@@ -330,7 +393,82 @@ export default function GlobalContextExplorer() {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </dialog>
+                )}
+
+                {/* Edit Accepted Influence Modal */}
+                {editModal && (
+                    <dialog
+                        className="modal-overlay"
+                        aria-modal="true"
+                        open
+                    >
+                        <div className="modal-content" style={{ maxWidth: 760, width: 'min(760px, 92vw)' }}>
+                            <div className="modal-header-with-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                                <h3>Edit Accepted Influence</h3>
+                            </div>
+                            <p style={{ color: 'var(--text-secondary)', margin: '8px 0 20px' }}>
+                                Update the accepted record and save it back to the same MongoDB document.
+                            </p>
+
+                            <form onSubmit={handleUpdateInfluence} style={{ display: 'grid', gap: 14 }}>
+                                <div className="form-group">
+                                    <label htmlFor="globalEventName">Global Event Name</label>
+                                    <input id="globalEventName" name="globalEventName" className="input-glass" value={editForm.globalEventName || ''} onChange={handleEditChange} />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                                    <div className="form-group">
+                                        <label htmlFor="globalEventDate">Date</label>
+                                        <input id="globalEventDate" name="globalEventDate" className="input-glass" value={editForm.globalEventDate || ''} onChange={handleEditChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="globalEventLocation">Location</label>
+                                        <input id="globalEventLocation" name="globalEventLocation" className="input-glass" value={editForm.globalEventLocation || ''} onChange={handleEditChange} />
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="globalEventDescription">Description</label>
+                                    <textarea id="globalEventDescription" name="globalEventDescription" className="input-glass" value={editForm.globalEventDescription || ''} onChange={handleEditChange} />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="globalEventDescriptionShort">Short Description</label>
+                                    <textarea id="globalEventDescriptionShort" name="globalEventDescriptionShort" className="input-glass" value={editForm.globalEventDescriptionShort || ''} onChange={handleEditChange} />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="globalEventDescriptionFull">Full Description</label>
+                                    <textarea id="globalEventDescriptionFull" name="globalEventDescriptionFull" className="input-glass" value={editForm.globalEventDescriptionFull || ''} onChange={handleEditChange} />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                                    <div className="form-group">
+                                        <label htmlFor="mechanism">Mechanism</label>
+                                        <input id="mechanism" name="mechanism" className="input-glass" value={editForm.mechanism || ''} onChange={handleEditChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="influenceType">Influence Type</label>
+                                        <select id="influenceType" name="influenceType" className="input-glass" value={editForm.influenceType || 'indirect'} onChange={handleEditChange}>
+                                            <option value="direct">Direct</option>
+                                            <option value="indirect">Indirect</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button type="button" className="btn-glass" onClick={() => setEditModal(null)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn-orange-outline btn-danger-solid" disabled={savingEdit}>
+                                        {savingEdit ? 'Saving…' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </dialog>
                 )}
             </div>
         </div>

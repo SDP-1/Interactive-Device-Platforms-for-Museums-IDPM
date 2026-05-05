@@ -204,6 +204,7 @@ def main():
     y_train = torch.tensor(train_labels, dtype=torch.float32, device=device)
     train_src = torch.tensor(train_pairs[:, 0], dtype=torch.long, device=device)
     train_dst = torch.tensor(train_pairs[:, 1], dtype=torch.long, device=device)
+    log_every = max(args.epochs // 10, 1)
 
     for epoch in range(1, args.epochs + 1):
         gnn.train()
@@ -217,7 +218,7 @@ def main():
         loss.backward()
         opt.step()
 
-        if epoch == 1 or epoch % 20 == 0 or epoch == args.epochs:
+        if epoch % log_every == 0 or epoch == args.epochs:
             train_metrics = _evaluate(gnn, head, data, train_pairs, train_labels, device)
             val_metrics = _evaluate(gnn, head, data, val_pairs, val_labels, device)
             print(

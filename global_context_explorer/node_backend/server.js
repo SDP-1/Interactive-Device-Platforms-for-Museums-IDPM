@@ -12,6 +12,7 @@ const userRoutes = require('./routes/users');
 const cityRoutes = require('./routes/cities');
 const eventRoutes = require('./routes/events');
 const influenceRoutes = require('./routes/influences');
+const districtMuseumRoutes = require('./routes/districtMuseums');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/influences', influenceRoutes);
+app.use('/api/district-museums', districtMuseumRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -73,6 +73,15 @@ class CandidateGenerator:
             "migration_labor": ["migration", "migrant", "labour", "labor", "indentured", "coolie", "recruitment", "imported", "recruited", "estate", "plantation", "workers", "south india", "tamil", "wages", "contract", "demographic"],
         }
 
+        QUERY_SIGNAL_GROUPS = {
+            # Strong historical trade-network signal for Roman-era exchange queries.
+            "roman": ["roman", "rome", "roman empire", "byzantine", "mediterranean", "ceylon"],
+            "trade_route": ["trade", "trade route", "trade routes", "indian ocean", "red sea", "port", "ports", "harbour", "harbor", "berenike", "alexandria", "merchant", "shipping"],
+            "commodity": ["spice", "spices", "gem", "gems", "pearl", "pearls", "commodity", "market"],
+            # Useful but not sufficient on its own; prevents coin-only pages from dominating.
+            "numismatic": ["coin", "coins", "currency", "circulation", "mint", "numismatic"],
+        }
+
         def _split_paragraphs(text: str) -> List[str]:
             t = str(text or "").strip()
             if not t:
@@ -133,10 +142,14 @@ class CandidateGenerator:
                     if not kw:
                         continue
                     global_hits += pl.count(kw)
+            signal_group_hits = {}
+            for group_name, terms in QUERY_SIGNAL_GROUPS.items():
+                signal_group_hits[group_name] = sum(pl.count(term) for term in terms)
             return {
                 "node_hits": node_hits,
                 "global_hits": global_hits,
                 "unique_anchor_hits": unique_anchor_hits,
+                "signal_group_hits": signal_group_hits,
             }
 
         def _best_paragraph(text: str) -> Tuple[str, Dict[str, int]]:
@@ -151,7 +164,12 @@ class CandidateGenerator:
                 # Rank primarily by local-node relevance, then global cues.
                 # This avoids picking unrelated "high global cue" paragraphs (e.g., modern wars)
                 # when the local event is specific (e.g., Mahinda mission / Buddhism transfer).
-                score = (m["node_hits"], m["unique_anchor_hits"], m["global_hits"], len(p))
+                score = (
+                    m["node_hits"] * 2,
+                    m["unique_anchor_hits"] * 1.5,
+                    m["global_hits"],
+                    len(p)
+                )
                 if score > best_score:
                     best_score = score
                     best = p
@@ -262,30 +280,63 @@ class CandidateGenerator:
 
             # Fix Issue 3: Do not treat the local event page itself as a "global influence".
             # Also check against all known local event names to prevent local events appearing as global.
+            should_skip_local = False
             if local_title and title_l == local_title:
-                continue
-            # Check if this title matches any local event name (case-insensitive, partial match)
-            if local_names_set:
+                should_skip_local = True
+            if local_names_set and not should_skip_local:
                 title_words = set(title_l.split())
                 for local_name in local_names_set:
                     local_words = set(local_name.split())
                     # If significant overlap (more than 2 words match), likely a local event
                     if len(title_words & local_words) >= 2 and len(local_words) <= 5:
-                        continue
-                # Also check exact or near-exact match
-                if title_l in local_names_set:
-                    continue
-                # Check if title is a substring of any local event name (e.g., "Negombo" in "Bandaranaike International Airport in Negombo")
-                for local_name in local_names_set:
+                        should_skip_local = True
+                        break
+                    if title_l == local_name:
+                        should_skip_local = True
+                        break
+                    # Check if title is a substring of any local event name (e.g., "Negombo" in "Bandaranaike International Airport in Negombo")
                     if title_l in local_name or local_name in title_l:
                         # Only skip if it's clearly a place name, not a global event
                         if any(place_word in title_l for place_word in ["airport", "airfield", "harbour", "harbor", "port", "city", "town", "district"]):
-                            continue
+                            should_skip_local = True
+                            break
+            if should_skip_local:
+                continue
 
             # Filter out clearly local place pages unless they show global-cue evidence.
             # This prevents "Negombo" (and similar) showing up as a global influence.
             global_hits = int(score_meta.get("global_hits", 0))
             node_hits = int(score_meta.get("node_hits", 0))
+            signal_group_hits = score_meta.get("signal_group_hits", {}) or {}
+            roman_hits = int(signal_group_hits.get("roman", 0))
+            trade_route_hits = int(signal_group_hits.get("trade_route", 0))
+            commodity_hits = int(signal_group_hits.get("commodity", 0))
+            numismatic_hits = int(signal_group_hits.get("numismatic", 0))
+
+            # Require a query-appropriate signal set.
+            # Trade pages should still be eligible for Roman/commerce queries,
+            # but Buddhism queries need religion/cultural diffusion pages to pass too.
+            religion_hits = 0
+            if religion_query:
+                religion_terms = ["buddhism", "buddhist", "mahinda", "ashoka", "theravada", "sangha", "monk", "missionary", "doctrine"]
+                candidate_text_l = f"{title_l} {cleaned_text.lower()}"
+                religion_hits = sum(candidate_text_l.count(term) for term in religion_terms)
+
+            has_strong_query_signal = (
+                roman_hits > 0
+                or trade_route_hits > 0
+                or commodity_hits > 0
+                or religion_hits > 0
+            )
+            if religion_query:
+                if religion_hits == 0 and global_hits < 2:
+                    continue
+            elif not has_strong_query_signal:
+                continue
+
+            # Extra guard for obvious off-topic encyclopedic pages.
+            if numismatic_hits > 0 and not has_strong_query_signal:
+                continue
 
             # Religion/cultural-diffusion query guard:
             # keep candidates tied to Buddhist transmission context and avoid modern conflict-only pages.
@@ -343,6 +394,12 @@ class CandidateGenerator:
                     "source": "wikipedia",
                     "global_cue_hits": global_hits,
                     "node_anchor_hits": int(score_meta.get("node_hits", 0)),
+                    "query_signal_hits": {
+                        "roman": roman_hits,
+                        "trade_route": trade_route_hits,
+                        "commodity": commodity_hits,
+                        "numismatic": numismatic_hits,
+                    },
                 }
             )
 
@@ -568,6 +625,14 @@ class CandidateGenerator:
                 keyword_match = self._calculate_keyword_match(query, event)
                 entity_match = self._calculate_entity_match(query, event)
                 temporal_relevance = self._calculate_temporal_relevance(query, event)
+                signal_hits = event.get('query_signal_hits', {}) or {}
+                signal_alignment = min(
+                    1.0,
+                    0.35 * min(3, int(signal_hits.get('roman', 0))) +
+                    0.35 * min(3, int(signal_hits.get('trade_route', 0))) +
+                    0.20 * min(3, int(signal_hits.get('commodity', 0))) +
+                    0.10 * min(3, int(signal_hits.get('numismatic', 0)))
+                )
                 
                 # Combined relevance score with better weighting
                 # Boost scores for better matching
@@ -578,7 +643,8 @@ class CandidateGenerator:
                     0.35 * min(1.0, similarity_boost) +
                     0.35 * min(1.0, keyword_boost) +
                     0.15 * entity_match +
-                    0.15 * temporal_relevance
+                    0.15 * temporal_relevance +
+                    0.20 * signal_alignment
                 )
                 query_text_lower = query.get('local_event_text', '').lower()
                 event_name_lower = event.get('event_name', '').lower()

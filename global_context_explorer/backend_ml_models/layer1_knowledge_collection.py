@@ -85,13 +85,139 @@ class KnowledgeCollector:
         # 1. Search Wikipedia for local event (using both REST and MediaWiki APIs)
         local_event_text = query.get('local_event_text', '')
         if local_event_text:
+            def _build_focus_queries(text: str, keywords: List[str], entities: List[str]) -> List[str]:
+                base = (text or '').lower()
+                cleaned_keywords = []
+                for keyword in keywords[:8]:
+                    if not isinstance(keyword, str):
+                        continue
+                    token = keyword.strip().lower()
+                    if token and token not in {'links', 'link', 'history', 'event', 'events'}:
+                        cleaned_keywords.append(token)
+
+                cleaned_entities = []
+                for entity in entities[:3]:
+                    if not isinstance(entity, str):
+                        continue
+                    token = entity.strip().lower()
+                    if token:
+                        cleaned_entities.append(token)
+
+                phrases = []
+                if cleaned_keywords:
+                    phrases.append(' '.join(cleaned_keywords[:4] + cleaned_entities[:1]))
+
+                roman_trade_signals = [
+                    'roman sri lanka trade',
+                    'roman coins sri lanka',
+                    'roman trade indian ocean',
+                    'indian ocean trade sri lanka',
+                    'red sea india trade routes',
+                    'roman empire trade expansion',
+                    'roman demand spices gems',
+                    'egyptian ports berenike',
+                ]
+
+                if any(term in base for term in ['roman', 'coin', 'trade', 'circulation', 'indian ocean', 'red sea']):
+                    phrases.extend(roman_trade_signals)
+
+                if 'sri lanka' in base or 'ceylon' in base:
+                    phrases.extend([
+                        'sri lanka roman trade',
+                        'sri lanka indian ocean trade',
+                        'sri lanka roman coins',
+                    ])
+
+                if 'coin' in base or 'circulation' in base:
+                    phrases.extend([
+                        'roman coin circulation',
+                        'ancient trade coins indian ocean',
+                    ])
+
+                if any(term in base for term in ['buddhism', 'mahinda', 'theravada', 'ashoka', 'sangha', 'monk']):
+                    phrases.extend([
+                        'buddhism in sri lanka',
+                        'mahinda mission sri lanka',
+                        'ashoka buddhism sri lanka',
+                        'theravada sri lanka',
+                        'buddhist mission sri lanka',
+                    ])
+
+                seen = set()
+                out = []
+                for phrase in phrases:
+                    phrase = ' '.join(str(phrase).split()).strip()
+                    if phrase and phrase not in seen:
+                        seen.add(phrase)
+                        out.append(phrase)
+                return out
+
+            def _keep_wikipedia_result(item: Dict, keywords: List[str], entities: List[str]) -> bool:
+                title = str(item.get('title', '') or '').lower()
+                snippet = str(item.get('snippet', '') or '').lower()
+                text = f"{title} {snippet}"
+
+                religion_terms = ['buddhism', 'buddhist', 'mahinda', 'ashoka', 'theravada', 'sangha', 'monk', 'missionary', 'doctrine']
+                religion_hits = sum(1 for term in religion_terms if term in text)
+
+                route_or_commodity_terms = [
+                    'indian ocean', 'red sea', 'trade route', 'trade routes', 'port', 'ports',
+                    'harbour', 'harbor', 'berenike', 'alexandria', 'spice', 'spices', 'gem', 'gems',
+                    'merchant', 'shipping'
+                ]
+                roman_trade_terms = ['roman', 'roman empire', 'byzantine', 'trade']
+                numismatic_terms = ['coin', 'coins', 'circulation', 'mint', 'currency']
+
+                keyword_hits = 0
+                for keyword in keywords[:6]:
+                    if isinstance(keyword, str) and keyword.strip().lower() in text:
+                        keyword_hits += 1
+                for entity in entities[:3]:
+                    if isinstance(entity, str) and entity.strip().lower() in text:
+                        keyword_hits += 1
+
+                route_hits = sum(1 for term in route_or_commodity_terms if term in text)
+                roman_trade_hits = sum(1 for term in roman_trade_terms if term in text)
+                numismatic_hits = sum(1 for term in numismatic_terms if term in text)
+
+                # Drop obvious non-matches unless they still have a very strong query-specific signal.
+                if any(bad in title for bad in ['pornography', 'pornographic', 'adult', 'inflation', 'canadian currencies', 'renminbi']):
+                    return (route_hits >= 1 or religion_hits >= 1) and keyword_hits >= 1
+
+                # Keep pages with either a trade-network signal or a religion/cultural-diffusion signal.
+                # This lets Buddhism-related queries surface Mahinda/Ashoka/Theravada pages instead of trade-only pages.
+                if not (route_hits >= 1 or roman_trade_hits >= 2 or religion_hits >= 1):
+                    return False
+
+                if numismatic_hits > 0 and route_hits == 0 and roman_trade_hits < 2:
+                    if religion_hits == 0:
+                        return False
+
+                return keyword_hits >= 1 or route_hits >= 1 or roman_trade_hits >= 2 or religion_hits >= 1
+
             # Try REST API first (faster, better summaries)
             wiki_summary = self._get_wikipedia_summary(local_event_text)
             if wiki_summary:
                 evidence['wikipedia_snippets'].append(wiki_summary)
             
-            # Also use MediaWiki search for broader results
-            search_results = self._search_wikipedia_mediawiki(local_event_text, limit=8)
+            # Also use MediaWiki search for broader results, but prefer focused query variants
+            search_queries = [local_event_text]
+            search_queries.extend(_build_focus_queries(local_event_text, query.get('keywords', []), query.get('entities', [])))
+
+            seen_titles = set()
+            search_results = []
+            for search_query in search_queries:
+                for result in self._search_wikipedia_mediawiki(search_query, limit=6):
+                    if not result:
+                        continue
+                    title = str(result.get('title', '') or '').strip().lower()
+                    if not title or title in seen_titles:
+                        continue
+                    if not _keep_wikipedia_result(result, query.get('keywords', []), query.get('entities', [])):
+                        continue
+                    seen_titles.add(title)
+                    search_results.append(result)
+
             evidence['wikipedia_search_results'].extend(search_results)
             
             # Get plaintext extracts for top search results in batches of B=2 (matches methodology PDF).

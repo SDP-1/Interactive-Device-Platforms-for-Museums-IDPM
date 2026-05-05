@@ -185,3 +185,61 @@ exports.rejectInfluence = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// PUT /api/influences/:id  — update an accepted influence in place
+exports.updateInfluence = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const influence = await GlobalInfluence.findById(id);
+
+        if (!influence) {
+            return res.status(404).json({ message: 'Influence not found' });
+        }
+
+        if (influence.status !== 'accepted') {
+            return res.status(400).json({ message: 'Only accepted influences can be updated' });
+        }
+
+        const allowedFields = [
+            'globalEventName',
+            'globalEventDate',
+            'globalEventLocation',
+            'globalEventDescription',
+            'globalEventDescriptionShort',
+            'globalEventDescriptionFull',
+            'causalStrength',
+            'reliabilityScore',
+            'finalScore',
+            'mechanism',
+            'influenceType',
+            'reliabilityComponents',
+            'explanationPaths',
+            'rawPipelineOutput',
+            'rejectionReason',
+        ];
+
+        const updateData = {};
+        for (const field of allowedFields) {
+            if (Object.hasOwn(req.body, field)) {
+                updateData[field] = req.body[field];
+            }
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No editable fields were provided' });
+        }
+
+        updateData.reviewedBy = req.user?._id;
+        updateData.reviewedAt = new Date();
+
+        const updated = await GlobalInfluence.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        res.json(updated);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

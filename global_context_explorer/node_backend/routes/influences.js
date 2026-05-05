@@ -4,6 +4,7 @@ const {
     getInfluences,
     acceptInfluence,
     rejectInfluence,
+    updateInfluence,
 } = require('../controllers/influenceController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -18,5 +19,7 @@ router.put('/:id/accept', acceptInfluence);
 
 router.post('/reject', rejectInfluence);
 router.put('/:id/reject', rejectInfluence);
+
+router.put('/:id', updateInfluence);
 
 module.exports = router;
