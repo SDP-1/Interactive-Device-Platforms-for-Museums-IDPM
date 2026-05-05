@@ -41,6 +41,10 @@ class MeshyImageTo3DService {
         'image_url': imageUrl,
         'should_texture': true,
         'model_type': 'standard',
+        "remove_lighting": true,
+        "enable_pbr": false,
+        "hd_texture": false,
+        "image_enhancement": false,
       }),
     );
 

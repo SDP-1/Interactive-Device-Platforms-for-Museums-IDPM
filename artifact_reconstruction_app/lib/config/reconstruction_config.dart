@@ -1,19 +1,31 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 /// Hugging Face API key for 2D reconstruction (inpainting).
+String get hfApiKey {
+  const fromEnv = String.fromEnvironment(
+    'HF_API_KEY',
+    defaultValue: '',
+  );
+  if (fromEnv.isNotEmpty) return fromEnv;
+  return dotenv.env['HF_API_KEY']?.trim() ?? '';
+}
 
-const String hfApiKey = String.fromEnvironment(
-  'HF_API_KEY',
-  defaultValue: '',
-);
+/// Gemini API key for image reconstruction.
+String get geminiApiKey {
+  const fromEnv = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: '',
+  );
+  if (fromEnv.isNotEmpty) return fromEnv;
+  return dotenv.env['GEMINI_API_KEY']?.trim() ?? '';
+}
 
-
-/// Get a key
-const String geminiApiKey = String.fromEnvironment(
-  'GEMINI_API_KEY',
-  defaultValue: '',
-);
-
-/// List models: GET
-const String geminiModelId = String.fromEnvironment(
-  'GEMINI_MODEL_ID',
-  defaultValue: '',
-);
+/// Optional model id override.
+String get geminiModelId {
+  const fromEnv = String.fromEnvironment(
+    'GEMINI_MODEL_ID',
+    defaultValue: '',
+  );
+  if (fromEnv.isNotEmpty) return fromEnv;
+  return dotenv.env['GEMINI_MODEL_ID']?.trim() ?? '';
+}
