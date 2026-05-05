@@ -195,6 +195,7 @@ const PaintingSimulation = ({ gameState, updateGameState, onBackToMenu }) => {
   const [completedPieces, setCompletedPieces] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [showHint, setShowHint] = useState(false);
   const stageRef = useRef();
 
   // Initialize pieces when puzzle pieces are generated
@@ -1002,6 +1003,16 @@ const PaintingSimulation = ({ gameState, updateGameState, onBackToMenu }) => {
             <div className="flex gap-3">
               <button
                 className="bg-transparent hover:bg-white/5 text-[#8B8C7A] hover:text-white font-bold py-2 px-6 rounded border border-[#8B8C7A]/30 transition-all active:scale-95"
+                onMouseDown={() => setShowHint(true)}
+                onMouseUp={() => setShowHint(false)}
+                onMouseLeave={() => setShowHint(false)}
+                onTouchStart={() => setShowHint(true)}
+                onTouchEnd={() => setShowHint(false)}
+              >
+                <span className="text-sm font-sans tracking-wide">👀 Hold for Hint</span>
+              </button>
+              <button
+                className="bg-transparent hover:bg-white/5 text-[#8B8C7A] hover:text-white font-bold py-2 px-6 rounded border border-[#8B8C7A]/30 transition-all active:scale-95"
                 onClick={resetPuzzle}
               >
                 <span className="text-sm font-sans tracking-wide">↺ Reset</span>
@@ -1089,6 +1100,20 @@ const PaintingSimulation = ({ gameState, updateGameState, onBackToMenu }) => {
                       strokeWidth={2}
                       cornerRadius={2}
                     />
+                    
+                    {/* Full Picture Hint Overlay */}
+                    {showHint && image && (
+                      <Image
+                        image={image}
+                        x={0}
+                        y={0}
+                        width={PIECE_SIZE.width * RESTORATION_CONFIGS[selectedDifficulty].cols}
+                        height={PIECE_SIZE.height * RESTORATION_CONFIGS[selectedDifficulty].rows}
+                        opacity={0.4}
+                        listening={false}
+                      />
+                    )}
+
                     {pieces.map(piece => (
                       <Group key={`target-group-${piece.id}`} x={piece.targetX - TARGET_POSITION.x} y={piece.targetY - TARGET_POSITION.y}>
                         <Rect

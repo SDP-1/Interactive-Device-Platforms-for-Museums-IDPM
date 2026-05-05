@@ -235,6 +235,7 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [zoom, setZoom] = useState(1);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [showHint, setShowHint] = useState(false);
 
   // ========== REFS ==========
   const canvasRef = useRef(null);
@@ -582,6 +583,22 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
               </div>
             )}
 
+            {/* Hint Pop-up Modal */}
+            {showHint && selectedMask && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm pointer-events-none transition-all duration-200 p-8">
+                <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center border border-stone-200 w-[60vw] h-[70vh] max-w-[900px]">
+                  <h3 className="text-4xl font-serif font-bold text-museum-primary mb-6 shrink-0">Original Museum Reference</h3>
+                  <div className="bg-stone-50 rounded-2xl p-6 border border-stone-100 flex items-center justify-center flex-1 w-full overflow-hidden">
+                    <img 
+                      src={selectedMask.displayImage} 
+                      className="w-full h-full object-contain drop-shadow-2xl"
+                      alt="Hint Reference"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Canvas */}
             <canvas
               ref={canvasRef}
@@ -657,6 +674,17 @@ function MaskColoring({ gameState, updateGameState, onBackToMenu }) {
             </h2>
 
             <div className="flex flex-col gap-3">
+              <button
+                className="w-full py-3 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-xl text-museum-primary font-bold tracking-wide transition-all active:scale-95 flex items-center justify-center gap-2"
+                onMouseDown={() => setShowHint(true)}
+                onMouseUp={() => setShowHint(false)}
+                onMouseLeave={() => setShowHint(false)}
+                onTouchStart={() => setShowHint(true)}
+                onTouchEnd={() => setShowHint(false)}
+              >
+                <span>👀</span> HOLD FOR HINT
+              </button>
+
               <button
                 className="w-full py-3 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-xl text-museum-primary font-bold tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 onClick={handleUndo}
