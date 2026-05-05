@@ -2151,18 +2151,52 @@ class ArtifactDetailViewScreen extends StatefulWidget {
 class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
   late Artifact _artifact;
   bool _convertingTo3D = false;
+  String? _beforeReconstructionImageUrl;
+  String? _afterReconstructionImageUrl;
+  bool _showBeforeReconstruction = false;
 
   @override
   void initState() {
     super.initState();
     _artifact = widget.artifact;
+    _loadImageHistory();
   }
 
   Future<void> _refetchArtifact() async {
     try {
       final a = await SupabaseService().getArtifactById(_artifact.id);
-      if (mounted) setState(() => _artifact = a);
+      if (mounted) {
+        setState(() => _artifact = a);
+        await _loadImageHistory();
+      }
     } catch (_) {}
+  }
+
+  Future<void> _loadImageHistory() async {
+    try {
+      final urls = await SupabaseService().getArtifactImageHistoryUrls(_artifact.id);
+      if (!mounted) return;
+      if (urls.length >= 2) {
+        setState(() {
+          _beforeReconstructionImageUrl = urls.first;
+          _afterReconstructionImageUrl = urls.last;
+          _showBeforeReconstruction = false;
+        });
+      } else {
+        setState(() {
+          _beforeReconstructionImageUrl = null;
+          _afterReconstructionImageUrl = _artifact.imageUrl;
+          _showBeforeReconstruction = false;
+        });
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _beforeReconstructionImageUrl = null;
+        _afterReconstructionImageUrl = _artifact.imageUrl;
+        _showBeforeReconstruction = false;
+      });
+    }
   }
 
   Future<void> _convertTo3D() async {
@@ -2318,6 +2352,12 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
   Widget build(BuildContext context) {
     final artifact = _artifact;
     final has3D = artifact.modelUrl != null && artifact.modelUrl!.isNotEmpty;
+    final comparisonBeforeUrl = _beforeReconstructionImageUrl;
+    final comparisonAfterUrl = _afterReconstructionImageUrl ?? artifact.imageUrl;
+    final hasComparisonImages = comparisonBeforeUrl != null && comparisonAfterUrl != null;
+    final displayImageUrl = hasComparisonImages
+        ? (_showBeforeReconstruction ? comparisonBeforeUrl : comparisonAfterUrl)
+        : artifact.imageUrl;
     return Scaffold(
       backgroundColor: AppTheme.surfaceWarm,
       appBar: AppBar(
@@ -2356,12 +2396,12 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                       borderRadius: BorderRadius.circular(18),
                       child: SizedBox(
                         width: double.infinity,
-                        child: artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty
+                        child: displayImageUrl != null && displayImageUrl.isNotEmpty
                             ? Container(
                                 constraints: const BoxConstraints(maxHeight: 380, minHeight: 220),
                                 color: AppTheme.stone200,
                                 child: Image.network(
-                                  artifact.imageUrl!,
+                                  displayImageUrl,
                                   fit: BoxFit.cover,
                                   loadingBuilder: (context, child, loadingProgress) {
                                     if (loadingProgress == null) return child;
@@ -2402,6 +2442,54 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                               ),
                       ),
                     ),
+                    if (hasComparisonImages) ...[
+                      const SizedBox(height: 10),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => setState(() => _showBeforeReconstruction = !_showBeforeReconstruction),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: _showBeforeReconstruction
+                                  ? AppTheme.stone200
+                                  : AppTheme.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: _showBeforeReconstruction
+                                    ? AppTheme.stone200
+                                    : AppTheme.primary.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _showBeforeReconstruction
+                                      ? Icons.history_toggle_off_rounded
+                                      : Icons.auto_fix_high_outlined,
+                                  size: 18,
+                                  color: _showBeforeReconstruction ? AppTheme.stone600 : AppTheme.primaryDark,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _showBeforeReconstruction
+                                        ? 'Tap to view After 2D Reconstruction'
+                                        : 'Tap to view Before Reconstruction',
+                                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                      color: _showBeforeReconstruction ? AppTheme.stone600 : AppTheme.primaryDark,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Text(
                       artifact.name,

@@ -138,4 +138,22 @@ class SupabaseService {
     await _client.storage.from('3d reconstruct').upload(filePath, modelFile);
     return _client.storage.from('3d reconstruct').getPublicUrl(filePath);
   }
+
+  /// Returns image history URLs for an artifact, sorted oldest -> newest.
+  /// Useful for showing "before reconstruction" and "after reconstruction" side by side.
+  Future<List<String>> getArtifactImageHistoryUrls(String artifactId) async {
+    final files = await _client.storage
+        .from('3d reconstruct')
+        .list(path: '$artifactId/images');
+
+    files.sort((a, b) {
+      final aNum = int.tryParse(a.name.split('.').first) ?? 0;
+      final bNum = int.tryParse(b.name.split('.').first) ?? 0;
+      return aNum.compareTo(bNum);
+    });
+
+    return files
+        .map((f) => _client.storage.from('3d reconstruct').getPublicUrl('$artifactId/images/${f.name}'))
+        .toList();
+  }
 }
