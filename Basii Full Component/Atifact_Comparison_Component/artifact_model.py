@@ -133,7 +133,8 @@ class ArtifactComparisonModel:
             convert_to_numpy=True
         )
         
-        # Cluster artifacts for better comparison insights
+        # To automatically classify these vectors into "families" (e.g., Ritual, Martial, Domestic).
+        # This allows the system to recognize that a "Sword" and a "Dagger" belong together even if the word "Weapon" isn't in their description.
         print(f"Clustering artifacts into {n_clusters} groups...")
         if len(artifacts) >= n_clusters:
             kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
