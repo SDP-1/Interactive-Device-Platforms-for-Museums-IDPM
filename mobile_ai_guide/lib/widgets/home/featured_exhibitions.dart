@@ -6,6 +6,7 @@ import 'package:mobile_ai_guide/pages/featured_exhibitions_page.dart';
 import 'package:mobile_ai_guide/pages/exhibit_artifacts_page.dart';
 import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
+import 'package:mobile_ai_guide/ui/content_language.dart';
 
 class FeaturedExhibitionsSection extends StatefulWidget {
   const FeaturedExhibitionsSection({super.key});
@@ -35,144 +36,152 @@ class _FeaturedExhibitionsSectionState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: app.kCardShadow,
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _HeaderRow(
-            onViewAll: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const FeaturedExhibitionsPage(),
-                ),
-              );
-            },
+    return ValueListenableBuilder<String>(
+      valueListenable: AppContentLanguage.instance.notifier,
+      builder: (context, language, _) {
+        final contentLanguage = language == 'si' ? 'si' : 'en';
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: app.kCardShadow,
           ),
-          const SizedBox(height: 12),
-          FutureBuilder<List<FeaturedExhibit>>(
-            future: _future,
-            builder: (context, snap) {
-              if (snap.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 120,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              if (snap.hasError) {
-                // handle session redirect specially
-                if (snap.error is SessionAccessException &&
-                    !_sessionRedirectTriggered) {
-                  _sessionRedirectTriggered = true;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    SessionGuard.redirectToSessionIntro(
-                      context,
-                      message: (snap.error as SessionAccessException).message,
-                    );
-                  });
-                  return const SizedBox(
-                    height: 120,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 28.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 56,
-                            color: Colors.red.shade300,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Unable to load featured exhibitions',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Please check your connection and try again.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey.shade700),
-                          ),
-                          const SizedBox(height: 12),
-                          FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: app.kGold,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 10,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _future =
-                                    FeaturedExhibitsService.fetchFeaturedExhibits();
-                                _sessionRedirectTriggered = false;
-                              });
-                            },
-                            child: const Text(
-                              'Retry',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ],
-                      ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HeaderRow(
+                onViewAll: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const FeaturedExhibitionsPage(),
                     ),
-                  ),
-                );
-              }
-
-              final items = snap.data ?? [];
-              final showCount = items.length >= 3 ? 3 : items.length;
-              if (showCount == 0) {
-                return const Text('No featured exhibitions available');
-              }
-              return Column(
-                children: List.generate(showCount, (i) {
-                  final ex = items[i];
-                  return Column(
-                    children: [
-                      ExhibitionItem(
-                        imageUrl: ex.imageUrl ?? '',
-                        title: ex.name,
-                        artifacts: '${ex.artifacts.length} artifacts',
-                        duration: _durationLabel(ex),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ExhibitArtifactsPage(exhibit: ex),
-                            ),
-                          );
-                        },
-                      ),
-                      if (i < showCount - 1) const SizedBox(height: 12),
-                    ],
                   );
-                }),
-              );
-            },
+                },
+              ),
+              const SizedBox(height: 12),
+              FutureBuilder<List<FeaturedExhibit>>(
+                future: _future,
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 120,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (snap.hasError) {
+                    // handle session redirect specially
+                    if (snap.error is SessionAccessException &&
+                        !_sessionRedirectTriggered) {
+                      _sessionRedirectTriggered = true;
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        SessionGuard.redirectToSessionIntro(
+                          context,
+                          message:
+                              (snap.error as SessionAccessException).message,
+                        );
+                      });
+                      return const SizedBox(
+                        height: 120,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 56,
+                                color: Colors.red.shade300,
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Unable to load featured exhibitions',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Please check your connection and try again.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.grey.shade700),
+                              ),
+                              const SizedBox(height: 12),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: app.kGold,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _future =
+                                        FeaturedExhibitsService.fetchFeaturedExhibits();
+                                    _sessionRedirectTriggered = false;
+                                  });
+                                },
+                                child: const Text(
+                                  'Retry',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final items = snap.data ?? [];
+                  final showCount = items.length >= 3 ? 3 : items.length;
+                  if (showCount == 0) {
+                    return const Text('No featured exhibitions available');
+                  }
+                  return Column(
+                    children: List.generate(showCount, (i) {
+                      final ex = items[i];
+                      return Column(
+                        children: [
+                          ExhibitionItem(
+                            imageUrl: ex.imageUrl ?? '',
+                            title: ex.getName(contentLanguage),
+                            artifacts: '${ex.artifacts.length} artifacts',
+                            duration: _durationLabel(ex),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ExhibitArtifactsPage(exhibit: ex),
+                                ),
+                              );
+                            },
+                          ),
+                          if (i < showCount - 1) const SizedBox(height: 12),
+                        ],
+                      );
+                    }),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

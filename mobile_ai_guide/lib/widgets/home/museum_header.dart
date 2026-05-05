@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ai_guide/pages/session_information_page.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
+import 'package:mobile_ai_guide/ui/content_language.dart';
+import 'package:mobile_ai_guide/ui/chat_language.dart';
 
 enum _HeaderMenuAction { session }
 
@@ -65,7 +67,7 @@ class MuseumHeader extends StatelessWidget {
                 ],
               ),
             ),
-            const _LangChip(label: 'English'),
+            const _LangChip(),
             const SizedBox(width: 10),
             const _MenuButton(),
           ],
@@ -76,37 +78,88 @@ class MuseumHeader extends StatelessWidget {
 }
 
 class _LangChip extends StatelessWidget {
-  const _LangChip({required this.label});
-
-  final String label;
+  const _LangChip();
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {},
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: app.kMuseumChip,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.translate, size: 14, color: app.kMuseumDeep),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: app.kMuseumDeep,
+    return ValueListenableBuilder<String>(
+      valueListenable: AppContentLanguage.instance.notifier,
+      builder: (context, language, _) {
+        final label = language == 'si' ? 'සිංහල' : 'English';
+        return PopupMenuButton<String>(
+          onSelected: (value) {
+            // Update both content and chat language
+            AppContentLanguage.instance.setLanguage(value);
+            AppChatLanguage.instance.setLanguage(value);
+          },
+          itemBuilder: (context) {
+            return [
+              const PopupMenuItem<String>(
+                value: 'en',
+                child: Row(
+                  children: [
+                    Icon(Icons.done, size: 18, color: app.kMuseumDeep),
+                    SizedBox(width: 10),
+                    Text(
+                      'English',
+                      style: TextStyle(
+                        color: app.kMuseumText,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const PopupMenuItem<String>(
+                value: 'si',
+                child: Row(
+                  children: [
+                    Icon(Icons.done, size: 18, color: app.kMuseumDeep),
+                    SizedBox(width: 10),
+                    Text(
+                      'සිංහල',
+                      style: TextStyle(
+                        color: app.kMuseumText,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ];
+          },
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: app.kMuseumChip,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 4),
+              ],
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              children: [
+                const Icon(Icons.translate, size: 14, color: app.kMuseumDeep),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: app.kMuseumDeep,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

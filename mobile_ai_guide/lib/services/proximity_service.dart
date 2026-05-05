@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile_ai_guide/config/proximity_constants.dart';
+import 'package:mobile_ai_guide/services/local_storage_service.dart';
 
 enum ProximityStatus { safe, warning, outOfRange }
 
@@ -15,9 +16,12 @@ class ProximityService {
       ValueNotifier<ProximityStatus>(ProximityStatus.safe);
   final ValueNotifier<double> distanceNotifier = ValueNotifier<double>(0.0);
   final ValueNotifier<String> debugNotifier = ValueNotifier<String>('');
+  // Countdown timer notifier (in seconds)
+  final ValueNotifier<int> countdownNotifier = ValueNotifier<int>(0);
   // Heartbeat (periodic) tracking
   Duration heartbeatInterval = Duration(seconds: HEARTBEAT_INTERVAL_SECONDS);
   Timer? _heartbeatTimer;
+  Timer? _countdownTimer;
   // Heartbeat is enforced ON and cannot be disabled by the user UI.
   final ValueNotifier<bool> heartbeatEnabledNotifier = ValueNotifier<bool>(
     true,
@@ -28,6 +32,7 @@ class ProximityService {
   StreamSubscription<Position>? _positionSub;
   final AudioPlayer _player = AudioPlayer();
   bool _isAlreadyOut = false;
+  int _countdownSeconds = 600; // 10 minutes in seconds
 
   /// Initializes permissions and (optionally) starts continuous tracking.
   /// Returns true when tracking or at least a one-time check was started;
@@ -124,6 +129,7 @@ class ProximityService {
   void dispose() {
     _positionSub?.cancel();
     _player.dispose();
+    _countdownTimer?.cancel();
   }
 
   void startTrackingPosition() {
@@ -138,6 +144,41 @@ class ProximityService {
   void stopTracking() {
     _positionSub?.cancel();
     _positionSub = null;
+  }
+
+  void _startCountdown() {
+    // Stop existing countdown if any
+    _countdownTimer?.cancel();
+    _countdownSeconds = 600; // Reset to 10 minutes
+    countdownNotifier.value = _countdownSeconds;
+
+    _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _countdownSeconds--;
+      countdownNotifier.value = _countdownSeconds;
+
+      if (_countdownSeconds <= 0) {
+        // Countdown expired - clear all data
+        _countdownTimer?.cancel();
+        _clearAllDataOnCountdownExpire();
+      }
+    });
+
+    debugNotifier.value = 'Countdown started: $_countdownSeconds seconds';
+  }
+
+  void _stopCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    _countdownSeconds = 0;
+    countdownNotifier.value = 0;
+    debugNotifier.value = 'Countdown stopped';
+  }
+
+  Future<void> _clearAllDataOnCountdownExpire() async {
+    await LocalStorageService.instance.clearAllSessionData();
+    countdownNotifier.value = 0;
+    debugNotifier.value =
+        'All session data cleared due to out-of-range timeout';
   }
 
   Future<void> _handlePosition(Position position) async {
@@ -155,6 +196,10 @@ class ProximityService {
       // Inside safe zone
       if (statusNotifier.value != ProximityStatus.safe) {
         statusNotifier.value = ProximityStatus.safe;
+        // Stop countdown when back to safe zone
+        if (_isAlreadyOut) {
+          _stopCountdown();
+        }
       }
       if (_isAlreadyOut) {
         _isAlreadyOut = false;
@@ -164,6 +209,10 @@ class ProximityService {
       // Warning zone
       if (statusNotifier.value != ProximityStatus.warning) {
         statusNotifier.value = ProximityStatus.warning;
+        // Stop countdown when back to warning zone
+        if (_isAlreadyOut) {
+          _stopCountdown();
+        }
       }
       if (_isAlreadyOut) {
         _isAlreadyOut = false;
@@ -173,18 +222,22 @@ class ProximityService {
       // Out of range
       if (statusNotifier.value != ProximityStatus.outOfRange) {
         statusNotifier.value = ProximityStatus.outOfRange;
+        // Start 10-minute countdown when going out of range
+        _startCountdown();
       }
       if (!_isAlreadyOut) {
         _isAlreadyOut = true;
-        await startBeeping();
+        // Beeping sound removed - popup alert will be shown from UI
       }
     }
   }
 
   Future<void> startBeeping() async {
+    // Beeping sound removed - now using popup alert instead
+    // Sound functionality kept for potential future use
     try {
-      await _player.setReleaseMode(ReleaseMode.loop);
-      await _player.play(AssetSource('beep.mp3'));
+      // await _player.setReleaseMode(ReleaseMode.loop);
+      // await _player.play(AssetSource('beep.mp3'));
     } catch (_) {}
   }
 

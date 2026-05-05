@@ -17,6 +17,8 @@ class Artifact {
     this.dimensionsSi,
     this.culturalSignificanceEn,
     this.culturalSignificanceSi,
+    this.storyEn,
+    this.storySi,
     this.galleryEn,
     this.gallerySi,
     this.createdAt,
@@ -40,6 +42,8 @@ class Artifact {
   final String? dimensionsSi;
   final String? culturalSignificanceEn;
   final String? culturalSignificanceSi;
+  final String? storyEn;
+  final String? storySi;
   final String? galleryEn;
   final String? gallerySi;
   final DateTime? createdAt;
@@ -60,6 +64,8 @@ class Artifact {
       language == 'si' ? materialSi : materialEn;
   String? getDimensions([String language = 'en']) =>
       language == 'si' ? dimensionsSi : dimensionsEn;
+  String? getStory([String language = 'en']) =>
+      language == 'si' ? storySi : storyEn;
   String? getCulturalSignificance([String language = 'en']) =>
       language == 'si' ? culturalSignificanceSi : culturalSignificanceEn;
   String? getGallery([String language = 'en']) =>
@@ -93,7 +99,10 @@ class Artifact {
     List<String> readImageUrls() {
       final value = json['imageUrls'] ?? json['image_urls'] ?? json['images'];
       if (value is List) {
-        return value.where((item) => item != null).map((item) => item.toString()).toList();
+        return value
+            .where((item) => item != null)
+            .map((item) => item.toString())
+            .toList();
       }
       return <String>[];
     }
@@ -107,13 +116,29 @@ class Artifact {
       year: readString(['year']),
       categoryEn: readString(['category_en', 'categoryEn', 'category']),
       categorySi: readString(['category_si', 'categorySi', 'category']),
-      descriptionEn: readString(['description_en', 'descriptionEn', 'description']),
-      descriptionSi: readString(['description_si', 'descriptionSi', 'description']),
+      descriptionEn: readString([
+        'description_en',
+        'descriptionEn',
+        'description',
+      ]),
+      descriptionSi: readString([
+        'description_si',
+        'descriptionSi',
+        'description',
+      ]),
       imageUrls: readImageUrls(),
       materialEn: readNullableString(['material_en', 'materialEn', 'material']),
       materialSi: readNullableString(['material_si', 'materialSi', 'material']),
-      dimensionsEn: readNullableString(['dimensions_en', 'dimensionsEn', 'dimensions']),
-      dimensionsSi: readNullableString(['dimensions_si', 'dimensionsSi', 'dimensions']),
+      dimensionsEn: readNullableString([
+        'dimensions_en',
+        'dimensionsEn',
+        'dimensions',
+      ]),
+      dimensionsSi: readNullableString([
+        'dimensions_si',
+        'dimensionsSi',
+        'dimensions',
+      ]),
       culturalSignificanceEn: readNullableString([
         'culturalSignificance_en',
         'culturalSignificanceEn',
@@ -124,6 +149,8 @@ class Artifact {
         'culturalSignificanceSi',
         'culturalSignificance',
       ]),
+      storyEn: readNullableString(['story_en', 'storyEn', 'story']),
+      storySi: readNullableString(['story_si', 'storySi', 'story']),
       galleryEn: readNullableString(['gallery_en', 'galleryEn', 'gallery']),
       gallerySi: readNullableString(['gallery_si', 'gallerySi', 'gallery']),
       createdAt: readDate('created_at'),
@@ -144,6 +171,8 @@ class Artifact {
       'description_en': descriptionEn,
       'description_si': descriptionSi,
       'imageUrls': imageUrls,
+      'story_en': storyEn,
+      'story_si': storySi,
       'material_en': materialEn,
       'material_si': materialSi,
       'dimensions_en': dimensionsEn,

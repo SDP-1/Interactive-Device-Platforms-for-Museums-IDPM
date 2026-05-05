@@ -748,6 +748,13 @@ class LocalStorageService {
     await db.delete(_tableSettings);
   }
 
+  /// Clear all session-scoped data from device when GPS is out of range
+  /// and countdown timer expires
+  Future<void> clearAllSessionData() async {
+    final db = await _db;
+    await _clearSessionScopedData(db);
+  }
+
   // Saved artifacts (bookmarks) are stored as a JSON array under settings
   // key 'saved_artifacts' scoped to the active session
   Future<List<Artifact>> getSavedArtifacts() async {

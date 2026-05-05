@@ -15,6 +15,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _showFontSlider = false;
+  bool _showAppLanguage = false;
   bool _showContentLanguage = false;
   bool _showChatLanguage = false;
   bool _showGpsSecurity = false;
@@ -35,6 +36,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _toggleGpsSecurity() {
     setState(() => _showGpsSecurity = !_showGpsSecurity);
+  }
+
+  void _toggleAppLanguage() {
+    setState(() => _showAppLanguage = !_showAppLanguage);
   }
 
   void _toggleContentLanguage() {
@@ -94,10 +99,9 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Preferences',
             subtitle: 'Customize your museum experience',
             tiles: [
-              const _SettingsTile(
-                icon: Icons.credit_card,
-                title: 'App Language',
-                subtitle: 'English',
+              _AppLanguageSettingTile(
+                isExpanded: _showAppLanguage,
+                onToggle: _toggleAppLanguage,
               ),
               _ChatLanguageSettingTile(
                 isExpanded: _showChatLanguage,
@@ -146,6 +150,7 @@ class _ContentLanguageSettingTile extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: AppContentLanguage.instance.notifier,
       builder: (context, language, _) {
+        String label = language == 'si' ? 'සිංහල' : 'English';
         return Column(
           children: [
             InkWell(
@@ -185,7 +190,7 @@ class _ContentLanguageSettingTile extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            AppContentLanguage.labelFor(language),
+                            label,
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black54,
@@ -330,6 +335,12 @@ class _GpsSecurityTile extends StatelessWidget {
 class _GpsSecurityDetailsPanel extends StatelessWidget {
   const _GpsSecurityDetailsPanel();
 
+  String _formatCountdown(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -359,18 +370,77 @@ class _GpsSecurityDetailsPanel extends StatelessWidget {
                   label = 'Out of Range';
                   color = Colors.red;
                 }
-                return Row(
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(label),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Text(label),
+                    // Show countdown warning when out of range
+                    if (status == ProximityStatus.outOfRange)
+                      ValueListenableBuilder<int>(
+                        valueListenable:
+                            ProximityService.instance.countdownNotifier,
+                        builder: (context, countdown, _) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                border: Border.all(color: Colors.red),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        color: Colors.red,
+                                        size: 18,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Data will be cleared in:',
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _formatCountdown(countdown),
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 );
               },
@@ -406,6 +476,7 @@ class _ChatLanguageSettingTile extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: AppChatLanguage.instance.notifier,
       builder: (context, language, _) {
+        String label = language == 'si' ? 'සිංහල' : 'English';
         return Column(
           children: [
             InkWell(
@@ -445,7 +516,7 @@ class _ChatLanguageSettingTile extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            AppChatLanguage.labelFor(language),
+                            label,
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black54,
@@ -814,6 +885,133 @@ class _FontSizeSettingTile extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
         ),
       ],
+    );
+  }
+}
+
+class _AppLanguageSettingTile extends StatelessWidget {
+  const _AppLanguageSettingTile({
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: AppContentLanguage.instance.notifier,
+      builder: (context, language, _) {
+        String label = language == 'si' ? 'සිංහල' : 'English';
+        return Column(
+          children: [
+            InkWell(
+              onTap: onToggle,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: app.kGold.withOpacity(0.16),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.language,
+                        color: app.kGold,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'App Language',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: Colors.black38,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: app.kWarmPanel,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Select App Language',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _LanguageOptionTile(
+                        label: 'English (Default)',
+                        language: 'en',
+                        groupValue: language,
+                        onSelect: (value) {
+                          AppContentLanguage.instance.setLanguage(value);
+                          AppChatLanguage.instance.setLanguage(value);
+                        },
+                      ),
+                      _LanguageOptionTile(
+                        label: 'Sinhala (සිංහල)',
+                        language: 'si',
+                        groupValue: language,
+                        onSelect: (value) {
+                          AppContentLanguage.instance.setLanguage(value);
+                          AppChatLanguage.instance.setLanguage(value);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              crossFadeState: isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+            ),
+          ],
+        );
+      },
     );
   }
 }

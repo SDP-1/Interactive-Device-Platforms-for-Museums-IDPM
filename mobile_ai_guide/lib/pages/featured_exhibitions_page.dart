@@ -5,6 +5,7 @@ import 'package:mobile_ai_guide/pages/exhibit_artifacts_page.dart';
 import 'package:mobile_ai_guide/services/session_access_service.dart';
 import 'package:mobile_ai_guide/widgets/common/session_guard.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
+import 'package:mobile_ai_guide/ui/content_language.dart';
 
 class FeaturedExhibitionsPage extends StatefulWidget {
   const FeaturedExhibitionsPage({super.key});
@@ -41,148 +42,155 @@ class _FeaturedExhibitionsPageState extends State<FeaturedExhibitionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kCream,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Featured Exhibitions',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
+    return ValueListenableBuilder<String>(
+      valueListenable: AppContentLanguage.instance.notifier,
+      builder: (context, language, _) {
+        final contentLanguage = language == 'si' ? 'si' : 'en';
+        return Scaffold(
+          backgroundColor: kCream,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            elevation: 0,
+            title: const Text(
+              'Featured Exhibitions',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+              ),
+            ),
+            centerTitle: true,
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: FutureBuilder<List<FeaturedExhibit>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snap.hasError) {
-            if (snap.error is SessionAccessException &&
-                !_sessionRedirectTriggered) {
-              _sessionRedirectTriggered = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                SessionGuard.redirectToSessionIntro(
-                  context,
-                  message: (snap.error as SessionAccessException).message,
-                );
-              });
-              return const Center(child: CircularProgressIndicator());
-            }
+          body: FutureBuilder<List<FeaturedExhibit>>(
+            future: _future,
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snap.hasError) {
+                if (snap.error is SessionAccessException &&
+                    !_sessionRedirectTriggered) {
+                  _sessionRedirectTriggered = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    SessionGuard.redirectToSessionIntro(
+                      context,
+                      message: (snap.error as SessionAccessException).message,
+                    );
+                  });
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 56,
-                      color: Colors.red.shade300,
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 56,
+                          color: Colors.red.shade300,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Unable to load exhibitions',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Please check your connection and try again.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: kGold,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: _refreshExhibits,
+                          child: const Text(
+                            'Retry',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Unable to load exhibitions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                  ),
+                );
+              }
+              final items = snap.data ?? [];
+              if (items.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'No featured exhibitions available',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                );
+              }
+
+              final maxItems = items.length > 10 ? 10 : items.length;
+              final visibleItems = items.take(maxItems).toList();
+              final totalArtifacts = visibleItems.fold<int>(
+                0,
+                (sum, ex) => sum + ex.artifacts.length,
+              );
+
+              return RefreshIndicator(
+                onRefresh: _refreshExhibits,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _ExhibitionsOverviewCard(
+                        exhibitionCount: visibleItems.length,
+                        totalArtifacts: totalArtifacts,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Please check your connection and try again.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: kGold,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: _refreshExhibits,
-                      child: const Text(
-                        'Retry',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+                      sliver: SliverList.builder(
+                        itemCount: visibleItems.length,
+                        itemBuilder: (context, index) {
+                          final ex = visibleItems[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: _ExhibitionCard(
+                              index: index + 1,
+                              exhibit: ex,
+                              durationLabel: _durationLabel(ex),
+                              contentLanguage: contentLanguage,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ExhibitArtifactsPage(exhibit: ex),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
-              ),
-            );
-          }
-          final items = snap.data ?? [];
-          if (items.isEmpty) {
-            return const Center(
-              child: Text(
-                'No featured exhibitions available',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            );
-          }
-
-          final maxItems = items.length > 10 ? 10 : items.length;
-          final visibleItems = items.take(maxItems).toList();
-          final totalArtifacts = visibleItems.fold<int>(
-            0,
-            (sum, ex) => sum + ex.artifacts.length,
-          );
-
-          return RefreshIndicator(
-            onRefresh: _refreshExhibits,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _ExhibitionsOverviewCard(
-                    exhibitionCount: visibleItems.length,
-                    totalArtifacts: totalArtifacts,
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
-                  sliver: SliverList.builder(
-                    itemCount: visibleItems.length,
-                    itemBuilder: (context, index) {
-                      final ex = visibleItems[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: _ExhibitionCard(
-                          index: index + 1,
-                          exhibit: ex,
-                          durationLabel: _durationLabel(ex),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ExhibitArtifactsPage(exhibit: ex),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -283,12 +291,14 @@ class _ExhibitionCard extends StatelessWidget {
     required this.index,
     required this.exhibit,
     required this.durationLabel,
+    required this.contentLanguage,
     required this.onTap,
   });
 
   final int index;
   final FeaturedExhibit exhibit;
   final String durationLabel;
+  final String contentLanguage;
   final VoidCallback onTap;
 
   @override
@@ -390,7 +400,7 @@ class _ExhibitionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    exhibit.name,
+                    exhibit.getName(contentLanguage),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 17,
@@ -399,8 +409,8 @@ class _ExhibitionCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    (exhibit.description ?? '').isNotEmpty
-                        ? exhibit.description!
+                    (exhibit.getDescription(contentLanguage) ?? '').isNotEmpty
+                        ? exhibit.getDescription(contentLanguage)!
                         : 'Explore this highlighted exhibition collection.',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

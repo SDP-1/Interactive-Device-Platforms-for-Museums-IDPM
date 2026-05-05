@@ -1,14 +1,25 @@
-import React from 'react';
+import React from "react";
 
 type SkeletonProps = {
   className?: string;
   style?: React.CSSProperties;
   rounded?: string;
-  variant?: 'default' | 'futuristic';
+  variant?: "default" | "futuristic";
 };
 
-export const Skeleton: React.FC<SkeletonProps> = ({ className = '', style = {}, rounded = 'md' }) => {
-  const radius = rounded === 'full' ? '9999px' : rounded === 'sm' ? '6px' : rounded === 'lg' ? '12px' : '8px';
+export const Skeleton: React.FC<SkeletonProps> = ({
+  className = "",
+  style = {},
+  rounded = "md",
+}) => {
+  const radius =
+    rounded === "full"
+      ? "9999px"
+      : rounded === "sm"
+        ? "6px"
+        : rounded === "lg"
+          ? "12px"
+          : "8px";
   return (
     <div
       className={`skeleton ${className}`}

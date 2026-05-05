@@ -4,6 +4,7 @@ import 'package:mobile_ai_guide/models/artifact.dart';
 import 'package:mobile_ai_guide/widgets/browse_artifacts/artifact_grid_card.dart';
 import 'package:mobile_ai_guide/ui/colors.dart';
 import 'package:mobile_ai_guide/services/featured_exhibits_service.dart';
+import 'package:mobile_ai_guide/ui/content_language.dart';
 
 class ExhibitArtifactsPage extends StatefulWidget {
   const ExhibitArtifactsPage({required this.exhibit, super.key});
@@ -51,59 +52,69 @@ class _ExhibitArtifactsPageState extends State<ExhibitArtifactsPage> {
   @override
   Widget build(BuildContext context) {
     final artifacts = _exhibit.artifacts;
-    return Scaffold(
-      backgroundColor: kCream,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: Colors.black,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          _exhibit.name,
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w700,
+    return ValueListenableBuilder<String>(
+      valueListenable: AppContentLanguage.instance.notifier,
+      builder: (context, language, _) {
+        final contentLanguage = language == 'si' ? 'si' : 'en';
+        return Scaffold(
+          backgroundColor: kCream,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              color: Colors.black,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text(
+              _exhibit.getName(contentLanguage),
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            centerTitle: true,
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: RefreshIndicator(
-          onRefresh: _refresh,
-          child: artifacts.isEmpty
-              ? ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.5,
-                      child: Center(
-                        child: Text(
-                          'No artifacts in this exhibit',
-                          style: TextStyle(color: Colors.grey.shade700),
+          body: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: RefreshIndicator(
+              onRefresh: _refresh,
+              child: artifacts.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: Center(
+                            child: Text(
+                              'No artifacts in this exhibit',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
+                    )
+                  : GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.72,
+                          ),
+                      itemCount: artifacts.length,
+                      itemBuilder: (context, index) {
+                        final artifact = artifacts[index];
+                        return ArtifactGridCard(
+                          artifact: artifact,
+                          language: contentLanguage,
+                        );
+                      },
                     ),
-                  ],
-                )
-              : GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.72,
-                  ),
-                  itemCount: artifacts.length,
-                  itemBuilder: (context, index) {
-                    final artifact = artifacts[index];
-                    return ArtifactGridCard(artifact: artifact, language: 'en');
-                  },
-                ),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

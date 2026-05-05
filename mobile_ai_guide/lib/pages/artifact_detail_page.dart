@@ -89,6 +89,7 @@ class _ArtifactDetailPageState extends State<ArtifactDetailPage>
                         culturalSignificance: artifact.getCulturalSignificance(
                           contentLanguage,
                         ),
+                        story: artifact.getStory(contentLanguage),
                       ),
 
                       // Ask AI Guide button placed inside scrollable content
