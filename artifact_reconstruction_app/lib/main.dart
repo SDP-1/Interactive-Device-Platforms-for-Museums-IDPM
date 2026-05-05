@@ -1337,8 +1337,38 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
     );
   }
 
+  InputDecoration _proInputDecoration({
+    required String labelText,
+    String? hintText,
+    Widget? prefixIcon,
+    bool alignLabelWithHint = false,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      filled: true,
+      fillColor: AppTheme.surfaceWarm,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      prefixIcon: prefixIcon,
+      alignLabelWithHint: alignLabelWithHint,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppTheme.stone200),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppTheme.stone200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppTheme.primary, width: 1.8),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final has3D = widget.artifact.modelUrl != null && widget.artifact.modelUrl!.isNotEmpty;
     return Scaffold(
       backgroundColor: AppTheme.surfaceWarm,
       appBar: AppBar(
@@ -1351,27 +1381,76 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!widget.isEditMode) ...[
-              Text(
-                'Add a name and any details you know. You can skip optional fields and add them later.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.stone600,
-                  height: 1.4,
-                ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppTheme.stone200),
               ),
-              const SizedBox(height: 24),
-            ],
-            if (widget.isEditMode) const SizedBox(height: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.edit_note_rounded, color: AppTheme.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.isEditMode ? 'Update artifact profile' : 'Complete artifact profile',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.stone800,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Use clear metadata to improve search and visitor experience.',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.stone600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: has3D ? const Color(0xFFE8F8EF) : const Color(0xFFF4F3F1),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      has3D ? '3D ready' : '2D only',
+                      style: TextStyle(
+                        color: has3D ? const Color(0xFF18794E) : AppTheme.stone600,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.stone200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -1381,21 +1460,17 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   Text(
                     'Basic info',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.bold,
+                      color: AppTheme.stone800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   TextField(
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
+                    decoration: _proInputDecoration(
                       labelText: 'Name *',
                       hintText: 'e.g. Roman ceramic cup',
-                      filled: true,
-                      fillColor: AppTheme.surfaceWarm,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       prefixIcon: const Icon(Icons.label_outline, size: 22),
                     ),
                     onChanged: (_) => setState(() {}),
@@ -1417,13 +1492,9 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   TextField(
                     controller: _categoryController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
+                    decoration: _proInputDecoration(
                       labelText: 'Category',
                       hintText: 'e.g. Ceramic, Pottery, Sculpture',
-                      filled: true,
-                      fillColor: AppTheme.surfaceWarm,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       prefixIcon: const Icon(Icons.category_outlined, size: 22),
                     ),
                     onChanged: (_) => setState(() {}),
@@ -1432,13 +1503,9 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   TextField(
                     controller: _eraController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
+                    decoration: _proInputDecoration(
                       labelText: 'Era or period',
                       hintText: 'e.g. Roman, 1st century AD',
-                      filled: true,
-                      fillColor: AppTheme.surfaceWarm,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       prefixIcon: const Icon(Icons.schedule_outlined, size: 22),
                     ),
                     onChanged: (_) => setState(() {}),
@@ -1447,13 +1514,9 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   TextField(
                     controller: _originController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
+                    decoration: _proInputDecoration(
                       labelText: 'Origin or place',
                       hintText: 'e.g. Italy, Greece, Egypt',
-                      filled: true,
-                      fillColor: AppTheme.surfaceWarm,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       prefixIcon: const Icon(Icons.place_outlined, size: 22),
                     ),
                     onChanged: (_) => setState(() {}),
@@ -1464,13 +1527,9 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                     maxLines: 4,
                     minLines: 2,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
+                    decoration: _proInputDecoration(
                       labelText: 'Description',
                       hintText: 'A short description for visitors...',
-                      filled: true,
-                      fillColor: AppTheme.surfaceWarm,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       alignLabelWithHint: true,
                     ),
                     onChanged: (_) => setState(() {}),
@@ -1501,7 +1560,8 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.stone200),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.06),
@@ -1535,7 +1595,7 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Converting to 3D…',
+                      'Converting to 3D...',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppTheme.stone600,
                         height: 1.3,
@@ -1553,48 +1613,45 @@ class _ArtifactDetailsScreenState extends State<ArtifactDetailsScreen> {
                   ],
                 ),
               ),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: (_hasEnteredData && !_saved && !_saving) ? _save : null,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primary,
-                      side: const BorderSide(color: AppTheme.primary),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: _saving
-                        ? SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
-                          )
-                        : const Text('Save details'),
+            FilledButton.icon(
+              onPressed: (_hasEnteredData && !_saved && !_saving) ? _save : null,
+              icon: _saving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.save_outlined, size: 20),
+              label: Text(_saving ? 'Saving...' : 'Save details'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppTheme.stone400.withValues(alpha: 0.45),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+            if (!widget.isEditMode) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _convertingTo3D ? null : _convertTo3D,
+                icon: _convertingTo3D
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
+                    : const Icon(Icons.view_in_ar, size: 20),
+                label: Text(_convertingTo3D ? 'Converting...' : (has3D ? 'View 3D' : 'Convert to 3D')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.primary,
+                  side: const BorderSide(color: AppTheme.primary),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                if (!widget.isEditMode) ...[
-                  const SizedBox(width: 14),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton.icon(
-                      onPressed: _convertingTo3D ? null : _convertTo3D,
-                      icon: _convertingTo3D
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Icon(Icons.view_in_ar, size: 20),
-                      label: Text(_convertingTo3D ? 'Converting…' : (widget.artifact.modelUrl != null && widget.artifact.modelUrl!.isNotEmpty ? 'View 3D' : 'Convert to 3D')),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -2094,6 +2151,7 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
   @override
   Widget build(BuildContext context) {
     final artifact = _artifact;
+    final has3D = artifact.modelUrl != null && artifact.modelUrl!.isNotEmpty;
     return Scaffold(
       backgroundColor: AppTheme.surfaceWarm,
       appBar: AppBar(
@@ -2110,107 +2168,159 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Reconstructed image',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: AppTheme.stone600,
-                fontWeight: FontWeight.w600,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppTheme.stone200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 22,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            if (artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(maxHeight: 420),
-                  color: AppTheme.stone200,
-                  child: Image.network(
-                    artifact.imageUrl!,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        height: 280,
-                        color: AppTheme.stone200,
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const CircularProgressIndicator(
-                              color: AppTheme.primary,
-                              strokeWidth: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: artifact.imageUrl != null && artifact.imageUrl!.isNotEmpty
+                            ? Container(
+                                constraints: const BoxConstraints(maxHeight: 380, minHeight: 220),
+                                color: AppTheme.stone200,
+                                child: Image.network(
+                                  artifact.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      height: 280,
+                                      color: AppTheme.stone200,
+                                      alignment: Alignment.center,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const CircularProgressIndicator(
+                                            color: AppTheme.primary,
+                                            strokeWidth: 2,
+                                          ),
+                                          const SizedBox(height: 14),
+                                          Text(
+                                            'Loading image...',
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                              color: AppTheme.stone600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (_, __, ___) => Container(
+                                    height: 240,
+                                    color: AppTheme.stone200,
+                                    padding: const EdgeInsets.all(32),
+                                    child: const Center(child: Icon(Icons.broken_image, size: 48, color: AppTheme.stone500)),
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                height: 220,
+                                color: AppTheme.stone200,
+                                child: const Center(child: Icon(Icons.image_outlined, size: 48, color: AppTheme.stone500)),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      artifact.name,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: AppTheme.stone800,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: has3D ? const Color(0xFFE8F8EF) : const Color(0xFFF4F3F1),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            has3D ? '3D ready' : '2D only',
+                            style: TextStyle(
+                              color: has3D ? const Color(0xFF18794E) : AppTheme.stone600,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Loading image…',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          ),
+                        ),
+                        if (artifact.category != null && artifact.category!.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.stone200,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              artifact.category!,
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                 color: AppTheme.stone600,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppTheme.stone200,
-                      padding: const EdgeInsets.all(32),
-                      child: const Center(child: Icon(Icons.broken_image, size: 48, color: AppTheme.stone500)),
+                          ),
+                        if (artifact.era != null && artifact.era!.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.stone200,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              artifact.era!,
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: AppTheme.stone600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
+                  ],
                 ),
-              )
-            else
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: AppTheme.stone200,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Icon(Icons.image_outlined, size: 48, color: AppTheme.stone500)),
-              ),
-            const SizedBox(height: 24),
-            Text(
-              artifact.name,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppTheme.stone800,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.3,
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'Details',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.stone800,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 24),
+            Text(
+              'Details',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppTheme.stone800,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppTheme.stone200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.045),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -2277,7 +2387,8 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.stone200),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.06),
@@ -2334,13 +2445,14 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
               icon: _convertingTo3D
                   ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.view_in_ar, size: 22),
-              label: Text(_convertingTo3D ? 'Converting…' : (_artifact.modelUrl != null && _artifact.modelUrl!.isNotEmpty ? 'View 3D' : 'Convert to 3D')),
+              label: Text(_convertingTo3D ? 'Converting...' : (has3D ? 'View 3D' : 'Convert to 3D')),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 17),
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
