@@ -866,7 +866,7 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: FilledButton.icon(
                   onPressed: _selectedImage == null
                       ? null
                       : () {
@@ -887,7 +887,8 @@ class _AdminCaptureUploadScreenState extends State<AdminCaptureUploadScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Next: send for reconstruction'),
+                  icon: const Icon(Icons.auto_fix_high_outlined),
+                  label: const Text('Reconstruct Image'),
                 ),
               ),
             ],
@@ -1965,6 +1966,15 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
                                       PopupMenuButton<String>(
                                         icon: Icon(Icons.more_horiz_rounded, color: AppTheme.stone600),
                                         padding: EdgeInsets.zero,
+                                        tooltip: 'More actions',
+                                        color: Colors.white,
+                                        surfaceTintColor: Colors.white,
+                                        elevation: 10,
+                                        shadowColor: Colors.black.withValues(alpha: 0.14),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          side: const BorderSide(color: AppTheme.stone200),
+                                        ),
                                         onSelected: (value) async {
                                           if (value == 'edit') {
                                             await Navigator.of(context).push<bool>(
@@ -1978,12 +1988,59 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
                                             final confirm = await showDialog<bool>(
                                               context: context,
                                               builder: (ctx) => AlertDialog(
-                                                title: const Text('Delete artifact?'),
-                                                content: const Text('This cannot be undone.'),
+                                                backgroundColor: Colors.white,
+                                                surfaceTintColor: Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  side: const BorderSide(color: AppTheme.stone200),
+                                                ),
+                                                titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                                                contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                                                actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                                                title: Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 34,
+                                                      height: 34,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red.withValues(alpha: 0.12),
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    const Expanded(
+                                                      child: Text('Delete artifact?'),
+                                                    ),
+                                                  ],
+                                                ),
+                                                content: Text(
+                                                  'This action is permanent and cannot be undone.',
+                                                  style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                                                    color: AppTheme.stone600,
+                                                    height: 1.35,
+                                                  ),
+                                                ),
                                                 actions: [
-                                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                                  OutlinedButton(
+                                                    style: OutlinedButton.styleFrom(
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(14),
+                                                      ),
+                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                    ),
+                                                    onPressed: () => Navigator.pop(ctx, false),
+                                                    child: const Text('Cancel'),
+                                                  ),
                                                   FilledButton(
-                                                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                                    style: FilledButton.styleFrom(
+                                                      backgroundColor: Colors.red,
+                                                      foregroundColor: Colors.white,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(14),
+                                                      ),
+                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                    ),
                                                     onPressed: () => Navigator.pop(ctx, true),
                                                     child: const Text('Delete'),
                                                   ),
@@ -2003,8 +2060,54 @@ class _ArtifactListScreenState extends State<ArtifactListScreen> {
                                           }
                                         },
                                         itemBuilder: (context) => [
-                                          const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                                          PopupMenuItem(
+                                            value: 'edit',
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 30,
+                                                  height: 30,
+                                                  decoration: BoxDecoration(
+                                                    color: AppTheme.primary.withValues(alpha: 0.12),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: const Icon(Icons.edit_outlined, size: 17, color: AppTheme.primary),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  'Edit',
+                                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                    color: AppTheme.stone800,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 'delete',
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 30,
+                                                  height: 30,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red.withValues(alpha: 0.1),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: const Icon(Icons.delete_outline, size: 17, color: Colors.red),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  'Delete',
+                                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                    color: Colors.red.shade700,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ],
@@ -2124,12 +2227,59 @@ class _ArtifactDetailViewScreenState extends State<ArtifactDetailViewScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete artifact?'),
-        content: const Text('This cannot be undone.'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppTheme.stone200),
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+        title: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text('Delete artifact?'),
+            ),
+          ],
+        ),
+        content: Text(
+          'This action is permanent and cannot be undone.',
+          style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.stone600,
+            height: 1.35,
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Delete'),
           ),
