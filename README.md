@@ -57,6 +57,12 @@ The platform operates on a decoupled microservices architecture, ensuring low la
 
 ---
 
+## 📚 Research & Documentation
+For a comprehensive deep dive into our methodology, system testing, and academic findings, please refer to our full research publications:
+👉 **[Read the Full Reports & Research Paper](https://ultra-museum.netlify.app/)**
+
+---
+
 ## 👥 Contributors
 This research was conducted as part of the BSc Honors Degree in Information Technology (Specializing in Software Engineering) at the **Sri Lanka Institute of Information Technology (SLIIT)**.
 
