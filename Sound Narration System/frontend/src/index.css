@@ -1,9 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
 /* Custom base styles */
 @layer base {
   body {
-    @apply antialiased;
+    @apply antialiased bg-stone-100 text-stone-900;
+    font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Playfair Display", Georgia, serif;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(180, 83, 9, 0.45) rgba(231, 229, 228, 0.8);
   }
 }
 
@@ -30,5 +41,24 @@
 @layer utilities {
   .text-gradient {
     @apply bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent;
+  }
+
+  @keyframes kioskMarquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .inspiration-marquee {
+    display: flex;
+    width: max-content;
+    animation: kioskMarquee 28s linear infinite;
+  }
+
+  .inspiration-marquee:hover {
+    animation-play-state: paused;
   }
 }

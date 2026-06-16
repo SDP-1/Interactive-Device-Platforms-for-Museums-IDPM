@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { fmtDate } from '../api'
 import StatusBadge from '../components/StatusBadge'
+import EditableExplanation from '../components/EditableExplanation'
 
 export default function Explanations() {
   const api    = useApi()
@@ -37,6 +38,16 @@ export default function Explanations() {
       load()
     } catch (err) {
       toast(`Error: ${err.message}`, true)
+    }
+  }
+
+  const doEdit = async (id, newText, notes) => {
+    try {
+      await api('PUT', `/admin/explanations/${id}/edit`, { edited_explanation: newText, notes: notes })
+      toast('Explanation updated and returned to Pending')
+      load()
+    } catch (err) {
+      toast(`Error updating explanation: ${err.message}`, true)
     }
   }
 
@@ -83,20 +94,12 @@ export default function Explanations() {
 
                   {/* Explanation text — prefer edited version when available */}
                   {(e.edited_explanation || e.explanation) && (
-                    <div className="space-y-1 mb-3">
-                      {e.edited_explanation && (
-                        <div className="text-xs text-indigo-600 font-medium">✏️ Curator-edited version:</div>
-                      )}
-                      <div className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                        {e.edited_explanation || e.explanation}
-                      </div>
-                      {e.edited_explanation && (
-                        <details className="text-xs text-gray-400">
-                          <summary className="cursor-pointer hover:text-gray-600">Show original AI text</summary>
-                          <div className="mt-1 bg-gray-100 rounded p-2 whitespace-pre-wrap">{e.explanation}</div>
-                        </details>
-                      )}
-                    </div>
+                    <EditableExplanation
+                      id={e.id}
+                      original={e.explanation}
+                      edited={e.edited_explanation}
+                      onSave={doEdit}
+                    />
                   )}
 
                   {e.curator_notes && (

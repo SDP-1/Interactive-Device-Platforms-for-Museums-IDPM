@@ -25,13 +25,20 @@ function ProtectedLayout() {
   const title = PAGE_TITLES[location.pathname] ?? 'Admin'
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-slate-50 relative overflow-hidden font-sans text-slate-800">
+      {/* Dynamic Background Blurs */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-64 -ml-20 -mb-20 w-[500px] h-[500px] rounded-full bg-violet-500/5 blur-[100px] pointer-events-none z-0"></div>
+      
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <header className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-10">
-          <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+      
+      <main className="flex-1 overflow-y-auto relative z-10">
+        <header className="bg-white/70 backdrop-blur-xl border-b border-slate-200/50 px-8 py-5 sticky top-0 z-20 shadow-sm">
+          <h1 className="text-2xl font-bold font-serif text-slate-900 tracking-tight">{title}</h1>
         </header>
-        <Outlet />
+        <div className="max-w-7xl mx-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

@@ -288,7 +288,14 @@ const colorClasses = {
   }
 };
 
-const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotspot, onHotspotChange }) => {
+const HotspotImage = ({ 
+  artifact, 
+  image, 
+  alt, 
+  activeHotspot: externalActiveHotspot, 
+  onHotspotChange,
+  showHotspots = true
+}) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [hotspotsVisible, setHotspotsVisible] = useState(false);
@@ -300,10 +307,12 @@ const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotsp
   const setActiveHotspot = onHotspotChange || setInternalActiveHotspot;
 
   useEffect(() => {
-    if (artifact) {
+    if (artifact && showHotspots) {
       setHotspots(generateHotspots(artifact));
+    } else {
+      setHotspots([]);
     }
-  }, [artifact]);
+  }, [artifact, showHotspots]);
 
   useEffect(() => {
     setImageLoaded(false);
@@ -313,6 +322,7 @@ const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotsp
   }, [image]);
 
   const handleImageClick = (e) => {
+    if (!showHotspots) return;
     // Don't toggle if clicking on a hotspot
     if (e.target.closest('.hotspot-marker')) return;
     setHotspotsVisible(!hotspotsVisible);
@@ -337,9 +347,8 @@ const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotsp
     <div className="relative w-full h-full">
       {/* Main Image Container */}
       <div
-        className={`relative w-full h-full cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl 
-                    border border-stone-200 bg-stone-100 transition-all duration-300
-                    ${hotspotsVisible ? 'ring-2 ring-amber-400 ring-offset-2' : ''}`}
+        className={`relative w-full h-full overflow-hidden rounded-xl sm:rounded-2xl 
+                    ${showHotspots ? 'cursor-pointer' : 'cursor-default'}`}
         onClick={handleImageClick}
       >
         {/* Loading State */}
@@ -355,7 +364,7 @@ const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotsp
           </div>
         ) : (
           <img
-            src={image}
+            src={Array.isArray(image) ? image[0] : image}
             alt={alt}
             className={`w-full h-full object-contain transition-all duration-500
                        ${imageLoaded ? 'opacity-100' : 'opacity-0'}
@@ -366,7 +375,7 @@ const HotspotImage = ({ artifact, image, alt, activeHotspot: externalActiveHotsp
         )}
 
         {/* Tap Indicator - shows when image is loaded but hotspots not visible */}
-        {imageLoaded && !imageError && !hotspotsVisible && (
+        {imageLoaded && !imageError && !hotspotsVisible && showHotspots && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 
                           opacity-0 hover:opacity-100 transition-opacity duration-300">
             <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 sm:px-6 sm:py-3 

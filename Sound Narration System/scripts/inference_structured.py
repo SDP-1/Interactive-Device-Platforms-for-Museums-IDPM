@@ -18,7 +18,7 @@ try:
     FUZZY_AVAILABLE = True
 except ImportError:
     FUZZY_AVAILABLE = False
-    print("⚠️  rapidfuzz not installed. Spelling correction disabled. Run: pip install rapidfuzz")
+    print("rapidfuzz not installed. Spelling correction disabled. Run: pip install rapidfuzz")
 
 def convert_to_story(name, description, era, what_happened):
     """Convert structured data to story format (same as training)"""

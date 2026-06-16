@@ -1,0 +1,3 @@
+# Ignore T5 local model folder
+Basii Full Component/Atifact_Comparison_Component/t5_artifact_explainer/
+*.model

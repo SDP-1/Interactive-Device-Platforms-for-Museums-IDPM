@@ -26,7 +26,7 @@ const ArtifactCard = ({ artifact, onClick, delay = 0 }) => {
           </div>
         ) : (
           <img
-            src={artifact.image}
+            src={Array.isArray(artifact.image) ? artifact.image[0] : artifact.image}
             alt={artifact.name}
             className={`w-full h-full object-contain transition-all duration-700 
                        group-hover:scale-110 p-6 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}

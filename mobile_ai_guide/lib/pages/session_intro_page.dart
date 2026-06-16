@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_ai_guide/pages/reconstruction_qr_scan_page.dart';
 import 'package:mobile_ai_guide/pages/session_qr_scan_page.dart';
 import 'package:mobile_ai_guide/ui/colors.dart' as app;
 
@@ -100,6 +101,35 @@ class SessionIntroPage extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: app.kGold,
+                      side: const BorderSide(color: app.kGold),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.view_in_ar_outlined, size: 20),
+                    label: const Text(
+                      'Scan 3D Artifact QR',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ReconstructionQrScanPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   height: 52,

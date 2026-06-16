@@ -5,9 +5,11 @@ from functools import lru_cache
 
 class ArtifactAIExplainer:
     def __init__(self, model_dir='t5_artifact_explainer'):
+        # Root path resolution
         self.model_dir = model_dir
         self.device = 'cpu' # Force CPU for quantization stability
         
+        print(f"Loading T5 model from: {model_dir}")
         print("Loading T5 tokenizer...")
         self.tokenizer = T5Tokenizer.from_pretrained(model_dir)
         
@@ -29,19 +31,6 @@ class ArtifactAIExplainer:
         self.model.eval()
 
     @lru_cache(maxsize=100)
-    def explain(self, artifact: dict, max_length=512) -> str:
-        # Create a hashable string representation for caching since dicts aren't hashable
-        # This is a bit of a hack but ensures the cache works based on content
-        artifact_key = f"{artifact['name']}|{artifact['category']}|{artifact['origin']}|{artifact['era']}"
-        return self._explain_internal(artifact_key, str(artifact), max_length)
-
-    def _explain_internal(self, key, artifact_str, max_length):
-        # Reconstruct dict from string is unsafe/hard, so we just use the original logic
-        # But we need to pass the dict. So let's refactor slightly.
-        # Actually, let's use a simpler wrapper.
-        pass
-
-    @lru_cache(maxsize=100)
     def _generate_explanation(self, input_text, max_length):
         input_ids = self.tokenizer.encode(input_text, return_tensors='pt', max_length=512, truncation=True).to(self.device)
         
@@ -50,7 +39,7 @@ class ArtifactAIExplainer:
                 input_ids,
                 max_length=max_length,
                 min_length=100,
-                num_beams=4, # Kept as requested by user
+                num_beams=4,
                 early_stopping=True,
                 no_repeat_ngram_size=3,
                 length_penalty=2.0
@@ -65,26 +54,9 @@ class ArtifactAIExplainer:
         return explanation.strip() if explanation.strip() else self._fallback_explanation(artifact)
 
     def compare_artifacts(self, artifact1: dict, artifact2: dict) -> str:
-        """Build a comparison narrative using T5-generated content for each artifact.
-
-        T5 is called once per artifact using its trained prompt format.
-        Only the Materials and Craftsmanship section is extracted for the
-        Design and Craftsmanship block; everything else uses structured fields.
-        """
-        input1 = (
-            f"Explain this artifact: {artifact1['name']} | "
-            f"Category: {artifact1['category']} | Origin: {artifact1['origin']} | "
-            f"Era: {artifact1['era']} | Materials: {artifact1['materials']} | "
-            f"Function: {artifact1['function']} | Symbolism: {artifact1['symbolism']} | "
-            f"Notes: {artifact1.get('notes', '')}"
-        )
-        input2 = (
-            f"Explain this artifact: {artifact2['name']} | "
-            f"Category: {artifact2['category']} | Origin: {artifact2['origin']} | "
-            f"Era: {artifact2['era']} | Materials: {artifact2['materials']} | "
-            f"Function: {artifact2['function']} | Symbolism: {artifact2['symbolism']} | "
-            f"Notes: {artifact2.get('notes', '')}"
-        )
+        """Build a comparison narrative using T5-generated content for each artifact."""
+        input1 = f"Explain this artifact: {artifact1['name']} | Category: {artifact1['category']} | Origin: {artifact1['origin']} | Era: {artifact1['era']} | Materials: {artifact1['materials']} | Function: {artifact1['function']} | Symbolism: {artifact1['symbolism']} | Notes: {artifact1.get('notes', '')}"
+        input2 = f"Explain this artifact: {artifact2['name']} | Category: {artifact2['category']} | Origin: {artifact2['origin']} | Era: {artifact2['era']} | Materials: {artifact2['materials']} | Function: {artifact2['function']} | Symbolism: {artifact2['symbolism']} | Notes: {artifact2.get('notes', '')}"
 
         raw1 = self._generate_explanation(input1, max_length=300).strip()
         raw2 = self._generate_explanation(input2, max_length=300).strip()
@@ -114,21 +86,13 @@ class ArtifactAIExplainer:
         return "\n".join(sections)
 
     def _extract_section(self, text: str, section_title: str) -> str:
-        """Extract the content of a named section from T5 output.
-        
-        Sections are separated by the next title-like line (no leading spaces, 
-        title-cased or all-caps). Returns the section body, or empty string if
-        the section is not found.
-        """
+        """Extract the content of a named section from T5 output."""
         import re
-        # Split on lines that look like section headers (short, no punctuation at end)
         header_pattern = re.compile(r'^([A-Z][A-Za-z &/\-]+)$', re.MULTILINE)
         parts = header_pattern.split(text)
-        # parts alternates: [pre-header-text, header, body, header, body, ...]
         for i, part in enumerate(parts):
             if part.strip() == section_title and i + 1 < len(parts):
                 content = parts[i + 1].strip()
-                # Remove any leading/trailing blank lines
                 return content if content else ''
         return ''
     

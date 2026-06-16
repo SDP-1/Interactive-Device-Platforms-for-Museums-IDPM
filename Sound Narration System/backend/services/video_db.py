@@ -7,6 +7,8 @@ import chromadb
 from chromadb.utils import embedding_functions
 import os
 import json
+import shutil
+from datetime import datetime
 
 class VideoVectorDB:
     def __init__(self, persist_directory=None):
@@ -26,18 +28,60 @@ class VideoVectorDB:
         self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2"  # Fast and accurate, good for semantic search
         )
-        
-        # Initialize ChromaDB with persistence
-        self.client = chromadb.PersistentClient(path=persist_directory)
-        
-        # Create or get the videos collection
-        self.collection = self.client.get_or_create_collection(
-            name="historical_videos",
-            embedding_function=self.embedding_fn,
-            metadata={"description": "Sri Lankan historical event videos"}
-        )
+
+        self.persist_directory = persist_directory
+        self._initialize_collection_with_recovery()
         
         print(f"✓ Video DB initialized with {self.collection.count()} videos")
+
+    def _initialize_collection_with_recovery(self):
+        """Initialize Chroma collection, auto-recovering from schema mismatch."""
+        try:
+            # Initialize ChromaDB with persistence
+            self.client = chromadb.PersistentClient(path=self.persist_directory)
+
+            # Create or get the videos collection
+            self.collection = self.client.get_or_create_collection(
+                name="historical_videos",
+                embedding_function=self.embedding_fn,
+                metadata={"description": "Sri Lankan historical event videos"}
+            )
+        except Exception as exc:
+            error_text = str(exc)
+            if "no such column: collections.topic" not in error_text:
+                raise
+
+            # Existing DB is from an incompatible schema/version. Keep backup, then recreate.
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_dir = f"{self.persist_directory}_backup_{timestamp}"
+            print(
+                "⚠ Incompatible ChromaDB schema detected. "
+                f"Backing up old DB to: {backup_dir}"
+            )
+
+            target_directory = self.persist_directory
+            try:
+                shutil.move(self.persist_directory, backup_dir)
+                os.makedirs(self.persist_directory, exist_ok=True)
+            except PermissionError:
+                # On Windows the sqlite file can be locked by another process.
+                # If so, keep the old folder as-is and continue with a fresh folder.
+                target_directory = f"{self.persist_directory}_fresh_{timestamp}"
+                os.makedirs(target_directory, exist_ok=True)
+                print(
+                    "⚠ Existing DB is locked by another process. "
+                    f"Using fresh DB folder: {target_directory}"
+                )
+
+            self.persist_directory = target_directory
+
+            self.client = chromadb.PersistentClient(path=self.persist_directory)
+            self.collection = self.client.get_or_create_collection(
+                name="historical_videos",
+                embedding_function=self.embedding_fn,
+                metadata={"description": "Sri Lankan historical event videos"}
+            )
+            print("✓ Recreated fresh compatible video database")
     
     def add_video(self, video_id: str, video_path: str, 
                   description: str, topics: list, 
@@ -78,7 +122,7 @@ class VideoVectorDB:
         )
         print(f"✓ Added video: {video_id}")
     
-    def find_video(self, question: str, answer: str = "", threshold: float = 0.75):
+    def find_video(self, question: str, answer: str = "", threshold: float = 0.55):
         """
         Find the best matching video for a question/answer
         
@@ -94,27 +138,63 @@ class VideoVectorDB:
         if self.collection.count() == 0:
             return None
         
-        # Combine question and answer for better matching
-        search_text = f"{question} {answer}"
-        
-        results = self.collection.query(
-            query_texts=[search_text],
-            n_results=1,
-            include=["metadatas", "distances"]
-        )
-        
-        if results and results['ids'] and results['ids'][0]:
-            # ChromaDB returns L2 distance - lower is better
-            # Convert to similarity score (0-1, higher is better)
-            distance = results['distances'][0][0]
-            similarity = 1 / (1 + distance)  # Normalize to 0-1 range
-            
-            print(f"  Video match: {results['ids'][0][0]} (similarity: {similarity:.3f})")
-            
-            if similarity >= threshold:
-                metadata = results['metadatas'][0][0]
+        # Evaluate both focused and contextual queries.
+        # Question-only helps targeted matches (e.g. "elara dutugemunu war"),
+        # while question+answer helps when answer adds useful context.
+        query_texts = [question]
+        if answer and answer.strip():
+            query_texts.append(f"{question} {answer}")
+
+        best_match = None
+        best_adjusted_score = 0.0
+        question_tokens = {
+            token.lower()
+            for token in question.replace(",", " ").split()
+            if len(token.strip()) > 2
+        }
+
+        for search_text in query_texts:
+            results = self.collection.query(
+                query_texts=[search_text],
+                n_results=min(3, self.collection.count()),
+                include=["metadatas", "distances"]
+            )
+
+            if not (results and results['ids'] and results['ids'][0]):
+                continue
+
+            for i, video_id in enumerate(results['ids'][0]):
+                # ChromaDB returns L2 distance - lower is better
+                distance = results['distances'][0][i]
+                similarity = 1 / (1 + distance)
+                metadata = results['metadatas'][0][i]
+
+                # Add a small boost when question tokens overlap with video topics.
+                # This improves retrieval for multi-keyword questions.
+                topics = json.loads(metadata.get('topics', '[]'))
+                topic_tokens = {
+                    token.lower()
+                    for topic in topics
+                    for token in str(topic).replace(",", " ").split()
+                    if len(token.strip()) > 2
+                }
+                overlap = len(question_tokens.intersection(topic_tokens))
+                adjusted_score = similarity + min(0.12, overlap * 0.04)
+
+                if adjusted_score > best_adjusted_score:
+                    best_adjusted_score = adjusted_score
+                    best_match = (video_id, metadata, similarity)
+
+        if best_match:
+            video_id, metadata, similarity = best_match
+            print(
+                f"  Video match: {video_id} "
+                f"(similarity: {similarity:.3f}, adjusted: {best_adjusted_score:.3f})"
+            )
+
+            if best_adjusted_score >= threshold:
                 return {
-                    "video_id": results['ids'][0][0],
+                    "video_id": video_id,
                     "video_path": metadata['video_path'],
                     "poster_path": metadata.get('poster_path') or None,
                     "description": metadata['description'],
@@ -122,8 +202,11 @@ class VideoVectorDB:
                     "era": metadata.get('era') or None,
                     "similarity": round(similarity, 3)
                 }
-            else:
-                print(f"  Similarity {similarity:.3f} below threshold {threshold}")
+
+            print(
+                f"  Adjusted similarity {best_adjusted_score:.3f} "
+                f"below threshold {threshold}"
+            )
         
         return None
     

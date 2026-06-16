@@ -73,15 +73,15 @@ print("Model loaded successfully!")
 
 training_args = TrainingArguments(
     output_dir='./t5_artifact_explainer',
-    num_train_epochs=30,
-    per_device_train_batch_size=2,
-    save_steps=10,
+    num_train_epochs=20,  # Optimized to 20 as discussed
+    per_device_train_batch_size=4, # Increased slightly for better CPU utilization
+    save_steps=50,
     save_total_limit=2,
-    logging_steps=5,
+    logging_steps=10,
     learning_rate=3e-5,
     report_to=[],
     remove_unused_columns=False,
-    warmup_steps=10
+    warmup_steps=20
 )
 
 print("Initializing trainer...")
@@ -89,11 +89,11 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=dataset,
-    processing_class=tokenizer
+    tokenizer=tokenizer # Use standard tokenizer parameter
 )
 
 # 5. Train
-print("Starting training...")
+print("Starting training (Approx 20-30 mins on CPU)...")
 trainer.train()
 print("Training completed!")
 

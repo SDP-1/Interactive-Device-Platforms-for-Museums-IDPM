@@ -27,7 +27,7 @@ const GalleryScreen = ({ onSelectArtifact }) => {
       // Transform API data to match expected format
       const transformedData = data.map(artifact => ({
         ...artifact,
-        image: artifact.image ? `/${artifact.image}` : null,
+        image: artifact.image ? (Array.isArray(artifact.image) ? artifact.image.map(img => `/${img}`) : `/${artifact.image}`) : null,
         description: artifact.function || artifact.notes || '',
         details: {
           material: artifact.materials || 'Unknown',
@@ -49,10 +49,27 @@ const GalleryScreen = ({ onSelectArtifact }) => {
     loadArtifacts();
   }, []);
 
-  // Get unique filter values from loaded artifacts
+  // Map dataset's specific labels into broader classification categories
+  const getBroadCategory = (categoryText) => {
+    if (!categoryText) return '';
+    const lower = categoryText.toLowerCase();
+    if (lower.includes('sword') || lower.includes('blade')) return 'Weapons';
+    if (lower.includes('drum') || lower.includes('percussion')) return 'Musical Instruments';
+    if (lower.includes('mask')) return 'Masks & Theater';
+    if (lower.includes('mural') || lower.includes('painting') || lower.includes('art')) return 'Art & Murals';
+    if (lower.includes('garment') || lower.includes('textile') || lower.includes('attire')) return 'Clothing & Textiles';
+    if (lower.includes('jewelry') || lower.includes('craft')) return 'Crafts & Jewelry';
+    if (lower.includes('carving') || lower.includes('sculpture') || lower.includes('symbol')) return 'Architecture & Sculpture';
+    // Match ceremonial/ritual before tools to properly catch Ritual Lamps vs Domestic Pottery
+    if (lower.includes('ceremonial') || lower.includes('ritual') || lower.includes('sacred') || lower.includes('temple')) return 'Ceremonial & Sacred';
+    if (lower.includes('tool') || lower.includes('stone') || lower.includes('fixture') || lower.includes('lamp') || lower.includes('pottery') || lower.includes('vessel') || lower.includes('ceramic')) return 'Tools & Utensils';
+    return 'Other';
+  };
+
+  // Get unique broad filter values from loaded artifacts
   const categories = useMemo(() => {
-    const cats = [...new Set(artifacts.map(a => a.category))];
-    return cats.filter(Boolean).sort();
+    const broadCats = artifacts.map(a => getBroadCategory(a.category));
+    return [...new Set(broadCats)].filter(c => c !== '' && c !== 'Other').sort();
   }, [artifacts]);
 
   const eras = useMemo(() => {
@@ -73,7 +90,7 @@ const GalleryScreen = ({ onSelectArtifact }) => {
         (artifact.description && artifact.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
         artifact.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesCategory = !selectedCategory || artifact.category === selectedCategory;
+      const matchesCategory = !selectedCategory || getBroadCategory(artifact.category) === selectedCategory;
       const matchesEra = !selectedEra || artifact.era === selectedEra;
       const matchesOrigin = !selectedOrigin || artifact.origin === selectedOrigin;
 
@@ -163,25 +180,34 @@ const GalleryScreen = ({ onSelectArtifact }) => {
 
           {/* Filter Dropdowns - Enlarged */}
           <div className="flex flex-wrap sm:flex-nowrap gap-6 overflow-x-auto pb-2">
-            {/* Category Filter */}
-            <div className="relative flex-1 min-w-[250px]">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none px-6 sm:px-8 py-5 rounded-[1.5rem] border-2 border-stone-100 
-                           bg-stone-50/50 focus:bg-white font-sans text-xl text-stone-800 cursor-pointer
-                           focus:border-amber-500 focus:ring-4 focus:ring-amber-100/50 outline-none
-                           transition-all duration-300 pr-16"
-              >
-                <option value="">All Categories</option>
+            {/* Category Pill Filters - Dynamic Classification System */}
+            <div className="w-full col-span-full mb-4">
+              <h3 className="font-sans text-stone-500 font-semibold mb-3 uppercase tracking-wider text-sm">Category</h3>
+              <div className="flex flex-wrap gap-3 w-full">
+                <button
+                  onClick={() => setSelectedCategory('')}
+                  className={`px-6 py-2.5 rounded-full font-sans text-lg font-medium transition-all duration-300 shadow-sm ${
+                    selectedCategory === '' 
+                      ? 'bg-amber-600 text-white shadow-amber-600/30 scale-105' 
+                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-amber-300'
+                  }`}
+                >
+                  All
+                </button>
                 {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category === selectedCategory ? '' : category)}
+                    className={`px-6 py-2.5 rounded-full font-sans text-lg font-medium transition-all duration-300 shadow-sm ${
+                      selectedCategory === category
+                        ? 'bg-amber-600 text-white shadow-amber-600/30 scale-105'
+                        : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-amber-300'
+                    }`}
+                  >
+                    {category}
+                  </button>
                 ))}
-              </select>
-              <ChevronDown
-                size={28}
-                className="absolute right-6 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
-              />
+              </div>
             </div>
 
             {/* Era Filter */}

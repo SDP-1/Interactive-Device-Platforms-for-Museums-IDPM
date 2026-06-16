@@ -44,7 +44,7 @@ export default function CityTimeline() {
 
     /* Generate tick labels */
     const ticks = [];
-    for (let y = -600; y <= 2000; y += 100) {
+    for (let y = -600; y <= 2100; y += 100) {
         ticks.push(y);
     }
 
@@ -79,17 +79,17 @@ export default function CityTimeline() {
                 <div className="city-timeline__slider-track-container">
                     {/* Era background bands */}
                     <div className="city-timeline__eras">
-                        <span className="era era--ancient" style={{ left: '0%', width: '23%' }}>Ancient</span>
-                        <span className="era era--classical" style={{ left: '23%', width: '19%' }}>Classical</span>
-                        <span className="era era--medieval" style={{ left: '42%', width: '19%' }}>Medieval</span>
-                        <span className="era era--colonial" style={{ left: '61%', width: '27%' }}>Colonial</span>
-                        <span className="era era--modern" style={{ left: '88%', width: '12%' }}>Modern</span>
+                        <span className="era era--ancient" style={{ left: '0%', width: '22.8%' }}>Ancient</span>
+                        <span className="era era--classical" style={{ left: '22.8%', width: '19%' }}>Classical</span>
+                        <span className="era era--medieval" style={{ left: '41.8%', width: '19%' }}>Medieval</span>
+                        <span className="era era--colonial" style={{ left: '60.8%', width: '26.6%' }}>Colonial</span>
+                        <span className="era era--modern" style={{ left: '87.4%', width: '12.6%' }}>Modern</span>
                     </div>
 
                     {/* Tick marks */}
                     <div className="city-timeline__ticks">
                         {ticks.map((y) => {
-                            const pct = ((y - (-600)) / (2000 - (-600))) * 100;
+                            const pct = ((y - (-600)) / (2030 - (-600))) * 100;
                             return (
                                 <div key={y} className="city-timeline__tick" style={{ left: `${pct}%` }}>
                                     <div className="city-timeline__tick-line" />
@@ -106,14 +106,14 @@ export default function CityTimeline() {
                         type="range"
                         className="city-timeline__range"
                         min={-600}
-                        max={2000}
+                        max={2030}
                         step={10}
                         value={cursorYear}
                         onChange={(e) => setCursorYear(Number(e.target.value))}
                     />
 
                     {/* Cursor position indicator */}
-                    <div className="city-timeline__cursor-indicator" style={{ left: `${((cursorYear - (-600)) / (2000 - (-600))) * 100}%` }}>
+                    <div className="city-timeline__cursor-indicator" style={{ left: `${((cursorYear - (-600)) / (2030 - (-600))) * 100}%` }}>
                         <span>{formatYear(cursorYear)}</span>
                     </div>
                 </div>

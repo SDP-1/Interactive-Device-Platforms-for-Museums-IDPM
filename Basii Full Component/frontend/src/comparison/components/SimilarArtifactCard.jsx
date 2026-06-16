@@ -30,7 +30,7 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
           </div>
         ) : (
           <img
-            src={artifact.image}
+            src={Array.isArray(artifact.image) ? artifact.image[0] : artifact.image}
             alt={artifact.name}
             className={`w-full h-full object-contain transition-all duration-500 
                        group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -38,14 +38,6 @@ const SimilarArtifactCard = ({ artifact, onCompare, delay = 0 }) => {
             onError={() => setImageError(true)}
           />
         )}
-
-        {/* Similarity Score Badge */}
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-          <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full 
-                           text-xs sm:text-sm font-semibold font-sans shadow-sm ${getScoreColor(artifact.similarityScore)}`}>
-            {artifact.similarityScore}% Match
-          </span>
-        </div>
       </div>
 
       {/* Content */}

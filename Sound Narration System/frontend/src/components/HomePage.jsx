@@ -118,49 +118,49 @@ function HomePage({ onNavigate, backendStatus }) {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1510] via-[#2d251c] to-[#1a1510] overflow-hidden">
+    <div className="min-h-screen bg-stone-100 overflow-hidden">
       {/* Animated Background Pattern */}
-      <div className="fixed inset-0 opacity-10">
+      <div className="fixed inset-0 opacity-[0.03]">
         <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D97706' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 px-8 py-6">
+      <header className="relative z-10 px-8 py-6 bg-white border-b border-stone-200 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-gradient-to-br from-[#D97706] to-[#B45309] rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
               <Landmark className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl font-bold text-stone-800 tracking-tight">
                 Sri Lankan Heritage
               </h1>
-              <p className="text-amber-200/60 text-sm">Interactive Museum Experience</p>
+              <p className="text-stone-500 text-sm">Interactive Museum Experience</p>
             </div>
           </div>
 
           {/* Time & Status */}
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-3xl font-light text-white tracking-wider font-mono">
+              <p className="text-3xl font-light text-stone-800 tracking-wider font-mono">
                 {formatTime(currentTime)}
               </p>
-              <p className="text-amber-200/50 text-sm">{formatDate(currentTime)}</p>
+              <p className="text-stone-500 text-sm">{formatDate(currentTime)}</p>
             </div>
             <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
               backendStatus === 'connected' 
-                ? 'bg-emerald-500/20 border border-emerald-500/30' 
-                : 'bg-red-500/20 border border-red-500/30'
+                ? 'bg-emerald-50 border border-emerald-200' 
+                : 'bg-red-50 border border-red-200'
             }`}>
               {backendStatus === 'connected' ? (
-                <Wifi className="w-4 h-4 text-emerald-400" />
+                <Wifi className="w-4 h-4 text-emerald-600" />
               ) : (
-                <WifiOff className="w-4 h-4 text-red-400" />
+                <WifiOff className="w-4 h-4 text-red-600" />
               )}
               <span className={`text-sm font-medium ${
-                backendStatus === 'connected' ? 'text-emerald-400' : 'text-red-400'
+                backendStatus === 'connected' ? 'text-emerald-700' : 'text-red-700'
               }`}>
                 {backendStatus === 'connected' ? 'System Online' : 'Offline'}
               </span>
@@ -175,20 +175,20 @@ function HomePage({ onNavigate, backendStatus }) {
           
           {/* Hero Welcome Section */}
           <div className="mb-10">
-            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-900/40 to-stone-900/40 border border-amber-500/20 p-10">
+            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-10 shadow-lg">
               {/* Decorative Elements */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-orange-500/10 to-transparent rounded-full blur-3xl" />
               
               <div className="relative flex items-center justify-between">
                 <div className="max-w-2xl">
-                  <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
+                  <h2 className="text-5xl font-bold text-stone-800 mb-4 leading-tight">
                     Discover the Rich
                     <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
                       History of Sri Lanka
                     </span>
                   </h2>
-                  <p className="text-xl text-amber-100/70 mb-8 leading-relaxed">
+                  <p className="text-xl text-stone-600 mb-8 leading-relaxed">
                     Ask questions, explore timelines, and immerse yourself in 
                     thousands of years of fascinating heritage through AI-powered narration.
                   </p>
@@ -203,26 +203,26 @@ function HomePage({ onNavigate, backendStatus }) {
                 </div>
 
                 {/* Stats Panel */}
-                <div className="hidden lg:grid grid-cols-2 gap-4">
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                  <div className="hidden lg:grid grid-cols-2 gap-4">
+                  <div className="bg-white rounded-2xl p-5 border border-stone-200">
                     <Users className="w-8 h-8 text-amber-400 mb-2" />
-                    <p className="text-3xl font-bold text-white">2,500+</p>
-                    <p className="text-amber-200/60 text-sm">Years of History</p>
+                    <p className="text-3xl font-bold text-stone-800">2,500+</p>
+                    <p className="text-stone-500 text-sm">Years of History</p>
                   </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                  <div className="bg-white rounded-2xl p-5 border border-stone-200">
                     <Landmark className="w-8 h-8 text-emerald-400 mb-2" />
-                    <p className="text-3xl font-bold text-white">8</p>
-                    <p className="text-amber-200/60 text-sm">UNESCO Sites</p>
+                    <p className="text-3xl font-bold text-stone-800">8</p>
+                    <p className="text-stone-500 text-sm">UNESCO Sites</p>
                   </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                  <div className="bg-white rounded-2xl p-5 border border-stone-200">
                     <Crown className="w-8 h-8 text-purple-400 mb-2" />
-                    <p className="text-3xl font-bold text-white">180+</p>
-                    <p className="text-amber-200/60 text-sm">Ancient Kings</p>
+                    <p className="text-3xl font-bold text-stone-800">180+</p>
+                    <p className="text-stone-500 text-sm">Ancient Kings</p>
                   </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                  <div className="bg-white rounded-2xl p-5 border border-stone-200">
                     <TrendingUp className="w-8 h-8 text-rose-400 mb-2" />
-                    <p className="text-3xl font-bold text-white">100+</p>
-                    <p className="text-amber-200/60 text-sm">Stories to Tell</p>
+                    <p className="text-3xl font-bold text-stone-800">100+</p>
+                    <p className="text-stone-500 text-sm">Stories to Tell</p>
                   </div>
                 </div>
               </div>
@@ -262,10 +262,10 @@ function HomePage({ onNavigate, backendStatus }) {
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-2xl font-bold text-white">Featured Topics</h3>
-                <p className="text-amber-200/60">Explore key moments in Sri Lankan history</p>
+                <h3 className="text-2xl font-bold text-stone-800">Featured Topics</h3>
+                <p className="text-stone-500">Explore key moments in Sri Lankan history</p>
               </div>
-              <button className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors font-medium">
+                <button className="flex items-center gap-2 text-orange-500 hover:text-orange-600 transition-colors font-medium">
                 View All <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -275,7 +275,7 @@ function HomePage({ onNavigate, backendStatus }) {
                 <button
                   key={topic.id}
                   onClick={() => onNavigate('ask', topic.title)}
-                  className="group relative bg-gradient-to-br from-stone-800/50 to-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-amber-500/10 hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] text-left overflow-hidden"
+                  className="group relative bg-white rounded-2xl p-6 border border-stone-200 hover:border-amber-300 transition-all duration-300 hover:scale-[1.02] text-left overflow-hidden shadow-sm hover:shadow-lg"
                 >
                   {/* Gradient Overlay on Hover */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${topic.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -285,18 +285,18 @@ function HomePage({ onNavigate, backendStatus }) {
                       <topic.icon className="w-6 h-6 text-white" />
                     </div>
                     
-                    <h4 className="text-lg font-bold text-white mb-1 group-hover:text-amber-300 transition-colors">
+                    <h4 className="text-lg font-bold text-stone-800 mb-1 group-hover:text-amber-700 transition-colors">
                       {topic.title}
                     </h4>
                     <div className="flex items-center gap-2 text-amber-400/80 text-sm mb-3">
                       <Clock className="w-3 h-3" />
                       {topic.era}
                     </div>
-                    <p className="text-amber-100/50 text-sm leading-relaxed">
+                    <p className="text-stone-500 text-sm leading-relaxed">
                       {topic.description}
                     </p>
 
-                    <div className="mt-4 flex items-center gap-2 text-amber-400 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                    <div className="mt-4 flex items-center gap-2 text-amber-600 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                       <MapPin className="w-4 h-4" />
                       <span className="text-sm font-medium">Learn More</span>
                     </div>
@@ -310,15 +310,15 @@ function HomePage({ onNavigate, backendStatus }) {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 px-8 py-6 mt-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between border-t border-amber-500/10 pt-6">
+      <footer className="relative z-10 px-8 py-6 mt-10 bg-white border-t border-stone-200">
+        <div className="max-w-7xl mx-auto flex items-center justify-between pt-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#D97706] to-[#B45309] rounded-xl flex items-center justify-center">
               <Landmark className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-white">Sri Lankan Heritage Museum</span>
+            <span className="font-semibold text-stone-800">Sri Lankan Heritage Museum</span>
           </div>
-          <p className="text-amber-200/40 text-sm">
+          <p className="text-stone-500 text-sm">
             Interactive Device Platform for Museums • Preserving Heritage Through Technology
           </p>
         </div>

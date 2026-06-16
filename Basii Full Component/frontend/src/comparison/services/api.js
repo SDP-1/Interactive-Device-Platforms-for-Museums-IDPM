@@ -65,6 +65,18 @@ export const fetchAiExplanation = async (artifactId) => {
   }
 };
 
+// Poll explanation curator-verification status
+export const fetchExplanationStatus = async (artifactId) => {
+  try {
+    const response = await fetch(`${API_BASE}/explanation-status/${artifactId}`);
+    if (!response.ok) throw new Error('Status check failed');
+    return await response.json();
+  } catch (error) {
+    console.warn('Explanation status unavailable:', error.message);
+    return null;
+  }
+};
+
 // Compare two artifacts
 export const compareArtifacts = async (artifact1Id, artifact2Id) => {
   try {

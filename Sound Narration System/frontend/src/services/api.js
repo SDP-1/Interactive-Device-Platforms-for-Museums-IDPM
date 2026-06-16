@@ -71,6 +71,52 @@ export async function checkHealth() {
   }
 }
 
+/**
+ * @returns {Promise<{ success: boolean, avgRating: number, totalReviews: number, enabled?: boolean, error?: string }>}
+ */
+export async function getReviewSummary() {
+  const response = await fetch(`${API_BASE_URL}/reviews/summary`);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || `HTTP error! status: ${response.status}`);
+    err.details = data;
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * @param {number} [limit]
+ */
+export async function getReviews(limit = 50) {
+  const response = await fetch(`${API_BASE_URL}/reviews?limit=${encodeURIComponent(limit)}`);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || `HTTP error! status: ${response.status}`);
+    err.details = data;
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * @param {{ rating: number, name: string, age: number, comment?: string, session_type?: string }} payload
+ */
+export async function submitReview(payload) {
+  const response = await fetch(`${API_BASE_URL}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || `HTTP error! status: ${response.status}`);
+    err.details = data;
+    throw err;
+  }
+  return data;
+}
+
 
 
 
